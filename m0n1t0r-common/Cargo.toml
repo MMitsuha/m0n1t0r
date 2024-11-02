@@ -1,0 +1,16 @@
+[package]
+name = "m0n1t0r-common"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.91"
+remoc = { version = "0.14.0", features = ["full", "codec-message-pack", "default-codec-message-pack", "rmp-serde"], default-features = false }
+serde = { version = "1.0.213", features = ["derive"] }
+strum = { version = "0.26.3", features = ["derive"] }
+thiserror = "1.0.65"
+tokio = { version = "1.41.0", features = ["full"] }
+tokio-util = "0.7.12"
+shell-words = "1.0.0"
+rsntp = "4.0.0"
+chrono = "0.4.38"

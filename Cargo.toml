@@ -1,0 +1,15 @@
+[workspace]
+resolver = "2"
+members = [
+    "m0n1t0r-client",
+    "m0n1t0r-server",
+    "m0n1t0r-common"
+]
+
+[workspace.package]
+version = "1.0.0"
+authors = ["Miyamizu Mitsuha"]
+description = "m0n1t0r RAT"
+readme = "README.md"
+# repository = "https://github.com/vu1nerab13/musubi"
+edition = "2021"

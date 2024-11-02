@@ -1,0 +1,18 @@
+[package]
+name = "m0n1t0r-client"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = { version = "4.9.0", features = ["secure-cookies"] }
+anyhow = "1.0.91"
+remoc = { version = "0.14.0", features = ["full", "codec-message-pack", "default-codec-message-pack", "rmp-serde"], default-features = false }
+reqwest = { version = "0.12.8", features = ["json"] }
+serde = { version = "1.0.213", features = ["derive"] }
+strum = { version = "0.26.3", features = ["derive"] }
+thiserror = "1.0.65"
+tokio = { version = "1.41.0", features = ["full"] }
+tokio-util = "0.7.12"
+m0n1t0r-common = { path = "../m0n1t0r-common" }
+log = "0.4.22"
+flexi_logger = { version = "0.29.4", features = ["async"] }
