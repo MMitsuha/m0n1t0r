@@ -1182,6 +1182,7 @@ dependencies = [
  "remoc",
  "reqwest",
  "serde",
+ "serde_json",
  "strum",
  "tokio",
  "tokio-util",

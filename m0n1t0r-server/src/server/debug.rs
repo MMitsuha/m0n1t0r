@@ -1,4 +1,4 @@
-use super::ServerObj;
+use crate::ServerObj;
 use anyhow::Result;
 use m0n1t0r_common::{client::Client, file::Agent as _, process::Agent as _, util};
 use std::sync::Arc;

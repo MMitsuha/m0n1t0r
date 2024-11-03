@@ -18,3 +18,13 @@ pub async fn ping(before: Duration) -> Result<Duration> {
 
     Ok(cost)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_ntp() {
+        ntp().await.unwrap();
+    }
+}

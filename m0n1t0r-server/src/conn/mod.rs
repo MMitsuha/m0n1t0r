@@ -1,4 +1,6 @@
-use crate::server::ServerObj;
+pub type ServerMap = HashMap<SocketAddr, Arc<RwLock<ServerObj>>>;
+
+use crate::{server, ServerObj};
 use anyhow::{anyhow, Result};
 use log::{debug, info, warn};
 use m0n1t0r_common::{
@@ -21,15 +23,17 @@ use tokio::{
 };
 use tokio_util::sync::CancellationToken;
 
-type ServerMap = HashMap<SocketAddr, Arc<RwLock<ServerObj>>>;
-
 pub struct Config {
     addr: SocketAddr,
+    server_map: Arc<RwLock<ServerMap>>,
 }
 
-impl Config {
-    pub fn new(addr: &SocketAddr) -> Self {
-        Self { addr: addr.clone() }
+impl From<&crate::Config> for Config {
+    fn from(config: &crate::Config) -> Self {
+        Self {
+            addr: config.conn_addr,
+            server_map: config.server_map.clone(),
+        }
     }
 }
 
@@ -98,7 +102,7 @@ pub async fn accept_connection(
     ));
     server.write().await.initialize(client_client);
     #[cfg(debug_assertions)]
-    crate::server::debug(server.clone()).await?;
+    server::debug(server.clone()).await?;
     server_map.write().await.insert(addr, server);
     info!("{}: connected", addr);
 
@@ -107,10 +111,9 @@ pub async fn accept_connection(
 
 pub async fn run(config: &Config) -> Result<()> {
     let listener = TcpListener::bind(config.addr).await?;
-    let server_map = Arc::new(RwLock::new(HashMap::new()));
 
     loop {
-        if let Err(e) = accept_connection(&listener, server_map.clone()).await {
+        if let Err(e) = accept_connection(&listener, config.server_map.clone()).await {
             warn!("accept connection error: {}", e);
         }
     }

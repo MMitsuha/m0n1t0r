@@ -1,4 +1,4 @@
-use crate::client::ClientObj;
+use crate::ClientObj;
 use anyhow::{anyhow, bail, Result};
 use log::{debug, info, warn};
 use m0n1t0r_common::{
@@ -22,9 +22,9 @@ pub struct Config {
     addr: SocketAddr,
 }
 
-impl Config {
-    pub fn new(addr: &SocketAddr) -> Self {
-        Self { addr: addr.clone() }
+impl From<&crate::Config> for Config {
+    fn from(config: &crate::Config) -> Self {
+        Self { addr: config.addr }
     }
 }
 

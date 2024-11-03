@@ -1,19 +1,23 @@
 mod client;
 mod conn;
 
+use std::net::SocketAddr;
+
+pub use client::ClientObj;
+
 use anyhow::Result;
 
-pub struct Config {}
+pub struct Config {
+    addr: SocketAddr,
+}
 
 impl Config {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(addr: &SocketAddr) -> Self {
+        Self { addr: addr.clone() }
     }
 }
 
 pub async fn run(config: &Config) -> Result<()> {
-    let conn_config = conn::Config::new(&"127.0.0.1:27853".parse()?);
-
-    conn::run(&conn_config).await?;
+    conn::run(&config.into()).await?;
     Ok(())
 }
