@@ -1,3 +1,5 @@
+pub type ClientMap = HashMap<SocketAddr, Arc<RwLock<ClientObj>>>;
+
 use crate::ClientObj;
 use anyhow::{anyhow, bail, Result};
 use log::{debug, info, warn};
@@ -16,15 +18,17 @@ use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
 use tokio::{io, net::TcpStream, select, sync::RwLock, time};
 use tokio_util::sync::CancellationToken;
 
-type ClientMap = HashMap<SocketAddr, Arc<RwLock<ClientObj>>>;
-
 pub struct Config {
     addr: SocketAddr,
+    client_map: Arc<RwLock<ClientMap>>,
 }
 
 impl From<&crate::Config> for Config {
     fn from(config: &crate::Config) -> Self {
-        Self { addr: config.addr }
+        Self {
+            addr: config.addr,
+            client_map: config.client_map.clone(),
+        }
     }
 }
 
@@ -53,14 +57,14 @@ async fn make_channel<'transport>(
     Ok((tx, rx))
 }
 
-async fn connection_task(
+async fn server_task(
     canceller: CancellationToken,
     addr: SocketAddr,
     client_server: ClientServerSharedMut<ClientObj>,
     client_map: Arc<RwLock<ClientMap>>,
 ) {
     select! {
-        _ =  client_server.serve(true) => canceller.cancel(),
+        _ = client_server.serve(true) => canceller.cancel(),
         _ = canceller.cancelled() => {},
     };
 
@@ -71,15 +75,13 @@ async fn connection_task(
     }
 }
 
-pub async fn accept_connection(
-    addr: &SocketAddr,
-    client_map: Arc<RwLock<ClientMap>>,
-) -> Result<()> {
+pub async fn accept(addr: &SocketAddr, client_map: Arc<RwLock<ClientMap>>) -> Result<()> {
     let stream = TcpStream::connect(addr).await?;
     let addr = addr.clone();
     debug!("{}: connection opened", addr);
     let client = Arc::new(RwLock::new(ClientObj::new(&addr)));
     let canceller = client.read().await.get_canceller();
+    let guard = canceller.clone().drop_guard();
     let terminator = client.read().await.get_terminator();
     let (mut tx, mut rx) = make_channel(canceller.clone(), &addr, stream).await?;
     let (client_server, client_client) = ClientServerSharedMut::<_>::new(client.clone(), 1);
@@ -87,7 +89,7 @@ pub async fn accept_connection(
     let server_client = rx.recv().await?.ok_or(anyhow!("server is invalid"))?;
     tx.send(client_client).await?;
 
-    tokio::spawn(connection_task(
+    tokio::spawn(server_task(
         canceller.clone(),
         addr,
         client_server,
@@ -95,6 +97,7 @@ pub async fn accept_connection(
     ));
     client.write().await.initialize(server_client);
     client_map.write().await.insert(addr, client);
+    guard.disarm();
     info!("{}: connected", addr);
 
     select! {
@@ -109,9 +112,7 @@ pub async fn accept_connection(
 }
 
 pub async fn run(config: &Config) -> Result<()> {
-    let client_map = Arc::new(RwLock::new(HashMap::new()));
-
-    while let Err(e) = accept_connection(&config.addr, client_map.clone()).await {
+    while let Err(e) = accept(&config.addr, config.client_map.clone()).await {
         warn!("failed to connect server: {}", e);
         time::sleep(Duration::from_secs(10)).await;
     }

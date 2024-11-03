@@ -7,7 +7,7 @@ use tokio::fs::{self, DirEntry};
 
 #[rtc::remote]
 pub trait Agent: Sync {
-    async fn list_files(&self, path: PathBuf) -> AppResult<Vec<File>> {
+    async fn list(&self, path: PathBuf) -> AppResult<Vec<File>> {
         let mut entries = fs::read_dir(path).await.map_err(Error::from)?;
         let mut files = Vec::new();
 
@@ -17,7 +17,7 @@ pub trait Agent: Sync {
         Ok(files)
     }
 
-    async fn read_file(&self, path: PathBuf) -> AppResult<Vec<u8>> {
+    async fn read(&self, path: PathBuf) -> AppResult<Vec<u8>> {
         Ok(fs::read(path).await.map_err(Error::from)?)
     }
 
@@ -25,7 +25,7 @@ pub trait Agent: Sync {
         Ok(fs::canonicalize(".").await.map_err(Error::from)?)
     }
 
-    async fn write_file(&self, path: PathBuf, data: Vec<u8>) -> AppResult<()> {
+    async fn write(&self, path: PathBuf, data: Vec<u8>) -> AppResult<()> {
         Ok(fs::write(path, data).await.map_err(Error::from)?)
     }
 

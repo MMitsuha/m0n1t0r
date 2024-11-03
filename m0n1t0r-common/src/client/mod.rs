@@ -1,14 +1,16 @@
-use std::time::Duration;
-
 use crate::{file, process, util, Result as AppResult};
 use remoc::rtc;
 
 #[rtc::remote]
 pub trait Client: Sync {
+    async fn version(&self) -> AppResult<String> {
+        Ok(util::version::get())
+    }
+
     async fn terminate(&self) -> AppResult<()>;
 
-    async fn ping(&self, before: Duration) -> AppResult<Duration> {
-        Ok(util::time::ping(before).await?)
+    async fn ping(&self) -> AppResult<()> {
+        Ok(())
     }
 
     async fn get_file_agent(&self) -> AppResult<file::AgentClient>;

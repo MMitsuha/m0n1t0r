@@ -1,8 +1,5 @@
 #[cfg(debug_assertions)]
-mod debug;
-
-#[cfg(debug_assertions)]
-pub use debug::debug;
+pub mod debug;
 
 use anyhow::Result;
 use m0n1t0r_common::{
@@ -48,6 +45,10 @@ impl ServerObj {
         let _ = self.get_client()?.terminate().await;
         self.get_canceller().cancel();
         Ok(())
+    }
+
+    pub fn get_addr(&self) -> &SocketAddr {
+        &self.addr
     }
 }
 

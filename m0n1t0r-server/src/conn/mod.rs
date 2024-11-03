@@ -62,7 +62,7 @@ async fn make_channel<'transport>(
     Ok((tx, rx))
 }
 
-async fn connection_task(
+async fn server_task(
     canceller: CancellationToken,
     addr: SocketAddr,
     server_server: ServerServerSharedMut<ServerObj>,
@@ -80,21 +80,19 @@ async fn connection_task(
     }
 }
 
-pub async fn accept_connection(
-    listener: &TcpListener,
-    server_map: Arc<RwLock<ServerMap>>,
-) -> Result<()> {
+pub async fn accept(listener: &TcpListener, server_map: Arc<RwLock<ServerMap>>) -> Result<()> {
     let (stream, addr) = listener.accept().await?;
     debug!("{}: connection opened", addr);
     let server = Arc::new(RwLock::new(ServerObj::new(&addr)));
     let canceller = server.read().await.get_canceller();
+    let guard = canceller.clone().drop_guard();
     let (mut tx, mut rx) = make_channel(canceller.clone(), &addr, stream).await?;
     let (server_server, server_client) = ServerServerSharedMut::<_>::new(server.clone(), 1);
 
     tx.send(server_client).await?;
     let client_client = rx.recv().await?.ok_or(anyhow!("client is invalid"))?;
 
-    tokio::spawn(connection_task(
+    tokio::spawn(server_task(
         canceller,
         addr,
         server_server,
@@ -102,8 +100,9 @@ pub async fn accept_connection(
     ));
     server.write().await.initialize(client_client);
     #[cfg(debug_assertions)]
-    server::debug(server.clone()).await?;
+    server::debug::run(server.clone()).await?;
     server_map.write().await.insert(addr, server);
+    guard.disarm();
     info!("{}: connected", addr);
 
     Ok(())
@@ -113,7 +112,7 @@ pub async fn run(config: &Config) -> Result<()> {
     let listener = TcpListener::bind(config.addr).await?;
 
     loop {
-        if let Err(e) = accept_connection(&listener, config.server_map.clone()).await {
+        if let Err(e) = accept(&listener, config.server_map.clone()).await {
             warn!("accept connection error: {}", e);
         }
     }

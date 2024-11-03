@@ -1,0 +1,139 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'm0n1t0r_client'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=m0n1t0r-client"
+                ],
+                "filter": {
+                    "name": "m0n1t0r_client",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'm0n1t0r-client'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=m0n1t0r-client",
+                    "--package=m0n1t0r-client"
+                ],
+                "filter": {
+                    "name": "m0n1t0r-client",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'm0n1t0r-client'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=m0n1t0r-client",
+                    "--package=m0n1t0r-client"
+                ],
+                "filter": {
+                    "name": "m0n1t0r-client",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'm0n1t0r_common'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=m0n1t0r-common"
+                ],
+                "filter": {
+                    "name": "m0n1t0r_common",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'm0n1t0r_server'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=m0n1t0r-server"
+                ],
+                "filter": {
+                    "name": "m0n1t0r_server",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'm0n1t0r-server'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=m0n1t0r-server",
+                    "--package=m0n1t0r-server"
+                ],
+                "filter": {
+                    "name": "m0n1t0r-server",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'm0n1t0r-server'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=m0n1t0r-server",
+                    "--package=m0n1t0r-server"
+                ],
+                "filter": {
+                    "name": "m0n1t0r-server",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

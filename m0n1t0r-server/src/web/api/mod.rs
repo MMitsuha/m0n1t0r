@@ -2,10 +2,8 @@ mod client;
 mod index;
 
 use crate::{Config as CrateConfig, ServerMap};
-use actix_web::{middleware, web::Data, App, HttpServer, Result as WebResult};
+use actix_web::{middleware, web::Data, App, HttpServer};
 use anyhow::Result;
-use serde::Serialize;
-use serde_json::Value;
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
 
@@ -23,24 +21,6 @@ impl From<&CrateConfig> for Config {
     }
 }
 
-#[derive(Serialize)]
-struct Response {
-    code: i16,
-    body: Value,
-}
-
-impl Response {
-    fn new(code: i16, body: impl Serialize) -> WebResult<Self> {
-        Ok(Self {
-            code,
-            body: serde_json::to_value(body)?,
-        })
-    }
-
-    fn success(body: impl Serialize) -> WebResult<Self> {
-        Self::new(0, body)
-    }
-}
 pub async fn run(config: &Config) -> Result<()> {
     let server_map = config.server_map.clone();
 
@@ -48,7 +28,8 @@ pub async fn run(config: &Config) -> Result<()> {
         App::new()
             .wrap(middleware::Logger::default())
             .app_data(Data::new(server_map.clone()))
-            .service(client::count::get)
+            .service(client::get)
+            .service(client::info::get)
             .service(index::get)
     })
     .bind(config.addr)?
