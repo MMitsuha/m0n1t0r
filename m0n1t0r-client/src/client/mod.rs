@@ -10,7 +10,7 @@ use tokio::sync::RwLock;
 use tokio_util::sync::CancellationToken;
 
 pub struct ClientObj {
-    addr: SocketAddr,
+    _addr: SocketAddr,
     canceller: CancellationToken,
     server_client: Option<ServerClient>,
     terminator: CancellationToken,
@@ -19,7 +19,7 @@ pub struct ClientObj {
 impl ClientObj {
     pub fn new(addr: &SocketAddr) -> Self {
         Self {
-            addr: addr.clone(),
+            _addr: addr.clone(),
             canceller: CancellationToken::new(),
             server_client: None,
             terminator: CancellationToken::new(),

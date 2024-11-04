@@ -1,5 +1,5 @@
 use crate::Result as AppResult;
-use anyhow::{Error, Result};
+use anyhow::{anyhow, Error, Result};
 use remoc::rtc;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -55,6 +55,42 @@ pub trait Agent: Sync {
 
     async fn hardlink(&self, from: PathBuf, to: PathBuf) -> AppResult<()> {
         Ok(fs::hard_link(from, to).await.map_err(Error::from)?)
+    }
+
+    async fn file(&self, path: PathBuf) -> AppResult<File> {
+        let metadata = fs::metadata(&path).await.map_err(Error::from)?;
+        Ok(File {
+            name: path
+                .file_name()
+                .ok_or(anyhow!("no file name"))?
+                .to_string_lossy()
+                .into(),
+            size: metadata.len(),
+            is_dir: metadata.is_dir(),
+            is_symlink: metadata.is_symlink(),
+        })
+    }
+
+    async fn symlink_file(&self, path: PathBuf) -> AppResult<File> {
+        let metadata = fs::symlink_metadata(&path).await.map_err(Error::from)?;
+        Ok(File {
+            name: path
+                .file_name()
+                .ok_or(anyhow!("no file name"))?
+                .to_string_lossy()
+                .into(),
+            size: metadata.len(),
+            is_dir: metadata.is_dir(),
+            is_symlink: metadata.is_symlink(),
+        })
+    }
+
+    async fn is_dir(&self, path: PathBuf) -> AppResult<bool> {
+        Ok(fs::metadata(path).await.map_err(Error::from)?.is_dir())
+    }
+
+    async fn is_symlink(&self, path: PathBuf) -> AppResult<bool> {
+        Ok(fs::metadata(path).await.map_err(Error::from)?.is_symlink())
     }
 }
 

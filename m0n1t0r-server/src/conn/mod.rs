@@ -13,6 +13,7 @@ use remoc::{
         self,
         base::{Receiver, Sender},
     },
+    Cfg, Connect,
 };
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 use tokio::{
@@ -49,7 +50,7 @@ async fn make_channel<'transport>(
         _,
         rch::base::Sender<ServerClient>,
         rch::base::Receiver<ClientClient>,
-    ) = remoc::Connect::io(remoc::Cfg::default(), stream_rx, stream_tx).await?;
+    ) = Connect::io(Cfg::default(), stream_rx, stream_tx).await?;
 
     tokio::spawn(async move {
         select! {

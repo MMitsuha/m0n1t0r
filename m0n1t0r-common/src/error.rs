@@ -4,17 +4,20 @@ use remoc::rtc;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-#[derive(Error, Debug, Serialize, Deserialize)]
+#[derive(Error, Debug, Serialize, Deserialize, Clone)]
 pub enum Error {
     #[error("remote call error")]
     RtcError(#[from] rtc::CallError),
 
-    #[error("remote call error")]
-    ProcedureError,
+    #[error("procedure error: {0}")]
+    ProcedureError(serde_error::Error),
+
+    #[error("procedure unimplemented")]
+    Unimplemented,
 }
 
 impl From<anyhow::Error> for Error {
-    fn from(_: anyhow::Error) -> Self {
-        Self::ProcedureError
+    fn from(e: anyhow::Error) -> Self {
+        Self::ProcedureError(serde_error::Error::new(&*e))
     }
 }

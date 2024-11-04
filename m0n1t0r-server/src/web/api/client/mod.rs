@@ -1,11 +1,15 @@
+pub mod file;
 pub mod info;
 
 use crate::{
-    web::error::{Error, Result as WebResult},
-    web::Response,
+    web::{Response, Result as WebResult},
     ServerMap,
 };
-use actix_web::{get, web, Responder};
+use actix_web::{
+    get,
+    web::{Data, Json},
+    Responder,
+};
 use info::GetInfoResponse;
 use serde::Serialize;
 use std::sync::Arc;
@@ -23,11 +27,7 @@ impl GetClientResponse {
         let mut clients = Vec::new();
 
         for (_, server) in lock.iter() {
-            clients.push(
-                GetInfoResponse::new(server.clone())
-                    .await
-                    .map_err(|_| Error::Unknown)?,
-            );
+            clients.push(GetInfoResponse::new(server.clone()).await?);
         }
         Ok(Self {
             count: lock.len(),
@@ -37,8 +37,8 @@ impl GetClientResponse {
 }
 
 #[get("/client")]
-pub async fn get(data: web::Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder> {
-    Ok(web::Json(Response::success(
+pub async fn get(data: Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder> {
+    Ok(Json(Response::success(
         GetClientResponse::new((**data).clone()).await?,
     )?))
 }

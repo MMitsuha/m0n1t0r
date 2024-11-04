@@ -1,6 +1,7 @@
 #[cfg(debug_assertions)]
 pub mod debug;
 
+use anyhow::anyhow;
 use anyhow::Result;
 use m0n1t0r_common::{
     client::{Client, ClientClient},
@@ -38,7 +39,7 @@ impl ServerObj {
     pub fn get_client(&self) -> Result<&ClientClient> {
         self.client_client
             .as_ref()
-            .ok_or(anyhow::anyhow!("client not connected"))
+            .ok_or(anyhow!("client not connected"))
     }
 
     pub async fn terminate(&self) -> Result<()> {

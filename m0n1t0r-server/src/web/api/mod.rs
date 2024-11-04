@@ -1,9 +1,10 @@
 mod client;
 mod index;
 
-use crate::{Config as CrateConfig, ServerMap};
+use crate::ServerMap;
 use actix_web::{middleware, web::Data, App, HttpServer};
 use anyhow::Result;
+use middleware::Logger;
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
 
@@ -12,8 +13,8 @@ pub struct Config {
     server_map: Arc<RwLock<ServerMap>>,
 }
 
-impl From<&CrateConfig> for Config {
-    fn from(config: &CrateConfig) -> Self {
+impl From<&crate::Config> for Config {
+    fn from(config: &crate::Config) -> Self {
         Self {
             addr: config.api_addr,
             server_map: config.server_map.clone(),
@@ -26,11 +27,12 @@ pub async fn run(config: &Config) -> Result<()> {
 
     HttpServer::new(move || {
         App::new()
-            .wrap(middleware::Logger::default())
+            .wrap(Logger::default())
             .app_data(Data::new(server_map.clone()))
             .service(client::get)
             .service(client::info::get)
             .service(index::get)
+            .service(client::file::get)
     })
     .bind(config.addr)?
     .run()

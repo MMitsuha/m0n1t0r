@@ -1,9 +1,12 @@
 use crate::{
-    web::error::{Error, Result as WebResult},
-    web::Response,
+    web::{Error, Response, Result as WebResult},
     ServerMap, ServerObj,
 };
-use actix_web::{get, web, Responder};
+use actix_web::{
+    get,
+    web::{Data, Json, Path},
+    Responder,
+};
 use m0n1t0r_common::server::Server;
 use serde::Serialize;
 use std::{net::SocketAddr, sync::Arc};
@@ -21,22 +24,20 @@ impl GetInfoResponse {
 
         Ok(Self {
             addr: lock.get_addr().clone(),
-            version: lock.version().await.map_err(|_| Error::Unknown)?,
+            version: lock.version().await?,
         })
     }
 }
 
 #[get("/client/{addr}/info")]
 pub async fn get(
-    data: web::Data<Arc<RwLock<ServerMap>>>,
-    addr: web::Path<SocketAddr>,
+    data: Data<Arc<RwLock<ServerMap>>>,
+    addr: Path<SocketAddr>,
 ) -> WebResult<impl Responder> {
     let lock = data.read().await;
     let server = lock.get(&addr).ok_or(Error::ClientNotFound)?;
 
-    Ok(web::Json(Response::success(
-        GetInfoResponse::new(server.clone())
-            .await
-            .map_err(|_| Error::Unknown)?,
+    Ok(Json(Response::success(
+        GetInfoResponse::new(server.clone()).await?,
     )?))
 }

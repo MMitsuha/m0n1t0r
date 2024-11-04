@@ -1,5 +1,12 @@
-use crate::{web::error::Result as WebResult, web::Response, ServerMap};
-use actix_web::{get, web, Responder};
+use crate::{
+    web::{Response, Result as WebResult},
+    ServerMap,
+};
+use actix_web::{
+    get,
+    web::{Data, Json},
+    Responder,
+};
 use m0n1t0r_common::util;
 use serde::Serialize;
 use std::sync::Arc;
@@ -19,6 +26,6 @@ impl GetIndexResponse {
 }
 
 #[get("/")]
-pub async fn get(_data: web::Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder> {
-    Ok(web::Json(Response::success(GetIndexResponse::new())?))
+pub async fn get(_data: Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder> {
+    Ok(Json(Response::success(GetIndexResponse::new())?))
 }
