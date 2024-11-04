@@ -49,10 +49,6 @@ pub trait Agent: Sync {
         Ok(fs::copy(from, to).await.map_err(Error::from)?)
     }
 
-    async fn symlink(&self, from: PathBuf, to: PathBuf) -> AppResult<()> {
-        Ok(fs::symlink(from, to).await.map_err(Error::from)?)
-    }
-
     async fn hardlink(&self, from: PathBuf, to: PathBuf) -> AppResult<()> {
         Ok(fs::hard_link(from, to).await.map_err(Error::from)?)
     }

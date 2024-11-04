@@ -33,6 +33,7 @@ pub async fn run(config: &Config) -> Result<()> {
             .service(client::info::get)
             .service(index::get)
             .service(client::file::get)
+            .service(client::file::delete)
     })
     .bind(config.addr)?
     .run()
