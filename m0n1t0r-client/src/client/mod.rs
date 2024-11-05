@@ -2,7 +2,7 @@ mod file;
 mod process;
 
 use m0n1t0r_common::{
-    client::Client, file as mcfile, process as mcprocess, server::ServerClient, Result as AppResult,
+    client::Client, fs as mcfile, process as mcprocess, server::ServerClient, Result as AppResult,
 };
 use remoc::{prelude::ServerSharedMut, rtc};
 use std::{net::SocketAddr, sync::Arc};

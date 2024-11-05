@@ -1,4 +1,4 @@
-use m0n1t0r_common::file as mcfile;
+use m0n1t0r_common::fs as mcfile;
 
 pub struct AgentObj {}
 
