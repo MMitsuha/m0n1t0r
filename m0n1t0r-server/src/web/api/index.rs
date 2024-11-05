@@ -25,7 +25,7 @@ impl Get {
     }
 }
 
-#[get("/")]
+#[get("")]
 pub async fn get(_data: Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder> {
     Ok(Json(Response::success(Get::new())?))
 }

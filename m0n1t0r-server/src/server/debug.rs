@@ -8,7 +8,6 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
     let lock = server.read().await;
     let client = lock.get_client()?;
     let file_agent = client.get_file_agent().await?;
-    let _process_agent = client.get_process_agent().await?;
 
     client.ping().await?;
     println!("version: {}", client.version().await?);

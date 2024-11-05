@@ -3,7 +3,7 @@ mod index;
 
 use crate::ServerMap;
 use actix_web::{
-    middleware,
+    middleware::{self, NormalizePath},
     web::{self, Data},
     App, HttpServer,
 };
@@ -32,6 +32,7 @@ pub async fn run(config: &Config) -> Result<()> {
     HttpServer::new(move || {
         App::new()
             .wrap(Logger::default())
+            .wrap(NormalizePath::trim())
             .app_data(Data::new(server_map.clone()))
             .service(index::get)
             .service(

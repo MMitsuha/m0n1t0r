@@ -29,7 +29,7 @@ impl Get {
     }
 }
 
-#[get("/")]
+#[get("")]
 pub async fn get(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: Path<SocketAddr>,
