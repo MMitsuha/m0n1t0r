@@ -2,7 +2,11 @@ mod client;
 mod index;
 
 use crate::ServerMap;
-use actix_web::{middleware, web::Data, App, HttpServer};
+use actix_web::{
+    middleware,
+    web::{self, Data},
+    App, HttpServer,
+};
 use anyhow::Result;
 use middleware::Logger;
 use std::{net::SocketAddr, sync::Arc};
@@ -29,11 +33,18 @@ pub async fn run(config: &Config) -> Result<()> {
         App::new()
             .wrap(Logger::default())
             .app_data(Data::new(server_map.clone()))
-            .service(client::get)
-            .service(client::info::get)
             .service(index::get)
-            .service(client::file::get)
-            .service(client::file::delete)
+            .service(
+                web::scope("/client").service(client::get).service(
+                    web::scope("/{addr}").service(client::client::get).service(
+                        web::scope("/fs")
+                            .service(client::fs::get)
+                            .service(client::fs::delete)
+                            .service(client::fs::put)
+                            .service(client::fs::head),
+                    ),
+                ),
+            )
     })
     .bind(config.addr)?
     .run()

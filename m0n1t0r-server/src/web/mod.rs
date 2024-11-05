@@ -36,6 +36,6 @@ impl Response {
     }
 
     fn error(error: Error) -> WebResult<Self> {
-        Self::new(error.discriminant(), error)
+        Self::new(error.discriminant(), error.to_string())
     }
 }

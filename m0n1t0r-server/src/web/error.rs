@@ -10,13 +10,13 @@ use thiserror::Error;
 pub enum Error {
     #[error("operation succeeded")]
     Okay = 0,
-    #[error("serialization error")]
+    #[error("serialization error: {0}")]
     SerializeError(serde_error::Error) = -1,
     #[error("can not find specified client")]
     ClientNotFound = -2,
-    #[error("remote call error")]
+    #[error("remote call error: {0}")]
     RemoteCallError(m0n1t0r_common::Error) = -3,
-    #[error("unknown error")]
+    #[error("unknown error: {0}")]
     Unknown(serde_error::Error) = -255,
 }
 

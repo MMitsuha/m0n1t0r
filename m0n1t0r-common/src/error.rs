@@ -6,7 +6,7 @@ use thiserror::Error;
 
 #[derive(Error, Debug, Serialize, Deserialize, Clone)]
 pub enum Error {
-    #[error("remote call error")]
+    #[error("remote call error: {0}")]
     RtcError(#[from] rtc::CallError),
 
     #[error("procedure error: {0}")]

@@ -13,11 +13,11 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 #[derive(Serialize)]
-struct GetIndexResponse {
+struct Get {
     version: String,
 }
 
-impl GetIndexResponse {
+impl Get {
     fn new() -> Self {
         Self {
             version: util::version::get(),
@@ -27,5 +27,5 @@ impl GetIndexResponse {
 
 #[get("/")]
 pub async fn get(_data: Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder> {
-    Ok(Json(Response::success(GetIndexResponse::new())?))
+    Ok(Json(Response::success(Get::new())?))
 }

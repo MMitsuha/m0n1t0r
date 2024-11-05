@@ -1,8 +1,8 @@
 use crate::Result as AppResult;
-use anyhow::{anyhow, Error, Result};
+use anyhow::{Error, Result};
 use remoc::rtc;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::{fs::Metadata, path::PathBuf};
 use tokio::fs::{self, DirEntry};
 
 #[rtc::remote]
@@ -33,6 +33,10 @@ pub trait Agent: Sync {
         Ok(fs::create_dir(path).await.map_err(Error::from)?)
     }
 
+    async fn create_directory_all(&self, path: PathBuf) -> AppResult<()> {
+        Ok(fs::create_dir_all(path).await.map_err(Error::from)?)
+    }
+
     async fn remove_file(&self, path: PathBuf) -> AppResult<()> {
         Ok(fs::remove_file(path).await.map_err(Error::from)?)
     }
@@ -55,30 +59,12 @@ pub trait Agent: Sync {
 
     async fn file(&self, path: PathBuf) -> AppResult<File> {
         let metadata = fs::metadata(&path).await.map_err(Error::from)?;
-        Ok(File {
-            name: path
-                .file_name()
-                .ok_or(anyhow!("no file name"))?
-                .to_string_lossy()
-                .into(),
-            size: metadata.len(),
-            is_dir: metadata.is_dir(),
-            is_symlink: metadata.is_symlink(),
-        })
+        Ok(File::from_metadata(&metadata, &path))
     }
 
     async fn symlink_file(&self, path: PathBuf) -> AppResult<File> {
         let metadata = fs::symlink_metadata(&path).await.map_err(Error::from)?;
-        Ok(File {
-            name: path
-                .file_name()
-                .ok_or(anyhow!("no file name"))?
-                .to_string_lossy()
-                .into(),
-            size: metadata.len(),
-            is_dir: metadata.is_dir(),
-            is_symlink: metadata.is_symlink(),
-        })
+        Ok(File::from_metadata(&metadata, &path))
     }
 
     async fn is_dir(&self, path: PathBuf) -> AppResult<bool> {
@@ -93,6 +79,7 @@ pub trait Agent: Sync {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct File {
     pub name: String,
+    pub path: PathBuf,
     pub size: u64,
     pub is_dir: bool,
     pub is_symlink: bool,
@@ -100,14 +87,22 @@ pub struct File {
 
 impl File {
     async fn from_dir_entry(entry: &DirEntry) -> Result<Self> {
-        let r#type = entry.file_type().await?;
         let metadata = entry.metadata().await?;
 
-        Ok(Self {
-            name: entry.file_name().to_string_lossy().into(),
+        Ok(Self::from_metadata(&metadata, &entry.path()))
+    }
+
+    fn from_metadata(metadata: &Metadata, path: &PathBuf) -> Self {
+        Self {
+            name: path
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .into(),
+            path: path.clone(),
             size: metadata.len(),
-            is_dir: r#type.is_dir(),
-            is_symlink: r#type.is_symlink(),
-        })
+            is_dir: metadata.is_dir(),
+            is_symlink: metadata.is_symlink(),
+        }
     }
 }

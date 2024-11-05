@@ -13,12 +13,12 @@ use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
 
 #[derive(Serialize)]
-pub struct GetInfoResponse {
+pub struct Get {
     addr: SocketAddr,
     version: String,
 }
 
-impl GetInfoResponse {
+impl Get {
     pub async fn new(server: Arc<RwLock<ServerObj>>) -> WebResult<Self> {
         let lock = server.read().await;
 
@@ -29,7 +29,7 @@ impl GetInfoResponse {
     }
 }
 
-#[get("/client/{addr}/info")]
+#[get("/")]
 pub async fn get(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: Path<SocketAddr>,
@@ -37,7 +37,5 @@ pub async fn get(
     let lock = data.read().await;
     let server = lock.get(&addr).ok_or(Error::ClientNotFound)?;
 
-    Ok(Json(Response::success(
-        GetInfoResponse::new(server.clone()).await?,
-    )?))
+    Ok(Json(Response::success(Get::new(server.clone()).await?)?))
 }

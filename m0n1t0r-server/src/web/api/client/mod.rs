@@ -1,5 +1,5 @@
-pub mod file;
-pub mod info;
+pub mod client;
+pub mod fs;
 
 use crate::{
     web::{Response, Result as WebResult},
@@ -10,24 +10,23 @@ use actix_web::{
     web::{Data, Json},
     Responder,
 };
-use info::GetInfoResponse;
 use serde::Serialize;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
 #[derive(Serialize)]
-struct GetClientResponse {
+struct Get {
     count: usize,
-    clients: Vec<GetInfoResponse>,
+    clients: Vec<client::Get>,
 }
 
-impl GetClientResponse {
+impl Get {
     async fn new(server_map: Arc<RwLock<ServerMap>>) -> WebResult<Self> {
         let lock = server_map.read().await;
         let mut clients = Vec::new();
 
         for (_, server) in lock.iter() {
-            clients.push(GetInfoResponse::new(server.clone()).await?);
+            clients.push(client::Get::new(server.clone()).await?);
         }
         Ok(Self {
             count: lock.len(),
@@ -36,9 +35,7 @@ impl GetClientResponse {
     }
 }
 
-#[get("/client")]
+#[get("/")]
 pub async fn get(data: Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder> {
-    Ok(Json(Response::success(
-        GetClientResponse::new((**data).clone()).await?,
-    )?))
+    Ok(Json(Response::success(Get::new((**data).clone()).await?)?))
 }
