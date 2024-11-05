@@ -37,13 +37,16 @@ pub async fn run(config: &Config) -> Result<()> {
             .service(index::get)
             .service(
                 web::scope("/client").service(client::get).service(
-                    web::scope("/{addr}").service(client::client::get).service(
-                        web::scope("/fs")
-                            .service(client::fs::get)
-                            .service(client::fs::delete)
-                            .service(client::fs::put)
-                            .service(client::fs::head),
-                    ),
+                    web::scope("/{addr}")
+                        .service(client::client::get)
+                        .service(
+                            web::scope("/fs")
+                                .service(client::fs::get)
+                                .service(client::fs::delete)
+                                .service(client::fs::put)
+                                .service(client::fs::head),
+                        )
+                        .service(web::scope("/process").service(client::process::interactive::get)),
                 ),
             )
     })

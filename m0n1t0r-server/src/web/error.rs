@@ -2,6 +2,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 use crate::web::Response;
 use actix_web::{error::ResponseError, http::StatusCode, HttpResponse};
+use remoc::rch::ConnectError;
 use serde::Serialize;
 use thiserror::Error;
 
@@ -16,6 +17,10 @@ pub enum Error {
     ClientNotFound = -2,
     #[error("remote call error: {0}")]
     RemoteCallError(m0n1t0r_common::Error) = -3,
+    #[error("web framework error: {0}")]
+    WebFrameworkError(serde_error::Error) = -4,
+    #[error("channel connect error: {0}")]
+    ChannelConnectError(#[from] ConnectError) = -5,
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error) = -255,
 }
@@ -56,5 +61,11 @@ impl From<serde_json::Error> for Error {
 impl From<m0n1t0r_common::Error> for Error {
     fn from(e: m0n1t0r_common::Error) -> Self {
         Self::RemoteCallError(e)
+    }
+}
+
+impl From<actix_web::Error> for Error {
+    fn from(e: actix_web::Error) -> Self {
+        Self::WebFrameworkError(serde_error::Error::new(&e))
     }
 }
