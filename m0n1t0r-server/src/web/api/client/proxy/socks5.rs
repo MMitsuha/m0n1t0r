@@ -17,7 +17,10 @@ use remoc::chmux::ReceiverStream;
 use serde::{Deserialize, Serialize};
 use socks5_impl::{
     protocol::{Address, Reply},
-    server::{auth::UserKeyAuth, ClientConnection, IncomingConnection, Server},
+    server::{
+        auth::{NoAuth, UserKeyAuth},
+        ClientConnection, IncomingConnection, Server,
+    },
 };
 use std::{net::SocketAddr, sync::Arc};
 use tokio::{
@@ -38,7 +41,7 @@ struct User {
 }
 
 #[get("/socks5/pass")]
-pub async fn get(
+pub async fn get_auth_pass(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: Path<SocketAddr>,
     user: Query<User>,
@@ -54,6 +57,42 @@ pub async fn get(
     drop(lock_map);
 
     let auth = Arc::new(UserKeyAuth::new(&user.name, &user.password));
+    let listener = Server::bind("0.0.0.0:0".parse()?, auth).await?;
+    let addr = listener.local_addr()?;
+    tokio::spawn(async move {
+        loop {
+            let agent = agent.clone();
+            select! {
+                accept = listener.accept() => match accept {
+                    Ok((conn, _)) => { tokio::spawn(handle(conn, agent, canceller.clone())); },
+                    Err(_) => continue,
+                },
+                _ = canceller.cancelled() => break,
+            }
+        }
+
+        Ok::<_, anyhow::Error>(())
+    });
+
+    Ok(Json(Response::success(addr)?))
+}
+
+#[get("/socks5/noauth")]
+pub async fn get_auth_none(
+    data: Data<Arc<RwLock<ServerMap>>>,
+    addr: Path<SocketAddr>,
+) -> WebResult<impl Responder> {
+    let lock_map = data.read().await;
+    let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
+
+    let lock_obj = server.read().await;
+    let client = lock_obj.get_client()?;
+    let agent = Arc::new(client.get_proxy_agent().await?);
+    let canceller = lock_obj.get_canceller();
+    drop(lock_obj);
+    drop(lock_map);
+
+    let auth = Arc::new(NoAuth::default());
     let listener = Server::bind("0.0.0.0:0".parse()?, auth).await?;
     let addr = listener.local_addr()?;
     tokio::spawn(async move {
