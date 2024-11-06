@@ -1,8 +1,10 @@
 mod file;
 mod process;
+mod proxy;
 
 use m0n1t0r_common::{
-    client::Client, fs as mcfile, process as mcprocess, server::ServerClient, Result as AppResult,
+    client::Client, fs as mcfile, process as mcprocess, proxy as mcproxy, server::ServerClient,
+    Result as AppResult,
 };
 use remoc::{prelude::ServerSharedMut, rtc};
 use std::{net::SocketAddr, sync::Arc};
@@ -61,6 +63,17 @@ impl Client for ClientObj {
         let server = Arc::new(RwLock::new(process::AgentObj::new()));
         let (server_server, server_client) =
             mcprocess::AgentServerSharedMut::<_>::new(server.clone(), 1);
+
+        tokio::spawn(async move {
+            server_server.serve(true).await;
+        });
+        Ok(server_client)
+    }
+
+    async fn get_proxy_agent(&self) -> AppResult<mcproxy::AgentClient> {
+        let server = Arc::new(RwLock::new(proxy::AgentObj::new()));
+        let (server_server, server_client) =
+            mcproxy::AgentServerSharedMut::<_>::new(server.clone(), 1);
 
         tokio::spawn(async move {
             server_server.serve(true).await;

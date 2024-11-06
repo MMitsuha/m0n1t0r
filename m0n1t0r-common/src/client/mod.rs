@@ -1,4 +1,4 @@
-use crate::{fs, process, util, Result as AppResult};
+use crate::{fs, process, proxy, util, Result as AppResult};
 use remoc::rtc;
 
 #[rtc::remote]
@@ -16,4 +16,6 @@ pub trait Client: Sync {
     async fn get_file_agent(&self) -> AppResult<fs::AgentClient>;
 
     async fn get_process_agent(&self) -> AppResult<process::AgentClient>;
+
+    async fn get_proxy_agent(&self) -> AppResult<proxy::AgentClient>;
 }

@@ -50,7 +50,8 @@ pub async fn run(config: &Config) -> Result<()> {
                             web::scope("/process")
                                 .service(client::process::interactive::get)
                                 .service(client::process::execute::get),
-                        ),
+                        )
+                        .service(web::scope("/proxy").service(client::proxy::socks5::get)),
                 ),
             )
     })

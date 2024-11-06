@@ -1,11 +1,14 @@
 pub type Result<T> = std::result::Result<T, Error>;
 
+use std::net::AddrParseError;
+
 use crate::web::Response;
 use actix_web::{error::ResponseError, http::StatusCode, HttpResponse};
 use remoc::rch::ConnectError;
 use serde::Serialize;
 use shell_words::ParseError;
 use thiserror::Error;
+use tokio::io;
 
 #[derive(Error, Debug, Serialize, Clone)]
 #[repr(i16)]
@@ -24,6 +27,10 @@ pub enum Error {
     ChannelConnectError(#[from] ConnectError) = -5,
     #[error("parse command error: {0}")]
     ParseCommandError(serde_error::Error) = -6,
+    #[error("io error: {0}")]
+    IoError(serde_error::Error) = -7,
+    #[error("parse addr error: {0}")]
+    ParseAddrError(serde_error::Error) = -8,
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error) = -255,
 }
@@ -76,5 +83,17 @@ impl From<actix_web::Error> for Error {
 impl From<ParseError> for Error {
     fn from(e: ParseError) -> Self {
         Self::ParseCommandError(serde_error::Error::new(&e))
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(e: io::Error) -> Self {
+        Self::IoError(serde_error::Error::new(&e))
+    }
+}
+
+impl From<AddrParseError> for Error {
+    fn from(e: AddrParseError) -> Self {
+        Self::ParseAddrError(serde_error::Error::new(&e))
     }
 }

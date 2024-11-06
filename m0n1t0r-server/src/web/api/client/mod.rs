@@ -1,6 +1,7 @@
 pub mod client;
 pub mod fs;
 pub mod process;
+pub mod proxy;
 
 use crate::{
     web::{Response, Result as WebResult},

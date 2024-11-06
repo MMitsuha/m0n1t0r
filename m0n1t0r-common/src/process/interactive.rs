@@ -5,7 +5,7 @@ use remoc::{
     rch::bin::{self, Receiver, Sender},
 };
 use std::process::Stdio;
-use tokio::{process::Command, select};
+use tokio::{io, process::Command, select};
 use tokio_util::io::{CopyToBytes, SinkWriter, StreamReader};
 
 pub async fn interactive(command: String) -> AppResult<(Sender, Receiver, Receiver)> {
@@ -30,15 +30,15 @@ pub async fn interactive(command: String) -> AppResult<(Sender, Receiver, Receiv
             SinkWriter::new(CopyToBytes::new(stderr_tx.into_inner().await?.into_sink()));
 
         select! {
-            _ = tokio::io::copy(
+            _ = io::copy(
                 &mut stdin_rx,
                 &mut stdin,
             ) => process.kill().await?,
-            _ = tokio::io::copy(
+            _ = io::copy(
                 &mut stdout,
                 &mut stdout_sink,
             ) => process.kill().await?,
-            _ = tokio::io::copy(
+            _ = io::copy(
                 &mut stderr,
                 &mut stderr_sink,
             ) => process.kill().await?,

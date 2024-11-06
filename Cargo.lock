@@ -308,6 +308,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c042108f3ed77fd83760a5fd79b53be043192bb3b9dba91d8c574c0ada7850c8"
 
 [[package]]
+name = "as-any"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b8a30a44e99a1c83ccb2a6298c563c888952a1c9134953db26876528f84c93a"
+
+[[package]]
 name = "async-trait"
 version = "0.1.83"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1260,6 +1266,7 @@ dependencies = [
  "actix-web",
  "actix-ws",
  "anyhow",
+ "as-any",
  "flexi_logger",
  "log",
  "m0n1t0r-common",
@@ -1270,6 +1277,7 @@ dependencies = [
  "serde_json",
  "serde_with",
  "shell-words",
+ "socks5-impl",
  "strum",
  "thiserror",
  "tokio",
@@ -1981,6 +1989,22 @@ checksum = "ce305eb0b4296696835b71df73eb912e0f1ffd2556a501fcede6e0c50349191c"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "socks5-impl"
+version = "0.5.16"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3ae3b3dd8f843e5260f8158b08c831d1e53717dd841f52599a51300cfd0f7221"
+dependencies = [
+ "as-any",
+ "async-trait",
+ "byteorder",
+ "bytes",
+ "percent-encoding",
+ "serde",
+ "thiserror",
+ "tokio",
 ]
 
 [[package]]
