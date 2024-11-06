@@ -26,12 +26,13 @@ pub async fn get(
     path: Path<(SocketAddr, Type, PathBuf)>,
 ) -> WebResult<impl Responder> {
     let (addr, r#type, path) = path.into_inner();
-    let lock = data.read().await;
-    let server = lock.get(&addr).ok_or(Error::ClientNotFound)?;
+    let lock_map = data.read().await;
+    let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
 
-    let lock = server.read().await;
-    let client = lock.get_client()?;
+    let lock_obj = server.read().await;
+    let client = lock_obj.get_client()?;
     let agent = client.get_file_agent().await?;
+
     if r#type == Type::Directory {
         Ok(HttpResponse::Ok().json(Response::success(agent.list(path).await?)?))
     } else {
@@ -45,12 +46,13 @@ pub async fn delete(
     path: Path<(SocketAddr, Type, PathBuf)>,
 ) -> WebResult<impl Responder> {
     let (addr, r#type, path) = path.into_inner();
-    let lock = data.read().await;
-    let server = lock.get(&addr).ok_or(Error::ClientNotFound)?;
+    let lock_map = data.read().await;
+    let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
 
-    let lock = server.read().await;
-    let client = lock.get_client()?;
+    let lock_obj = server.read().await;
+    let client = lock_obj.get_client()?;
     let agent = client.get_file_agent().await?;
+
     if r#type == Type::Directory {
         Ok(Json(Response::success(
             agent.remove_directory(path).await?,
@@ -67,12 +69,13 @@ pub async fn put(
     payload: Bytes,
 ) -> WebResult<impl Responder> {
     let (addr, r#type, path) = path.into_inner();
-    let lock = data.read().await;
-    let server = lock.get(&addr).ok_or(Error::ClientNotFound)?;
+    let lock_map = data.read().await;
+    let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
 
-    let lock = server.read().await;
-    let client = lock.get_client()?;
+    let lock_obj = server.read().await;
+    let client = lock_obj.get_client()?;
     let agent = client.get_file_agent().await?;
+
     if r#type == Type::Directory {
         Ok(Json(Response::success(
             agent.create_directory(path).await?,
@@ -90,11 +93,12 @@ pub async fn head(
     path: Path<(SocketAddr, Type, PathBuf)>,
 ) -> WebResult<impl Responder> {
     let (addr, _, path) = path.into_inner();
-    let lock = data.read().await;
-    let server = lock.get(&addr).ok_or(Error::ClientNotFound)?;
+    let lock_map = data.read().await;
+    let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
 
-    let lock = server.read().await;
-    let client = lock.get_client()?;
+    let lock_obj = server.read().await;
+    let client = lock_obj.get_client()?;
     let agent = client.get_file_agent().await?;
+
     Ok(Json(Response::success(agent.file(path).await?)?))
 }

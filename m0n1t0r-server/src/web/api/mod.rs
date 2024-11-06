@@ -46,7 +46,11 @@ pub async fn run(config: &Config) -> Result<()> {
                                 .service(client::fs::put)
                                 .service(client::fs::head),
                         )
-                        .service(web::scope("/process").service(client::process::interactive::get)),
+                        .service(
+                            web::scope("/process")
+                                .service(client::process::interactive::get)
+                                .service(client::process::execute::get),
+                        ),
                 ),
             )
     })

@@ -4,6 +4,7 @@ use crate::web::Response;
 use actix_web::{error::ResponseError, http::StatusCode, HttpResponse};
 use remoc::rch::ConnectError;
 use serde::Serialize;
+use shell_words::ParseError;
 use thiserror::Error;
 
 #[derive(Error, Debug, Serialize, Clone)]
@@ -21,6 +22,8 @@ pub enum Error {
     WebFrameworkError(serde_error::Error) = -4,
     #[error("channel connect error: {0}")]
     ChannelConnectError(#[from] ConnectError) = -5,
+    #[error("parse command error: {0}")]
+    ParseCommandError(serde_error::Error) = -6,
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error) = -255,
 }
@@ -67,5 +70,11 @@ impl From<m0n1t0r_common::Error> for Error {
 impl From<actix_web::Error> for Error {
     fn from(e: actix_web::Error) -> Self {
         Self::WebFrameworkError(serde_error::Error::new(&e))
+    }
+}
+
+impl From<ParseError> for Error {
+    fn from(e: ParseError) -> Self {
+        Self::ParseCommandError(serde_error::Error::new(&e))
     }
 }

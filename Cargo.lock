@@ -1269,6 +1269,7 @@ dependencies = [
  "serde-error",
  "serde_json",
  "serde_with",
+ "shell-words",
  "strum",
  "thiserror",
  "tokio",

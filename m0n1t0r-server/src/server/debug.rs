@@ -6,8 +6,8 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
-    let lock = server.read().await;
-    let client = lock.get_client()?;
+    let lock_obj = server.read().await;
+    let client = lock_obj.get_client()?;
     let file_agent = client.get_file_agent().await?;
     let process_agent = client.get_process_agent().await?;
 

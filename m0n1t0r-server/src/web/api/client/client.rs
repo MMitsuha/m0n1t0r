@@ -20,11 +20,11 @@ pub struct Get {
 
 impl Get {
     pub async fn new(server: Arc<RwLock<ServerObj>>) -> WebResult<Self> {
-        let lock = server.read().await;
+        let lock_obj = server.read().await;
 
         Ok(Self {
-            addr: lock.get_addr().clone(),
-            version: lock.version().await?,
+            addr: lock_obj.get_addr().clone(),
+            version: lock_obj.version().await?,
         })
     }
 }
@@ -34,8 +34,8 @@ pub async fn get(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: Path<SocketAddr>,
 ) -> WebResult<impl Responder> {
-    let lock = data.read().await;
-    let server = lock.get(&addr).ok_or(Error::ClientNotFound)?;
+    let lock_map = data.read().await;
+    let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
 
     Ok(Json(Response::success(Get::new(server.clone()).await?)?))
 }

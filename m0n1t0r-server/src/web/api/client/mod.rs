@@ -23,14 +23,14 @@ struct Get {
 
 impl Get {
     async fn new(server_map: Arc<RwLock<ServerMap>>) -> WebResult<Self> {
-        let lock = server_map.read().await;
+        let lock_map = server_map.read().await;
         let mut clients = Vec::new();
 
-        for (_, server) in lock.iter() {
+        for (_, server) in lock_map.iter() {
             clients.push(client::Get::new(server.clone()).await?);
         }
         Ok(Self {
-            count: lock.len(),
+            count: lock_map.len(),
             clients,
         })
     }
