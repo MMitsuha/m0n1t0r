@@ -5,18 +5,18 @@ pub use client::ClientObj;
 pub use conn::ClientMap;
 
 use anyhow::Result;
-use std::{collections::HashMap, net::SocketAddr, sync::Arc};
+use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
 pub struct Config {
-    addr: SocketAddr,
+    addr: String,
     client_map: Arc<RwLock<ClientMap>>,
 }
 
 impl Config {
-    pub fn new(addr: &SocketAddr) -> Self {
+    pub fn new(addr: &str) -> Self {
         Self {
-            addr: addr.clone(),
+            addr: addr.to_string(),
             client_map: Arc::new(RwLock::new(HashMap::new())),
         }
     }

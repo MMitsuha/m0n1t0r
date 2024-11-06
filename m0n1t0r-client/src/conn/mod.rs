@@ -16,18 +16,24 @@ use remoc::{
     Cfg, Connect,
 };
 use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
-use tokio::{io, net::TcpStream, select, sync::RwLock, time};
+use tokio::{
+    io,
+    net::{self, TcpStream},
+    select,
+    sync::RwLock,
+    time,
+};
 use tokio_util::sync::CancellationToken;
 
 pub struct Config {
-    addr: SocketAddr,
+    addr: String,
     client_map: Arc<RwLock<ClientMap>>,
 }
 
 impl From<&crate::Config> for Config {
     fn from(config: &crate::Config) -> Self {
         Self {
-            addr: config.addr,
+            addr: config.addr.clone(),
             client_map: config.client_map.clone(),
         }
     }
@@ -113,7 +119,21 @@ pub async fn accept(addr: &SocketAddr, client_map: Arc<RwLock<ClientMap>>) -> Re
 }
 
 pub async fn run(config: &Config) -> Result<()> {
-    while let Err(e) = accept(&config.addr, config.client_map.clone()).await {
+    while let Err(e) = accept(
+        &loop {
+            match net::lookup_host(&config.addr)
+                .await?
+                .next()
+                .ok_or(anyhow!("no address found"))
+            {
+                Ok(a) => break a,
+                Err(_) => continue,
+            }
+        },
+        config.client_map.clone(),
+    )
+    .await
+    {
         warn!("failed to connect server: {}", e);
         time::sleep(Duration::from_secs(10)).await;
     }
