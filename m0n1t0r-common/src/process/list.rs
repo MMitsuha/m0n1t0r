@@ -1,4 +1,3 @@
-use crate::Result as AppResult;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use sysinfo::{Pid, Process as SysProcess, ProcessRefreshKind, RefreshKind, System};
@@ -26,7 +25,7 @@ impl Process {
     }
 }
 
-pub async fn list() -> AppResult<Vec<Process>> {
+pub async fn list() -> Vec<Process> {
     let process = System::new_with_specifics(
         RefreshKind::new().with_processes(ProcessRefreshKind::everything()),
     );
@@ -36,5 +35,5 @@ pub async fn list() -> AppResult<Vec<Process>> {
         processes.push(Process::from_process(pid, process));
     }
 
-    Ok(processes)
+    processes
 }

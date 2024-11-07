@@ -1,5 +1,4 @@
 use crate::Result as AppResult;
-use anyhow::Error;
 use serde::{Deserialize, Serialize};
 use std::process::{self};
 use tokio::process::Command;
@@ -22,10 +21,5 @@ impl From<process::Output> for Output {
 }
 
 pub async fn execute(command: String, args: Vec<String>) -> AppResult<Output> {
-    Ok(Command::new(command)
-        .args(args)
-        .output()
-        .await
-        .map_err(Error::from)?
-        .into())
+    Ok(Command::new(command).args(args).output().await?.into())
 }

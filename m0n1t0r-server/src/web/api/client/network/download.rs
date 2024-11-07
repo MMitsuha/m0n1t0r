@@ -1,6 +1,3 @@
-pub mod execute;
-pub mod interactive;
-
 use crate::{
     web::{Error, Response, Result as WebResult},
     ServerMap,
@@ -10,23 +7,25 @@ use actix_web::{
     web::{Data, Json, Path},
     Responder,
 };
-use m0n1t0r_common::{client::Client, process::Agent as _};
-use std::{net::SocketAddr, sync::Arc};
+use m0n1t0r_common::{client::Client, network::Agent as _};
+use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
+use url::Url;
 
-#[get("")]
+#[get("/download/{url}/{path}")]
 pub async fn get(
     data: Data<Arc<RwLock<ServerMap>>>,
-    addr: Path<SocketAddr>,
+    path: Path<(SocketAddr, Url, PathBuf)>,
 ) -> WebResult<impl Responder> {
+    let (addr, url, path) = path.into_inner();
     let lock_map = data.read().await;
     let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
-    let agent = client.get_process_agent().await?;
+    let agent = client.get_network_agent().await?;
     drop(lock_obj);
     drop(lock_map);
 
-    Ok(Json(Response::success(agent.list().await?)?))
+    Ok(Json(Response::success(agent.download(url, path).await?)?))
 }

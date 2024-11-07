@@ -1,10 +1,11 @@
-mod file;
+mod fs;
+mod network;
 mod process;
 mod proxy;
 
 use m0n1t0r_common::{
-    client::Client, fs as mcfile, process as mcprocess, proxy as mcproxy, server::ServerClient,
-    Result as AppResult,
+    client::Client, fs as mcfile, network as mcnetwork, process as mcprocess, proxy as mcproxy,
+    server::ServerClient, Result as AppResult,
 };
 use remoc::{prelude::ServerSharedMut, rtc};
 use std::{net::SocketAddr, sync::Arc};
@@ -49,7 +50,7 @@ impl Client for ClientObj {
     }
 
     async fn get_file_agent(&self) -> AppResult<mcfile::AgentClient> {
-        let server = Arc::new(RwLock::new(file::AgentObj::new()));
+        let server = Arc::new(RwLock::new(fs::AgentObj::new()));
         let (server_server, server_client) =
             mcfile::AgentServerSharedMut::<_>::new(server.clone(), 1);
 
@@ -74,6 +75,17 @@ impl Client for ClientObj {
         let server = Arc::new(RwLock::new(proxy::AgentObj::new()));
         let (server_server, server_client) =
             mcproxy::AgentServerSharedMut::<_>::new(server.clone(), 1);
+
+        tokio::spawn(async move {
+            server_server.serve(true).await;
+        });
+        Ok(server_client)
+    }
+
+    async fn get_network_agent(&self) -> AppResult<mcnetwork::AgentClient> {
+        let server = Arc::new(RwLock::new(network::AgentObj::new()));
+        let (server_server, server_client) =
+            mcnetwork::AgentServerSharedMut::<_>::new(server.clone(), 1);
 
         tokio::spawn(async move {
             server_server.serve(true).await;

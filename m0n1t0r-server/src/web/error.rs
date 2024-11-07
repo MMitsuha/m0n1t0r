@@ -3,7 +3,11 @@ pub type Result<T> = std::result::Result<T, Error>;
 use std::net::AddrParseError;
 
 use crate::web::Response;
-use actix_web::{error::ResponseError, http::StatusCode, HttpResponse};
+use actix_web::{
+    error::{PathError, QueryPayloadError, ResponseError},
+    http::StatusCode,
+    HttpResponse,
+};
 use remoc::rch::ConnectError;
 use serde::Serialize;
 use shell_words::ParseError;
@@ -15,22 +19,34 @@ use tokio::io;
 pub enum Error {
     #[error("operation succeeded")]
     Okay = 0,
+
     #[error("serialization error: {0}")]
     SerializeError(serde_error::Error) = -1,
+
     #[error("can not find specified client")]
     ClientNotFound = -2,
+
     #[error("remote call error: {0}")]
     RemoteCallError(m0n1t0r_common::Error) = -3,
+
     #[error("web framework error: {0}")]
     WebFrameworkError(serde_error::Error) = -4,
+
     #[error("channel connect error: {0}")]
     ChannelConnectError(#[from] ConnectError) = -5,
+
     #[error("parse command error: {0}")]
     ParseCommandError(serde_error::Error) = -6,
+
     #[error("io error: {0}")]
     IoError(serde_error::Error) = -7,
+
     #[error("parse addr error: {0}")]
     ParseAddrError(serde_error::Error) = -8,
+
+    #[error("extractor error: {0}")]
+    ExtractorError(serde_error::Error) = -9,
+
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error) = -255,
 }
@@ -95,5 +111,17 @@ impl From<io::Error> for Error {
 impl From<AddrParseError> for Error {
     fn from(e: AddrParseError) -> Self {
         Self::ParseAddrError(serde_error::Error::new(&e))
+    }
+}
+
+impl From<PathError> for Error {
+    fn from(e: PathError) -> Self {
+        Self::ExtractorError(serde_error::Error::new(&e))
+    }
+}
+
+impl From<QueryPayloadError> for Error {
+    fn from(e: QueryPayloadError) -> Self {
+        Self::ExtractorError(serde_error::Error::new(&e))
     }
 }

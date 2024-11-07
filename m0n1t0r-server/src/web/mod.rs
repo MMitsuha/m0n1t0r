@@ -1,6 +1,7 @@
 pub mod api;
 mod error;
 
+use actix_web::web::{PathConfig, QueryConfig};
 pub use error::*;
 
 use anyhow::anyhow;
@@ -38,4 +39,11 @@ impl Response {
     fn error(error: Error) -> WebResult<Self> {
         Self::new(error.discriminant(), error.to_string())
     }
+}
+
+fn extractor_config() -> (PathConfig, QueryConfig) {
+    (
+        PathConfig::default().error_handler(|error, _| Error::from(error).into()),
+        QueryConfig::default().error_handler(|error, _| Error::from(error).into()),
+    )
 }

@@ -19,6 +19,6 @@ pub trait Agent: Sync {
     }
 
     async fn list(&self) -> AppResult<Vec<list::Process>> {
-        list::list().await
+        Ok(list::list().await)
     }
 }

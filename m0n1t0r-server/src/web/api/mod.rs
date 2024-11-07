@@ -30,15 +30,20 @@ pub async fn run(config: &Config) -> Result<()> {
     let server_map = config.server_map.clone();
 
     HttpServer::new(move || {
+        let (path_config, query_config) = super::extractor_config();
+
         App::new()
             .wrap(Logger::default())
             .wrap(NormalizePath::trim())
             .app_data(Data::new(server_map.clone()))
+            .app_data(path_config)
+            .app_data(query_config)
             .service(index::get)
             .service(
                 web::scope("/client").service(client::get).service(
                     web::scope("/{addr}")
                         .service(client::client::get)
+                        .service(client::client::get_update)
                         .service(
                             web::scope("/fs")
                                 .service(client::fs::get)
@@ -56,7 +61,8 @@ pub async fn run(config: &Config) -> Result<()> {
                             web::scope("/proxy")
                                 .service(client::proxy::socks5::get_auth_none)
                                 .service(client::proxy::socks5::get_auth_pass),
-                        ),
+                        )
+                        .service(web::scope("/network").service(client::network::download::get)),
                 ),
             )
     })

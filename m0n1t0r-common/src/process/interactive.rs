@@ -16,8 +16,7 @@ pub async fn interactive(command: String) -> AppResult<(Sender, Receiver, Receiv
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .spawn()
-        .map_err(Error::from)?;
+        .spawn()?;
 
     tokio::spawn(async move {
         let mut stdin = process.stdin.take().unwrap();

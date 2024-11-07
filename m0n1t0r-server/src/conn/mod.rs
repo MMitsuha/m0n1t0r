@@ -1,6 +1,9 @@
 pub type ServerMap = HashMap<SocketAddr, Arc<RwLock<ServerObj>>>;
 
-use crate::{server, ServerObj};
+#[cfg(debug_assertions)]
+use crate::server;
+
+use crate::ServerObj;
 use anyhow::{anyhow, Result};
 use log::{debug, info, warn};
 use m0n1t0r_common::{

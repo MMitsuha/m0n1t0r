@@ -7,10 +7,11 @@ use actix_web::{
     web::{Data, Json, Path},
     Responder,
 };
-use m0n1t0r_common::server::Server;
+use m0n1t0r_common::{client::Client as _, server::Server};
 use serde::Serialize;
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
+use url::Url;
 
 #[derive(Serialize)]
 pub struct Get {
@@ -38,4 +39,19 @@ pub async fn get(
     let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
 
     Ok(Json(Response::success(Get::new(server.clone()).await?)?))
+}
+
+#[get("/update/{url}")]
+pub async fn get_update(
+    data: Data<Arc<RwLock<ServerMap>>>,
+    path: Path<(SocketAddr, Url)>,
+) -> WebResult<impl Responder> {
+    let (addr, url) = path.into_inner();
+    let lock_map = data.read().await;
+    let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
+
+    let lock_obj = server.read().await;
+    let client = lock_obj.get_client()?;
+
+    Ok(Json(Response::success(client.update(url).await?)?))
 }

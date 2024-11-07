@@ -32,6 +32,8 @@ pub async fn get(
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
     let agent = client.get_file_agent().await?;
+    drop(lock_obj);
+    drop(lock_map);
 
     if r#type == Type::Directory {
         Ok(HttpResponse::Ok().json(Response::success(agent.list(path).await?)?))
@@ -52,6 +54,8 @@ pub async fn delete(
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
     let agent = client.get_file_agent().await?;
+    drop(lock_obj);
+    drop(lock_map);
 
     if r#type == Type::Directory {
         Ok(Json(Response::success(
@@ -75,6 +79,8 @@ pub async fn put(
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
     let agent = client.get_file_agent().await?;
+    drop(lock_obj);
+    drop(lock_map);
 
     if r#type == Type::Directory {
         Ok(Json(Response::success(
@@ -99,6 +105,8 @@ pub async fn head(
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
     let agent = client.get_file_agent().await?;
+    drop(lock_obj);
+    drop(lock_map);
 
     Ok(Json(Response::success(agent.file(path).await?)?))
 }

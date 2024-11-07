@@ -32,18 +32,9 @@ pub async fn get(
     drop(lock_map);
 
     let (stdin_tx, stdout_rx, stderr_rx) = agent.interactive(command).await?;
-    let mut stdin_tx = stdin_tx
-        .into_inner()
-        .await
-        .map_err(Error::ChannelConnectError)?;
-    let mut stdout_rx = stdout_rx
-        .into_inner()
-        .await
-        .map_err(Error::ChannelConnectError)?;
-    let mut stderr_rx = stderr_rx
-        .into_inner()
-        .await
-        .map_err(Error::ChannelConnectError)?;
+    let mut stdin_tx = stdin_tx.into_inner().await?;
+    let mut stdout_rx = stdout_rx.into_inner().await?;
+    let mut stderr_rx = stderr_rx.into_inner().await?;
 
     let (response, mut session, mut stream) = actix_ws::handle(&req, body)?;
     task::spawn_local(async move {
