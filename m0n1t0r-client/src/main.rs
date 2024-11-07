@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 use anyhow::Result;
 use flexi_logger::Logger;
 use m0n1t0r_client::Config;
