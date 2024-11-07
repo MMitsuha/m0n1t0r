@@ -49,7 +49,8 @@ pub async fn run(config: &Config) -> Result<()> {
                         .service(
                             web::scope("/process")
                                 .service(client::process::interactive::get)
-                                .service(client::process::execute::get),
+                                .service(client::process::execute::get)
+                                .service(client::process::get),
                         )
                         .service(
                             web::scope("/proxy")

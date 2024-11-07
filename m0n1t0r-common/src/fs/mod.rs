@@ -5,6 +5,37 @@ use serde::{Deserialize, Serialize};
 use std::{fs::Metadata, path::PathBuf};
 use tokio::fs::{self, DirEntry};
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct File {
+    pub name: String,
+    pub path: PathBuf,
+    pub size: u64,
+    pub is_dir: bool,
+    pub is_symlink: bool,
+}
+
+impl File {
+    async fn from_dir_entry(entry: &DirEntry) -> Result<Self> {
+        let metadata = entry.metadata().await?;
+
+        Ok(Self::from_metadata(&metadata, &entry.path()))
+    }
+
+    fn from_metadata(metadata: &Metadata, path: &PathBuf) -> Self {
+        Self {
+            name: path
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .into(),
+            path: path.clone(),
+            size: metadata.len(),
+            is_dir: metadata.is_dir(),
+            is_symlink: metadata.is_symlink(),
+        }
+    }
+}
+
 #[rtc::remote]
 pub trait Agent: Sync {
     async fn list(&self, path: PathBuf) -> AppResult<Vec<File>> {
@@ -73,36 +104,5 @@ pub trait Agent: Sync {
 
     async fn is_symlink(&self, path: PathBuf) -> AppResult<bool> {
         Ok(fs::metadata(path).await.map_err(Error::from)?.is_symlink())
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct File {
-    pub name: String,
-    pub path: PathBuf,
-    pub size: u64,
-    pub is_dir: bool,
-    pub is_symlink: bool,
-}
-
-impl File {
-    async fn from_dir_entry(entry: &DirEntry) -> Result<Self> {
-        let metadata = entry.metadata().await?;
-
-        Ok(Self::from_metadata(&metadata, &entry.path()))
-    }
-
-    fn from_metadata(metadata: &Metadata, path: &PathBuf) -> Self {
-        Self {
-            name: path
-                .file_name()
-                .unwrap_or_default()
-                .to_string_lossy()
-                .into(),
-            path: path.clone(),
-            size: metadata.len(),
-            is_dir: metadata.is_dir(),
-            is_symlink: metadata.is_symlink(),
-        }
     }
 }
