@@ -444,6 +444,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "cfg_block"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f16895abeb4fd800dcd4e7916b690d79b33a964ae3272d51510623b76aa7108"
+
+[[package]]
 name = "chrono"
 version = "0.4.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1400,6 +1406,7 @@ version = "0.1.0"
 dependencies = [
  "actix-web",
  "anyhow",
+ "cfg_block",
  "flexi_logger",
  "log",
  "m0n1t0r-common",

@@ -2,6 +2,14 @@
 name = "m0n1t0r-client"
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
+
+[features]
+default = ["general"]
+general = []
+windows = []
+linux = []
+macos = []
 
 [dependencies]
 actix-web = { version = "4.9.0", features = ["secure-cookies"] }
@@ -16,3 +24,4 @@ tokio-util = "0.7.12"
 m0n1t0r-common = { path = "../m0n1t0r-common" }
 log = "0.4.22"
 flexi_logger = { version = "0.29.4", features = ["async"] }
+cfg_block = "0.2.0"

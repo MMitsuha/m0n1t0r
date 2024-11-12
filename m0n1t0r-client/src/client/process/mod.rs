@@ -1,11 +1,13 @@
-use m0n1t0r_common::process as mcprocess;
+use cfg_block::cfg_block;
 
-pub struct AgentObj {}
+cfg_block! {
+    #[cfg(feature = "general")] {
+        mod general;
+        pub use general::*;
+    }
 
-impl AgentObj {
-    pub fn new() -> Self {
-        Self {}
+    #[cfg(feature = "windows")] {
+        mod windows;
+        pub use windows::*;
     }
 }
-
-impl mcprocess::Agent for AgentObj {}
