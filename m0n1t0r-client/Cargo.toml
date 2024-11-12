@@ -5,7 +5,7 @@ edition = "2021"
 build = "build.rs"
 
 [features]
-default = ["general"]
+default = ["windows"]
 general = []
 windows = []
 linux = []
@@ -28,5 +28,5 @@ cfg_block = "0.2.0"
 cxx = "1.0"
 
 [build-dependencies]
-xmake = { version = "0.2.3", git = "https://github.com/MMitsuha/xmake-rs.git" }
+xmake = { version = "0.2.4", git = "https://github.com/MMitsuha/xmake-rs.git" }
 cxx-build = "1.0"

@@ -1,8 +1,15 @@
-includes("../m0n1t0r-xmake")
+includes("../xmake/ffi.lua")
 add_rules("mode.debug", "mode.release")
 
 target("cpp-windows-lib")
-    set_kind("binary")
+    set_kind("static")
+    set_languages("c++17")
+    on_load(function (target)
+        target:add("ffi.rust.files", "../src/client/process/windows/mod.rs")
+    end)
+    set_rules("ffi.rust")
+
+    add_includedirs("../../")
     add_files("src/*.cpp")
 
 --
@@ -73,4 +80,3 @@ target("cpp-windows-lib")
 --
 -- @endcode
 --
-

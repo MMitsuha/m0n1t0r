@@ -2995,8 +2995,8 @@ checksum = "1e9df38ee2d2c3c5948ea468a8406ff0db0b29ae1ffde1bcf20ef305bcc95c51"
 
 [[package]]
 name = "xmake"
-version = "0.2.3"
-source = "git+https://github.com/MMitsuha/xmake-rs.git#ac3ff3d7470e91c4adafb1426bec6a71ba940629"
+version = "0.2.4"
+source = "git+https://github.com/MMitsuha/xmake-rs.git#95bf139cca0d6cac1985a5d7af6a5409e4d7eb56"
 dependencies = [
  "cc",
 ]

@@ -1,8 +1,0 @@
-rule("ffi.rust")
-    after_load(function (target)
-        local file_path = target:get("ffi.rust.files")
-        local file_name = path.filename(file_path)
-        os.runv("cxxbridge", { file_path, "--header" }, { stdout = file_name..".h" })
-        os.runv("cxxbridge", { file_path }, { stdout = file_name..".cc" })
-        target:add("files", file_name..".cc")
-    end)

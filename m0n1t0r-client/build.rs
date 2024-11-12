@@ -5,7 +5,7 @@ const PROJECT_LIST: [&str; 1] = ["m0n1t0r-cpp-windows-lib"];
 fn xmake_build() -> Vec<PathBuf> {
     PROJECT_LIST
         .iter()
-        .map(|x| xmake::build(format!("../{}", x)))
+        .map(|x| xmake::build(format!("{}", x)))
         .collect::<Vec<PathBuf>>()
 }
 
