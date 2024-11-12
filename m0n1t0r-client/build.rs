@@ -1,8 +1,10 @@
 use std::path::PathBuf;
 
+#[allow(warnings)]
 const PROJECT_LIST_WINDOWS: [&str; 1] = ["m0n1t0r-cpp-windows-lib"];
 
 fn xmake_build() -> Vec<PathBuf> {
+    #[allow(warnings)]
     let mut paths = Vec::new();
 
     #[cfg(feature = "windows")]
