@@ -25,3 +25,8 @@ m0n1t0r-common = { path = "../m0n1t0r-common" }
 log = "0.4.22"
 flexi_logger = { version = "0.29.4", features = ["async"] }
 cfg_block = "0.2.0"
+cxx = "1.0"
+
+[build-dependencies]
+xmake = { version = "0.2.3", git = "https://github.com/MMitsuha/xmake-rs.git" }
+cxx-build = "1.0"

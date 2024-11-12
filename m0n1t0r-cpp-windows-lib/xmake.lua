@@ -1,3 +1,4 @@
+includes("../m0n1t0r-xmake")
 add_rules("mode.debug", "mode.release")
 
 target("cpp-windows-lib")
