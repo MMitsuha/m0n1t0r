@@ -1,7 +1,7 @@
 includes("../xmake/ffi.lua")
 add_rules("mode.debug", "mode.release")
 
-target("cpp-windows-lib")
+target("m0n1t0r-cpp-windows-lib")
     set_kind("static")
     set_languages("c++17")
     on_load(function (target)
@@ -9,7 +9,7 @@ target("cpp-windows-lib")
     end)
     set_rules("ffi.rust")
 
-    add_includedirs("../../")
+    add_includedirs("include")
     add_files("src/*.cpp")
 
 --

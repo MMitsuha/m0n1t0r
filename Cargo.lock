@@ -1482,6 +1482,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tokio-util",
+ "winapi",
  "xmake",
 ]
 
@@ -1491,6 +1492,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
+ "cxx",
  "log",
  "remoc",
  "reqwest",
