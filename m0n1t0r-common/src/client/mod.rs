@@ -11,6 +11,10 @@ pub trait Client: Sync {
         Ok(util::version::get())
     }
 
+    async fn target_platform(&self) -> AppResult<String> {
+        Ok("general".to_string())
+    }
+
     async fn terminate(&self) -> AppResult<()>;
 
     async fn ping(&self) -> AppResult<()> {

@@ -7,7 +7,7 @@ use actix_web::{
     web::{Data, Json, Path},
     Responder,
 };
-use m0n1t0r_common::{client::Client as _, server::Server};
+use m0n1t0r_common::client::Client as _;
 use serde::Serialize;
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
@@ -17,15 +17,18 @@ use url::Url;
 pub struct Get {
     addr: SocketAddr,
     version: String,
+    target_platform: String,
 }
 
 impl Get {
     pub async fn new(server: Arc<RwLock<ServerObj>>) -> WebResult<Self> {
         let lock_obj = server.read().await;
+        let client = lock_obj.get_client()?;
 
         Ok(Self {
             addr: lock_obj.get_addr().clone(),
-            version: lock_obj.version().await?,
+            version: client.version().await?,
+            target_platform: client.target_platform().await?,
         })
     }
 }

@@ -49,6 +49,11 @@ impl Client for ClientObj {
         Ok(())
     }
 
+    #[cfg(not(feature = "general"))]
+    async fn target_platform(&self) -> AppResult<String> {
+        Ok("specific".to_string())
+    }
+
     async fn get_file_agent(&self) -> AppResult<mcfile::AgentClient> {
         let server = Arc::new(RwLock::new(fs::AgentObj::new()));
         let (server_server, server_client) =
