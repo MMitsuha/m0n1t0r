@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, process::Command};
 
 #[allow(warnings)]
 const PROJECT_LIST_WINDOWS: [&str; 1] = ["m0n1t0r-cpp-windows-lib"];
@@ -6,6 +6,11 @@ const PROJECT_LIST_WINDOWS: [&str; 1] = ["m0n1t0r-cpp-windows-lib"];
 fn xmake_build() -> Vec<PathBuf> {
     #[allow(warnings)]
     let mut paths = Vec::new();
+
+    Command::new("xmake")
+        .arg("--help")
+        .output()
+        .expect("No xmake found. Please install xmake.");
 
     #[cfg(feature = "windows")]
     paths.append(
