@@ -1,7 +1,5 @@
 pub type Result<T> = std::result::Result<T, Error>;
 
-use std::net::AddrParseError;
-
 use crate::web::Response;
 use actix_web::{
     error::{PathError, QueryPayloadError, ResponseError},
@@ -11,6 +9,7 @@ use actix_web::{
 use remoc::rch::ConnectError;
 use serde::Serialize;
 use shell_words::ParseError;
+use std::net::AddrParseError;
 use thiserror::Error;
 use tokio::io;
 

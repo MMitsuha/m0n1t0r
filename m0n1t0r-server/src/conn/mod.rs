@@ -29,14 +29,12 @@ use tokio_util::sync::CancellationToken;
 
 pub struct Config {
     addr: SocketAddr,
-    server_map: Arc<RwLock<ServerMap>>,
 }
 
 impl From<&crate::Config> for Config {
     fn from(config: &crate::Config) -> Self {
         Self {
             addr: config.conn_addr,
-            server_map: config.server_map.clone(),
         }
     }
 }
@@ -77,10 +75,13 @@ async fn server_task(
         _ = canceller.cancelled() => {},
     };
 
-    if let Some(_server) = server_map.write().await.remove(&addr) {
-        info!("{}: disconnected", addr);
-    } else {
-        warn!("{}: disconnected unexpectedly", addr);
+    match server_map.write().await.remove(&addr) {
+        Some(_server) => {
+            info!("{}: disconnected", addr);
+        }
+        None => {
+            warn!("{}: disconnected unexpectedly", addr);
+        }
     }
 }
 
@@ -112,11 +113,11 @@ pub async fn accept(listener: &TcpListener, server_map: Arc<RwLock<ServerMap>>) 
     Ok(())
 }
 
-pub async fn run(config: &Config) -> Result<()> {
+pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<()> {
     let listener = TcpListener::bind(config.addr).await?;
 
     loop {
-        if let Err(e) = accept(&listener, config.server_map.clone()).await {
+        if let Err(e) = accept(&listener, server_map.clone()).await {
             warn!("accept connection error: {}", e);
         }
     }

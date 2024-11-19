@@ -73,12 +73,15 @@ async fn server_task(
     select! {
         _ = client_server.serve(true) => canceller.cancel(),
         _ = canceller.cancelled() => {},
-    };
+    }
 
-    if let Some(_server) = client_map.write().await.remove(&addr) {
-        info!("{}: disconnected", addr);
-    } else {
-        warn!("{}: disconnected unexpectedly", addr);
+    match client_map.write().await.remove(&addr) {
+        Some(_server) => {
+            info!("{}: disconnected", addr);
+        }
+        None => {
+            warn!("{}: disconnected unexpectedly", addr);
+        }
     }
 }
 

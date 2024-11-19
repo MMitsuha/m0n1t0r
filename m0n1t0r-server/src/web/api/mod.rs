@@ -14,21 +14,17 @@ use tokio::sync::RwLock;
 
 pub struct Config {
     addr: SocketAddr,
-    server_map: Arc<RwLock<ServerMap>>,
 }
 
 impl From<&crate::Config> for Config {
     fn from(config: &crate::Config) -> Self {
         Self {
             addr: config.api_addr,
-            server_map: config.server_map.clone(),
         }
     }
 }
 
-pub async fn run(config: &Config) -> Result<()> {
-    let server_map = config.server_map.clone();
-
+pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<()> {
     HttpServer::new(move || {
         let (path_config, query_config) = super::extractor_config();
 
