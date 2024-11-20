@@ -1,6 +1,6 @@
 # m0n1t0r RAT
 
-*`m0n1t0r` is a high performance and high reliability command and control tool set for read teams*
+*`m0n1t0r` is a high performance and high reliability command and control tool set for red teams*
 
 ## Features
 
