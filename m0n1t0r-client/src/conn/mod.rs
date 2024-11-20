@@ -87,7 +87,7 @@ fn ca_store() -> Result<RootCertStore> {
 
     for cert in CertificateDer::pem_slice_iter(include_bytes!(concat!(
         env!("CARGO_WORKSPACE_DIR"),
-        "certs/ca.key.der"
+        "certs/ca.crt"
     ))) {
         store.add(cert?)?;
     }

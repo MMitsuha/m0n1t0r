@@ -19,12 +19,7 @@ use remoc::{
     Cfg, Connect,
 };
 use rustls_pki_types::{pem::PemObject as _, CertificateDer, PrivateKeyDer};
-use std::{
-    collections::HashMap,
-    net::SocketAddr,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::{collections::HashMap, net::SocketAddr, path::Path, sync::Arc};
 use tokio::{
     io,
     net::{TcpListener, TcpStream},

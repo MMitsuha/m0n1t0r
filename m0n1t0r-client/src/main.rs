@@ -12,9 +12,9 @@ async fn main() -> Result<()> {
 
     let client_map = Arc::new(RwLock::new(HashMap::new()));
     let config = if cfg!(debug_assertions) {
-        Config::new("127.0.0.1:27853")
+        Config::new("127.0.0.1", 27853)
     } else {
-        Config::new("mmitsuha.xyz:27853")
+        Config::new("mmitsuha.xyz", 27853)
     }?;
 
     m0n1t0r_client::run(&config, client_map).await?;
