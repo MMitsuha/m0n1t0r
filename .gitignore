@@ -1,4 +1,18 @@
+# Build
 target/
+
+# IDE
 .vscode/
+
+# Mac OS
 .DS_Store
+
+# Spell checker
 cspell.config.yaml
+
+# Certificates
+certs/*.crt
+certs/*.key
+certs/*.srl
+certs/*.csr
+certs/*.der

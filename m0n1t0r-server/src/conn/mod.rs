@@ -18,13 +18,20 @@ use remoc::{
     },
     Cfg, Connect,
 };
-use std::{collections::HashMap, net::SocketAddr, sync::Arc};
+use rustls_pki_types::{pem::PemObject as _, CertificateDer, PrivateKeyDer};
+use std::{
+    collections::HashMap,
+    net::SocketAddr,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use tokio::{
     io,
     net::{TcpListener, TcpStream},
     select,
     sync::RwLock,
 };
+use tokio_rustls::{server::TlsStream, TlsAcceptor};
 use tokio_util::sync::CancellationToken;
 
 pub struct Config {
@@ -43,7 +50,7 @@ impl From<&crate::Config> for Config {
 async fn make_channel<'transport>(
     canceller: CancellationToken,
     addr: &SocketAddr,
-    stream: TcpStream,
+    stream: TlsStream<TcpStream>,
 ) -> Result<(Sender<ServerClient>, Receiver<ClientClient>)> {
     let addr = addr.clone();
     let (stream_rx, stream_tx) = io::split(stream);
@@ -85,8 +92,13 @@ async fn server_task(
     }
 }
 
-pub async fn accept(listener: &TcpListener, server_map: Arc<RwLock<ServerMap>>) -> Result<()> {
+pub async fn accept(
+    listener: &TcpListener,
+    acceptor: TlsAcceptor,
+    server_map: Arc<RwLock<ServerMap>>,
+) -> Result<()> {
     let (stream, addr) = listener.accept().await?;
+    let stream = acceptor.accept(stream).await?;
     debug!("{}: connection opened", addr);
     let server = Arc::new(RwLock::new(ServerObj::new(&addr)));
     let canceller = server.read().await.get_canceller();
@@ -113,11 +125,24 @@ pub async fn accept(listener: &TcpListener, server_map: Arc<RwLock<ServerMap>>) 
     Ok(())
 }
 
+fn tls_acceptor(config: &Config) -> Result<TlsAcceptor> {
+    let path = Path::new(env!("CARGO_WORKSPACE_DIR")).join("certs");
+    let certs =
+        CertificateDer::pem_file_iter(path.join("end.crt"))?.collect::<Result<Vec<_>, _>>()?;
+    let key = PrivateKeyDer::from_pem_file(path.join("end.key"))?;
+    let tls_config = rustls::ServerConfig::builder()
+        .with_no_client_auth()
+        .with_single_cert(certs, key)?;
+
+    Ok(TlsAcceptor::from(Arc::new(tls_config)))
+}
+
 pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<()> {
     let listener = TcpListener::bind(config.addr).await?;
+    let acceptor = tls_acceptor(config)?;
 
     loop {
-        if let Err(e) = accept(&listener, server_map.clone()).await {
+        if let Err(e) = accept(&listener, acceptor.clone(), server_map.clone()).await {
             warn!("accept connection error: {}", e);
         }
     }

@@ -15,26 +15,23 @@ use remoc::{
     },
     Cfg, Connect,
 };
+use rustls::RootCertStore;
+use rustls_pki_types::{pem::PemObject as _, CertificateDer, DnsName, ServerName};
 use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
-use tokio::{
-    io,
-    net::{self, TcpStream},
-    select,
-    sync::RwLock,
-    time,
-};
+use tokio::{io, net::TcpStream, select, sync::RwLock, time};
+use tokio_rustls::{client::TlsStream, TlsConnector};
 use tokio_util::sync::CancellationToken;
 
 pub struct Config {
-    addr: String,
-    client_map: Arc<RwLock<ClientMap>>,
+    host: String,
+    addr: SocketAddr,
 }
 
 impl From<&crate::Config> for Config {
     fn from(config: &crate::Config) -> Self {
         Self {
+            host: config.host.clone(),
             addr: config.addr.clone(),
-            client_map: config.client_map.clone(),
         }
     }
 }
@@ -43,7 +40,7 @@ impl From<&crate::Config> for Config {
 async fn make_channel<'transport>(
     canceller: CancellationToken,
     addr: &SocketAddr,
-    stream: TcpStream,
+    stream: TlsStream<TcpStream>,
 ) -> Result<(Sender<ClientClient>, Receiver<ServerClient>)> {
     let addr = addr.clone();
     let (socket_rx, socket_tx) = io::split(stream);
@@ -85,9 +82,41 @@ async fn server_task(
     }
 }
 
-pub async fn accept(addr: &SocketAddr, client_map: Arc<RwLock<ClientMap>>) -> Result<()> {
+fn ca_store() -> Result<RootCertStore> {
+    let mut store = RootCertStore::empty();
+
+    for cert in CertificateDer::pem_slice_iter(include_bytes!(concat!(
+        env!("CARGO_WORKSPACE_DIR"),
+        "certs/ca.key.der"
+    ))) {
+        store.add(cert?)?;
+    }
+
+    Ok(store)
+}
+
+fn tls_connector() -> Result<TlsConnector> {
+    let store = ca_store()?;
+    let config = rustls::ClientConfig::builder()
+        .with_root_certificates(store)
+        .with_no_client_auth();
+
+    Ok(TlsConnector::from(Arc::new(config)))
+}
+
+pub async fn accept(
+    addr: &SocketAddr,
+    host: &str,
+    connector: TlsConnector,
+    client_map: Arc<RwLock<ClientMap>>,
+) -> Result<()> {
     let stream = TcpStream::connect(addr).await?;
-    let addr = addr.clone();
+    let stream = connector
+        .connect(
+            ServerName::DnsName(DnsName::try_from(host.to_string())?),
+            stream,
+        )
+        .await?;
     debug!("{}: connection opened", addr);
     let client = Arc::new(RwLock::new(ClientObj::new(&addr)));
     let canceller = client.read().await.get_canceller();
@@ -101,12 +130,12 @@ pub async fn accept(addr: &SocketAddr, client_map: Arc<RwLock<ClientMap>>) -> Re
 
     tokio::spawn(server_task(
         canceller.clone(),
-        addr,
+        addr.clone(),
         client_server,
         client_map.clone(),
     ));
     client.write().await.initialize(server_client);
-    client_map.write().await.insert(addr, client);
+    client_map.write().await.insert(addr.clone(), client);
     guard.disarm();
     info!("{}: connected", addr);
 
@@ -121,19 +150,14 @@ pub async fn accept(addr: &SocketAddr, client_map: Arc<RwLock<ClientMap>>) -> Re
     }
 }
 
-pub async fn run(config: &Config) -> Result<()> {
+pub async fn run(config: &Config, client_map: Arc<RwLock<ClientMap>>) -> Result<()> {
+    let connector = tls_connector()?;
+
     while let Err(e) = accept(
-        &loop {
-            match net::lookup_host(&config.addr)
-                .await?
-                .next()
-                .ok_or(anyhow!("no address found"))
-            {
-                Ok(a) => break a,
-                Err(_) => continue,
-            }
-        },
-        config.client_map.clone(),
+        &config.addr,
+        &config.host,
+        connector.clone(),
+        client_map.clone(),
     )
     .await
     {

@@ -1477,10 +1477,14 @@ dependencies = [
  "m0n1t0r-common",
  "remoc",
  "reqwest",
+ "rustls",
+ "rustls-pemfile",
+ "rustls-pki-types",
  "serde",
  "strum",
  "thiserror 1.0.66",
  "tokio",
+ "tokio-rustls",
  "tokio-util",
  "winapi",
  "xmake",
@@ -1522,6 +1526,9 @@ dependencies = [
  "m0n1t0r-common",
  "remoc",
  "reqwest",
+ "rustls",
+ "rustls-pemfile",
+ "rustls-pki-types",
  "serde",
  "serde-error",
  "serde_json",
@@ -1531,6 +1538,7 @@ dependencies = [
  "strum",
  "thiserror 2.0.3",
  "tokio",
+ "tokio-rustls",
  "tokio-util",
  "url",
 ]
@@ -2027,11 +2035,13 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.23.15"
+version = "0.23.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fbb44d7acc4e873d613422379f69f237a1b141928c02f6bc6ccfddddc2d7993"
+checksum = "7f1a745511c54ba6d4465e8d5dfbd81b45791756de28d4981af70d6dca128f1e"
 dependencies = [
+ "log",
  "once_cell",
+ "ring",
  "rustls-pki-types",
  "rustls-webpki",
  "subtle",
