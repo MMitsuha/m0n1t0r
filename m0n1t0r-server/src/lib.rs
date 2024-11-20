@@ -6,20 +6,28 @@ pub use conn::ServerMap;
 pub use server::ServerObj;
 
 use anyhow::Result;
-use std::{net::SocketAddr, sync::Arc};
+use std::{
+    net::SocketAddr,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use tokio::{select, sync::RwLock};
 use web::api;
 
 pub struct Config {
     conn_addr: SocketAddr,
     api_addr: SocketAddr,
+    key: PathBuf,
+    cert: PathBuf,
 }
 
 impl Config {
-    pub fn new(conn_addr: &SocketAddr, api_addr: &SocketAddr) -> Self {
+    pub fn new(conn_addr: &SocketAddr, api_addr: &SocketAddr, key: &Path, cert: &Path) -> Self {
         Self {
             conn_addr: conn_addr.clone(),
             api_addr: api_addr.clone(),
+            key: key.to_path_buf(),
+            cert: cert.to_path_buf(),
         }
     }
 }

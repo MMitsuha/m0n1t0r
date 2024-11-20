@@ -19,7 +19,7 @@ use remoc::{
     Cfg, Connect,
 };
 use rustls_pki_types::{pem::PemObject as _, CertificateDer, PrivateKeyDer};
-use std::{collections::HashMap, net::SocketAddr, path::Path, sync::Arc};
+use std::{collections::HashMap, net::SocketAddr, path::PathBuf, sync::Arc};
 use tokio::{
     io,
     net::{TcpListener, TcpStream},
@@ -31,12 +31,16 @@ use tokio_util::sync::CancellationToken;
 
 pub struct Config {
     addr: SocketAddr,
+    key: PathBuf,
+    cert: PathBuf,
 }
 
 impl From<&crate::Config> for Config {
     fn from(config: &crate::Config) -> Self {
         Self {
             addr: config.conn_addr,
+            key: config.key.clone(),
+            cert: config.cert.clone(),
         }
     }
 }
@@ -121,10 +125,8 @@ pub async fn accept(
 }
 
 fn tls_acceptor(config: &Config) -> Result<TlsAcceptor> {
-    let path = Path::new(env!("CARGO_WORKSPACE_DIR")).join("certs");
-    let certs =
-        CertificateDer::pem_file_iter(path.join("end.crt"))?.collect::<Result<Vec<_>, _>>()?;
-    let key = PrivateKeyDer::from_pem_file(path.join("end.key"))?;
+    let certs = CertificateDer::pem_file_iter(&config.key)?.collect::<Result<Vec<_>, _>>()?;
+    let key = PrivateKeyDer::from_pem_file(&config.cert)?;
     let tls_config = rustls::ServerConfig::builder()
         .with_no_client_auth()
         .with_single_cert(certs, key)?;
