@@ -1,5 +1,6 @@
 pub mod client;
 pub mod fs;
+pub mod info;
 pub mod network;
 pub mod process;
 pub mod proxy;

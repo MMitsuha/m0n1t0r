@@ -1,3 +1,5 @@
+mod info;
+
 use crate::{fs, network, process, proxy, util, Result as AppResult};
 use remoc::rtc;
 use tokio::fs as tfs;
@@ -13,6 +15,10 @@ pub trait Client: Sync {
 
     async fn target_platform(&self) -> AppResult<String> {
         Ok("general".to_string())
+    }
+
+    async fn system_info(&self) -> AppResult<info::System> {
+        Ok(info::System::new())
     }
 
     async fn terminate(&self) -> AppResult<()>;

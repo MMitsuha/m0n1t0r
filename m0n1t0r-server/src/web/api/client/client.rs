@@ -44,17 +44,21 @@ pub async fn get(
     Ok(Json(Response::success(Get::new(server.clone()).await?)?))
 }
 
-#[get("/update/{url}")]
-pub async fn get_update(
-    data: Data<Arc<RwLock<ServerMap>>>,
-    path: Path<(SocketAddr, Url)>,
-) -> WebResult<impl Responder> {
-    let (addr, url) = path.into_inner();
-    let lock_map = data.read().await;
-    let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
+pub mod update {
+    use super::*;
 
-    let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
+    #[get("/update/{url}")]
+    pub async fn get(
+        data: Data<Arc<RwLock<ServerMap>>>,
+        path: Path<(SocketAddr, Url)>,
+    ) -> WebResult<impl Responder> {
+        let (addr, url) = path.into_inner();
+        let lock_map = data.read().await;
+        let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
 
-    Ok(Json(Response::success(client.update(url).await?)?))
+        let lock_obj = server.read().await;
+        let client = lock_obj.get_client()?;
+
+        Ok(Json(Response::success(client.update(url).await?)?))
+    }
 }

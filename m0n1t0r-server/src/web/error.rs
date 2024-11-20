@@ -9,7 +9,7 @@ use actix_web::{
 use remoc::rch::ConnectError;
 use serde::Serialize;
 use shell_words::ParseError;
-use std::net::AddrParseError;
+use std::{net::AddrParseError, num::ParseIntError};
 use thiserror::Error;
 use tokio::io;
 
@@ -45,6 +45,9 @@ pub enum Error {
 
     #[error("extractor error: {0}")]
     ExtractorError(serde_error::Error) = -9,
+
+    #[error("parse int error: {0}")]
+    ParseIntError(serde_error::Error) = -10,
 
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error) = -255,
@@ -110,6 +113,12 @@ impl From<io::Error> for Error {
 impl From<AddrParseError> for Error {
     fn from(e: AddrParseError) -> Self {
         Self::ParseAddrError(serde_error::Error::new(&e))
+    }
+}
+
+impl From<ParseIntError> for Error {
+    fn from(e: ParseIntError) -> Self {
+        Self::ParseIntError(serde_error::Error::new(&e))
     }
 }
 

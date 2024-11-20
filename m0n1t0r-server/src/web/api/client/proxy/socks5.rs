@@ -40,77 +40,85 @@ struct User {
     password: String,
 }
 
-#[get("/socks5/pass")]
-pub async fn get_auth_pass(
-    data: Data<Arc<RwLock<ServerMap>>>,
-    addr: Path<SocketAddr>,
-    user: Query<User>,
-) -> WebResult<impl Responder> {
-    let lock_map = data.read().await;
-    let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
+pub mod pass {
+    pub use super::*;
 
-    let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
-    let agent = Arc::new(client.get_proxy_agent().await?);
-    let canceller = lock_obj.get_canceller();
-    drop(lock_obj);
-    drop(lock_map);
+    #[get("/socks5/pass")]
+    pub async fn get(
+        data: Data<Arc<RwLock<ServerMap>>>,
+        addr: Path<SocketAddr>,
+        user: Query<User>,
+    ) -> WebResult<impl Responder> {
+        let lock_map = data.read().await;
+        let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
 
-    let auth = Arc::new(UserKeyAuth::new(&user.name, &user.password));
-    let listener = Server::bind("0.0.0.0:0".parse()?, auth).await?;
-    let addr = listener.local_addr()?;
-    tokio::spawn(async move {
-        loop {
-            let agent = agent.clone();
-            select! {
-                accept = listener.accept() => match accept {
-                    Ok((conn, _)) => { tokio::spawn(handle(conn, agent, canceller.clone())); },
-                    Err(_) => continue,
-                },
-                _ = canceller.cancelled() => break,
+        let lock_obj = server.read().await;
+        let client = lock_obj.get_client()?;
+        let agent = Arc::new(client.get_proxy_agent().await?);
+        let canceller = lock_obj.get_canceller();
+        drop(lock_obj);
+        drop(lock_map);
+
+        let auth = Arc::new(UserKeyAuth::new(&user.name, &user.password));
+        let listener = Server::bind("0.0.0.0:0".parse()?, auth).await?;
+        let addr = listener.local_addr()?;
+        tokio::spawn(async move {
+            loop {
+                let agent = agent.clone();
+                select! {
+                    accept = listener.accept() => match accept {
+                        Ok((conn, _)) => { tokio::spawn(handle(conn, agent, canceller.clone())); },
+                        Err(_) => continue,
+                    },
+                    _ = canceller.cancelled() => break,
+                }
             }
-        }
 
-        Ok::<_, anyhow::Error>(())
-    });
+            Ok::<_, anyhow::Error>(())
+        });
 
-    Ok(Json(Response::success(addr)?))
+        Ok(Json(Response::success(addr)?))
+    }
 }
 
-#[get("/socks5/noauth")]
-pub async fn get_auth_none(
-    data: Data<Arc<RwLock<ServerMap>>>,
-    addr: Path<SocketAddr>,
-) -> WebResult<impl Responder> {
-    let lock_map = data.read().await;
-    let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
+pub mod noauth {
+    pub use super::*;
 
-    let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
-    let agent = Arc::new(client.get_proxy_agent().await?);
-    let canceller = lock_obj.get_canceller();
-    drop(lock_obj);
-    drop(lock_map);
+    #[get("/socks5/noauth")]
+    pub async fn get(
+        data: Data<Arc<RwLock<ServerMap>>>,
+        addr: Path<SocketAddr>,
+    ) -> WebResult<impl Responder> {
+        let lock_map = data.read().await;
+        let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
 
-    let auth = Arc::new(NoAuth::default());
-    let listener = Server::bind("0.0.0.0:0".parse()?, auth).await?;
-    let addr = listener.local_addr()?;
-    tokio::spawn(async move {
-        loop {
-            let agent = agent.clone();
-            select! {
-                accept = listener.accept() => match accept {
-                    Ok((conn, _)) => { tokio::spawn(handle(conn, agent, canceller.clone())); },
-                    Err(_) => continue,
-                },
-                _ = canceller.cancelled() => break,
+        let lock_obj = server.read().await;
+        let client = lock_obj.get_client()?;
+        let agent = Arc::new(client.get_proxy_agent().await?);
+        let canceller = lock_obj.get_canceller();
+        drop(lock_obj);
+        drop(lock_map);
+
+        let auth = Arc::new(NoAuth::default());
+        let listener = Server::bind("0.0.0.0:0".parse()?, auth).await?;
+        let addr = listener.local_addr()?;
+        tokio::spawn(async move {
+            loop {
+                let agent = agent.clone();
+                select! {
+                    accept = listener.accept() => match accept {
+                        Ok((conn, _)) => { tokio::spawn(handle(conn, agent, canceller.clone())); },
+                        Err(_) => continue,
+                    },
+                    _ = canceller.cancelled() => break,
+                }
             }
-        }
 
-        Ok::<_, anyhow::Error>(())
-    });
+            Ok::<_, anyhow::Error>(())
+        });
 
-    Ok(Json(Response::success(addr)?))
+        Ok(Json(Response::success(addr)?))
+    }
 }
 
 async fn handle<S>(

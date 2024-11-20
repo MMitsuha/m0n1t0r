@@ -39,7 +39,7 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                 web::scope("/client").service(client::get).service(
                     web::scope("/{addr}")
                         .service(client::client::get)
-                        .service(client::client::get_update)
+                        .service(client::client::update::get)
                         .service(
                             web::scope("/fs")
                                 .service(client::fs::get)
@@ -51,13 +51,15 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                             web::scope("/process")
                                 .service(client::process::interactive::get)
                                 .service(client::process::execute::get)
-                                .service(client::process::get),
+                                .service(client::process::get)
+                                .service(client::process::delete),
                         )
                         .service(
                             web::scope("/proxy")
-                                .service(client::proxy::socks5::get_auth_none)
-                                .service(client::proxy::socks5::get_auth_pass),
+                                .service(client::proxy::socks5::noauth::get)
+                                .service(client::proxy::socks5::pass::get),
                         )
+                        .service(web::scope("/info").service(client::info::system::get))
                         .service(web::scope("/network").service(client::network::download::get)),
                 ),
             )
