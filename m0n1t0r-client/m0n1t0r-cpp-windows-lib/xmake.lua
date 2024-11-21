@@ -5,7 +5,7 @@ target("m0n1t0r-cpp-windows-lib")
     set_kind("static")
     set_languages("c++17")
     on_load(function (target)
-        target:add("ffi.rust.files", "../src/client/process/windows/mod.rs")
+        target:add("ffi.rust.files", "../src/client/windows/process.rs")
     end)
     set_rules("ffi.rust")
 

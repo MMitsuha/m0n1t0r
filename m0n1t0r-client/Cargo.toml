@@ -30,7 +30,6 @@ tokio-rustls = { version = "0.26.0", features = ["ring", "logging", "tls12"], de
 rustls = { version = "0.23.17", features = ["ring", "log", "logging", "std", "tls12"], default-features = false }
 rustls-pemfile = "2.1.2"
 rustls-pki-types = { version = "1.7.0", features = ["alloc"] }
-scap = "0.0.7"
 paste = "1.0.15"
 quote = "1.0.37"
 

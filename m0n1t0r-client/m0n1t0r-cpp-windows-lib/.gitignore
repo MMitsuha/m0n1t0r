@@ -5,4 +5,5 @@ build/
 # MacOS Cache
 .DS_Store
 
-src/mod.rs.*
+src/*.rs.*
+include/*.rs.*
