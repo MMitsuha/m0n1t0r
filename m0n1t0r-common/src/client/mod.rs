@@ -2,10 +2,17 @@ mod info;
 
 use crate::{fs, network, process, proxy, util, Result as AppResult};
 use remoc::rtc;
+use serde::{Deserialize, Serialize};
 use tokio::fs as tfs;
 use url::Url;
 
 const UPDATE_TEMP_PATH: &str = "tmp.bin";
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum TargetPlatform {
+    General,
+    Specific,
+}
 
 #[rtc::remote]
 pub trait Client: Sync {
@@ -13,8 +20,8 @@ pub trait Client: Sync {
         Ok(util::version::get())
     }
 
-    async fn target_platform(&self) -> AppResult<String> {
-        Ok("general".to_string())
+    async fn target_platform(&self) -> AppResult<TargetPlatform> {
+        Ok(TargetPlatform::General)
     }
 
     async fn system_info(&self) -> AppResult<info::System> {

@@ -7,7 +7,7 @@ use actix_web::{
     web::{Data, Json, Path},
     Responder,
 };
-use m0n1t0r_common::client::Client as _;
+use m0n1t0r_common::client::{Client as _, TargetPlatform};
 use serde::Serialize;
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
@@ -17,7 +17,7 @@ use url::Url;
 pub struct Get {
     addr: SocketAddr,
     version: String,
-    target_platform: String,
+    target_platform: TargetPlatform,
 }
 
 impl Get {

@@ -3,6 +3,9 @@ mod network;
 mod process;
 mod proxy;
 
+#[cfg(not(feature = "general"))]
+use m0n1t0r_common::client::TargetPlatform;
+
 use m0n1t0r_common::{
     client::Client, fs as mcfile, network as mcnetwork, process as mcprocess, proxy as mcproxy,
     server::ServerClient, Result as AppResult,
@@ -50,8 +53,8 @@ impl Client for ClientObj {
     }
 
     #[cfg(not(feature = "general"))]
-    async fn target_platform(&self) -> AppResult<String> {
-        Ok("specific".to_string())
+    async fn target_platform(&self) -> AppResult<TargetPlatform> {
+        Ok(TargetPlatform::Specific)
     }
 
     async fn get_file_agent(&self) -> AppResult<mcfile::AgentClient> {
