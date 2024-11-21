@@ -1,6 +1,6 @@
 #include "process.h"
 #include "convertor.h"
-#include "mod.rs.h"
+#include "process.rs.h"
 #include <Windows.h>
 
 std::optional<std::tuple<HANDLE, HANDLE, HANDLE, HANDLE>> create_pipes() {

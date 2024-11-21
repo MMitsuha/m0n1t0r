@@ -24,7 +24,7 @@ fn xmake_build() -> Vec<PathBuf> {
 }
 
 fn main() {
-    let _ = cxx_build::bridge("src/client/process/windows/mod.rs");
+    let _ = cxx_build::bridge("src/client/windows/process.rs");
 
     for path in xmake_build() {
         println!("cargo:rustc-link-search={}", path.display());
