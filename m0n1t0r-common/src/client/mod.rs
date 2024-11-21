@@ -32,7 +32,7 @@ pub trait Client: Sync {
         Ok(())
     }
 
-    async fn get_file_agent(&self) -> AppResult<fs::AgentClient>;
+    async fn get_fs_agent(&self) -> AppResult<fs::AgentClient>;
 
     async fn get_process_agent(&self) -> AppResult<process::AgentClient>;
 

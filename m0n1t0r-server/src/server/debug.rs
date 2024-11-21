@@ -8,7 +8,7 @@ use tokio::sync::RwLock;
 pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
-    let file_agent = client.get_file_agent().await?;
+    let file_agent = client.get_fs_agent().await?;
     let process_agent = client.get_process_agent().await?;
 
     client.ping().await?;

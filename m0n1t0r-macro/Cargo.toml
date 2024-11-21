@@ -1,0 +1,12 @@
+[package]
+name = "m0n1t0r-macro"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+readme.workspace = true
+edition.workspace = true
+
+[dependencies]
+syn = "2.0"
+quote = "1.0"
+proc-macro2 = "1.0"

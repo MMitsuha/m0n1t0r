@@ -31,7 +31,7 @@ pub async fn get(
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
-    let agent = client.get_file_agent().await?;
+    let agent = client.get_fs_agent().await?;
     drop(lock_obj);
     drop(lock_map);
 
@@ -53,7 +53,7 @@ pub async fn delete(
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
-    let agent = client.get_file_agent().await?;
+    let agent = client.get_fs_agent().await?;
     drop(lock_obj);
     drop(lock_map);
 
@@ -78,7 +78,7 @@ pub async fn put(
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
-    let agent = client.get_file_agent().await?;
+    let agent = client.get_fs_agent().await?;
     drop(lock_obj);
     drop(lock_map);
 
@@ -104,7 +104,7 @@ pub async fn head(
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
-    let agent = client.get_file_agent().await?;
+    let agent = client.get_fs_agent().await?;
     drop(lock_obj);
     drop(lock_map);
 
