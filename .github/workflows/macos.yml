@@ -1,0 +1,27 @@
+name: Build on MacOS
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: xmake-io/github-action-setup-xmake@v1
+    - name: Generate certificates
+      run: cd ./certs && ./generate.sh
+    - name: Install cxxbridge
+      run: cargo install cxxbridge-cmd
+    - name: Build
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose
