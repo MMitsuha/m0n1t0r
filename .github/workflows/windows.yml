@@ -1,0 +1,25 @@
+name: Build on Windows
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: xmake-io/github-action-setup-xmake@v1
+    - name: Install cxxbridge
+      run: cargo install cxxbridge-cmd
+    - name: Build
+      run: cargo build --features windows --verbose
+    - name: Run tests
+      run: cargo test --features windows --verbose
