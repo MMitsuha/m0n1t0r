@@ -16,42 +16,28 @@ use actix_web::{
     Responder,
 };
 use m0n1t0r_common::client::Client as _;
-use serde::Serialize;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-#[derive(Serialize)]
-struct Get {
-    count: usize,
-    clients: Vec<client::Get>,
-}
-
-impl Get {
-    async fn new(server_map: Arc<RwLock<ServerMap>>) -> WebResult<Self> {
-        let lock_map = server_map.read().await;
-        let mut clients = Vec::new();
-
-        for (addr, server) in lock_map.iter() {
-            let lock_obj = server.read().await;
-            let client = lock_obj.get_client()?;
-
-            clients.push(
-                client::Get::new(
-                    addr,
-                    client.version().await?,
-                    client.target_platform().await?,
-                )
-                .await?,
-            );
-        }
-        Ok(Self {
-            count: lock_map.len(),
-            clients,
-        })
-    }
-}
-
 #[get("")]
 pub async fn get(data: Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder> {
-    Ok(Json(Response::success(Get::new((**data).clone()).await?)?))
+    let lock_map = data.read().await;
+    let mut details = Vec::new();
+
+    for (addr, server) in lock_map.iter() {
+        let lock_obj = server.read().await;
+        let client = lock_obj.get_client()?;
+
+        details.push(
+            client::Detail::new(
+                addr,
+                client.version().await?,
+                client.target_platform().await?,
+                client.system_info().await?,
+            )
+            .await?,
+        );
+    }
+
+    Ok(Json(Response::success(details)?))
 }

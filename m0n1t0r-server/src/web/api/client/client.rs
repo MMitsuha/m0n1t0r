@@ -7,29 +7,35 @@ use actix_web::{
     web::{Data, Json, Path},
     Responder,
 };
-use m0n1t0r_common::client::{Client as _, TargetPlatform};
+use m0n1t0r_common::{
+    client::{Client as _, TargetPlatform},
+    info,
+};
 use serde::Serialize;
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
 use url::Url;
 
 #[derive(Serialize)]
-pub struct Get {
+pub struct Detail {
     addr: SocketAddr,
     version: String,
     target_platform: TargetPlatform,
+    system_info: info::System,
 }
 
-impl Get {
+impl Detail {
     pub async fn new(
         addr: &SocketAddr,
         version: String,
         target_platform: TargetPlatform,
+        system_info: info::System,
     ) -> WebResult<Self> {
         Ok(Self {
             addr: addr.clone(),
             version,
             target_platform,
+            system_info,
         })
     }
 }
@@ -46,10 +52,11 @@ pub async fn get(
     let client = lock_obj.get_client()?;
 
     Ok(Json(Response::success(
-        Get::new(
+        Detail::new(
             lock_obj.get_addr(),
             client.version().await?,
             client.target_platform().await?,
+            client.system_info().await?,
         )
         .await?,
     )?))

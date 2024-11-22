@@ -17,12 +17,25 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: xmake-io/github-action-setup-xmake@v1
-    - name: Install cxxbridge
-      run: cargo install cxxbridge-cmd
+
     - uses: msys2/setup-msys2@v2
     - shell: powershell
       run: msys2 -c 'cd ./certs && ./generate.sh'
+
+    - name: Install cxxbridge
+      run: cargo install cxxbridge-cmd
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: 6.8.0
+        dir: ${{ github.workspace }}/qt/
+
     - name: Build
       run: cargo build --features windows --verbose
+
+    - name: Build ui
+      run: cd ./certs && xmake f --qt=${{ github.workspace }}/qt/ && xmake build && cd ..
+
     - name: Run tests
       run: cargo test --features windows --verbose
