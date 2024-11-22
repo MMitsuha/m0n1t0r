@@ -17,6 +17,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: xmake-io/github-action-setup-xmake@v1
+    - name: Install dependencies
+      run: sudo apt install -y libpipewire-0.3-dev clang libdbus-glib-1-dev
     - name: Install cxxbridge
       run: cargo install cxxbridge-cmd
     - name: Build

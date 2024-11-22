@@ -14,7 +14,7 @@
 
 - Unix
 
-1. Install `xmake` using your package management tool (such as `apt` or `pacman`)
+1. Install `xmake`, `libpipewire-0.3-dev`, `clang`, `libdbus-glib-1-dev` using your package management tool (such as `apt` or `pacman`)
 2. Run `./certs/generate.sh` if needed
 3. Run `cargo build`
 
