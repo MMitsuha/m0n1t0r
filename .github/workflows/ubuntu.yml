@@ -19,6 +19,8 @@ jobs:
     - uses: xmake-io/github-action-setup-xmake@v1
     - name: Install dependencies
       run: sudo apt install -y libpipewire-0.3-dev clang libdbus-glib-1-dev
+    - name: Generate certificates
+      run: cd ./certs && ./generate.sh
     - name: Install cxxbridge
       run: cargo install cxxbridge-cmd
     - name: Build
