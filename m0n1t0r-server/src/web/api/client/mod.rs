@@ -4,6 +4,7 @@ pub mod info;
 pub mod network;
 pub mod process;
 pub mod proxy;
+pub mod screen;
 
 use crate::{
     web::{Response, Result as WebResult},
@@ -14,6 +15,7 @@ use actix_web::{
     web::{Data, Json},
     Responder,
 };
+use m0n1t0r_common::client::Client as _;
 use serde::Serialize;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -29,8 +31,18 @@ impl Get {
         let lock_map = server_map.read().await;
         let mut clients = Vec::new();
 
-        for (_, server) in lock_map.iter() {
-            clients.push(client::Get::new(server.clone()).await?);
+        for (addr, server) in lock_map.iter() {
+            let lock_obj = server.read().await;
+            let client = lock_obj.get_client()?;
+
+            clients.push(
+                client::Get::new(
+                    addr,
+                    client.version().await?,
+                    client.target_platform().await?,
+                )
+                .await?,
+            );
         }
         Ok(Self {
             count: lock_map.len(),

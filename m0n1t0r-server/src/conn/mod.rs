@@ -57,7 +57,16 @@ async fn make_channel<'transport>(
         _,
         rch::base::Sender<ServerClient>,
         rch::base::Receiver<ClientClient>,
-    ) = Connect::io(Cfg::default(), stream_rx, stream_tx).await?;
+    ) = Connect::io(
+        Cfg {
+            max_data_size: 0x8000000,
+            chunk_size: 0x4000000,
+            ..Default::default()
+        },
+        stream_rx,
+        stream_tx,
+    )
+    .await?;
 
     tokio::spawn(async move {
         select! {
@@ -125,8 +134,8 @@ pub async fn accept(
 }
 
 fn tls_acceptor(config: &Config) -> Result<TlsAcceptor> {
-    let certs = CertificateDer::pem_file_iter(&config.key)?.collect::<Result<Vec<_>, _>>()?;
-    let key = PrivateKeyDer::from_pem_file(&config.cert)?;
+    let certs = CertificateDer::pem_file_iter(&config.cert)?.collect::<Result<Vec<_>, _>>()?;
+    let key = PrivateKeyDer::from_pem_file(&config.key)?;
     let tls_config = rustls::ServerConfig::builder()
         .with_no_client_auth()
         .with_single_cert(certs, key)?;

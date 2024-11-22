@@ -22,8 +22,8 @@ pub enum Error {
     #[error("serialization error: {0}")]
     SerializeError(serde_error::Error) = -1,
 
-    #[error("can not find specified client")]
-    ClientNotFound = -2,
+    #[error("specified object not find error")]
+    NotFoundError = -2,
 
     #[error("remote call error: {0}")]
     RemoteCallError(m0n1t0r_common::Error) = -3,
@@ -49,6 +49,9 @@ pub enum Error {
     #[error("parse int error: {0}")]
     ParseIntError(serde_error::Error) = -10,
 
+    #[error("unsupported error")]
+    UnsupportedError = -11,
+
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error) = -255,
 }
@@ -68,7 +71,7 @@ impl ResponseError for Error {
     fn status_code(&self) -> StatusCode {
         match *self {
             Error::Okay => StatusCode::OK,
-            Error::ClientNotFound => StatusCode::NOT_FOUND,
+            Error::NotFoundError => StatusCode::NOT_FOUND,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

@@ -27,7 +27,7 @@ pub async fn get(
 ) -> WebResult<impl Responder> {
     let (addr, r#type, path) = path.into_inner();
     let lock_map = data.read().await;
-    let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
+    let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
@@ -49,7 +49,7 @@ pub async fn delete(
 ) -> WebResult<impl Responder> {
     let (addr, r#type, path) = path.into_inner();
     let lock_map = data.read().await;
-    let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
+    let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
@@ -74,7 +74,7 @@ pub async fn put(
 ) -> WebResult<impl Responder> {
     let (addr, r#type, path) = path.into_inner();
     let lock_map = data.read().await;
-    let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
+    let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
@@ -100,7 +100,7 @@ pub async fn head(
 ) -> WebResult<impl Responder> {
     let (addr, _, path) = path.into_inner();
     let lock_map = data.read().await;
-    let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
+    let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;

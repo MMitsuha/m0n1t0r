@@ -16,6 +16,7 @@ use remoc::{
     Cfg, Connect,
 };
 use rustls::RootCertStore;
+#[allow(unused_imports)]
 use rustls_pki_types::{pem::PemObject as _, CertificateDer, DnsName, ServerName};
 use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
 use tokio::{io, net::TcpStream, select, sync::RwLock, time};
@@ -95,25 +96,78 @@ fn ca_store() -> Result<RootCertStore> {
     Ok(store)
 }
 
+#[cfg(debug_assertions)]
+mod debug {
+    use rustls::client::danger::ServerCertVerifier;
+
+    #[derive(Default, Debug)]
+    pub struct NoCertificateVerification {}
+
+    impl ServerCertVerifier for NoCertificateVerification {
+        fn verify_server_cert(
+            &self,
+            _end_entity: &rustls_pki_types::CertificateDer<'_>,
+            _intermediates: &[rustls_pki_types::CertificateDer<'_>],
+            _server_name: &rustls_pki_types::ServerName<'_>,
+            _ocsp_response: &[u8],
+            _now: rustls_pki_types::UnixTime,
+        ) -> Result<rustls::client::danger::ServerCertVerified, rustls::Error> {
+            Ok(rustls::client::danger::ServerCertVerified::assertion())
+        }
+
+        fn verify_tls12_signature(
+            &self,
+            _message: &[u8],
+            _cert: &rustls_pki_types::CertificateDer<'_>,
+            _dss: &rustls::DigitallySignedStruct,
+        ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
+            Ok(rustls::client::danger::HandshakeSignatureValid::assertion())
+        }
+
+        fn verify_tls13_signature(
+            &self,
+            _message: &[u8],
+            _cert: &rustls_pki_types::CertificateDer<'_>,
+            _dss: &rustls::DigitallySignedStruct,
+        ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
+            Ok(rustls::client::danger::HandshakeSignatureValid::assertion())
+        }
+
+        fn supported_verify_schemes(&self) -> Vec<rustls::SignatureScheme> {
+            rustls::crypto::ring::default_provider()
+                .signature_verification_algorithms
+                .supported_schemes()
+        }
+    }
+}
+
 fn tls_connector() -> Result<TlsConnector> {
     let store = ca_store()?;
-    let config = rustls::ClientConfig::builder()
+    #[allow(unused_mut)]
+    let mut config = rustls::ClientConfig::builder()
         .with_root_certificates(store)
         .with_no_client_auth();
+    #[cfg(debug_assertions)]
+    config
+        .dangerous()
+        .set_certificate_verifier(Arc::new(debug::NoCertificateVerification::default()));
 
     Ok(TlsConnector::from(Arc::new(config)))
 }
 
 pub async fn accept(
     addr: &SocketAddr,
-    host: &str,
+    #[allow(unused_variables)] host: &str,
     connector: TlsConnector,
     client_map: Arc<RwLock<ClientMap>>,
 ) -> Result<()> {
     let stream = TcpStream::connect(addr).await?;
     let stream = connector
         .connect(
+            #[cfg(not(debug_assertions))]
             ServerName::DnsName(DnsName::try_from(host.to_string())?),
+            #[cfg(debug_assertions)]
+            ServerName::IpAddress(addr.ip().into()),
             stream,
         )
         .await?;

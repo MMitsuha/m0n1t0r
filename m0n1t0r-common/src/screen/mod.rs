@@ -1,6 +1,10 @@
 use crate::Result as AppResult;
+use openh264::{
+    encoder::Encoder,
+    formats::{BgraSliceU8, YUVBuffer},
+};
 use remoc::{
-    rch::bin::{self, Receiver},
+    rch::lr::{self, Receiver},
     rtc,
 };
 use scap::{
@@ -37,24 +41,33 @@ impl Options {
 
 #[rtc::remote]
 pub trait Agent: Sync {
-    async fn record(&self, options: Options) -> AppResult<Receiver> {
-        let (tx, remote_rx) = bin::channel();
+    async fn record(&self, options: Options) -> AppResult<Receiver<Vec<u8>>> {
+        let mut options = options;
+        options.output_type = FrameType::BGRAFrame;
+        let (mut tx, remote_rx) = lr::channel();
 
         thread::spawn(move || {
             let runtime = Builder::new_current_thread().enable_all().build()?;
             let mut recorder = Capturer::build(options.into_scap())?;
-            let mut tx = runtime.block_on(tx.into_inner())?;
+            let mut encoder = Encoder::new()?;
 
             recorder.start_capture();
             loop {
                 let frame = recorder.get_next_frame()?;
-                runtime.block_on(tx.send(rmp_serde::to_vec(&frame)?.into()))?;
+                let stream = match frame {
+                    scap::frame::Frame::BGRA(bgraframe) => {
+                        encoder.encode(&YUVBuffer::from_rgb_source(BgraSliceU8::new(
+                            &bgraframe.data,
+                            (bgraframe.width.try_into()?, bgraframe.height.try_into()?),
+                        )))?
+                    }
+                    _ => unimplemented!(),
+                };
+                runtime.block_on(tx.send(stream.to_vec()))?;
             }
-
             #[allow(unreachable_code)]
             Ok::<_, anyhow::Error>(())
         });
-
         Ok(remote_rx)
     }
 

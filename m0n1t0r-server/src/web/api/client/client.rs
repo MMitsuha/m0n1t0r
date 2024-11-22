@@ -1,6 +1,6 @@
 use crate::{
     web::{Error, Response, Result as WebResult},
-    ServerMap, ServerObj,
+    ServerMap,
 };
 use actix_web::{
     get,
@@ -21,14 +21,15 @@ pub struct Get {
 }
 
 impl Get {
-    pub async fn new(server: Arc<RwLock<ServerObj>>) -> WebResult<Self> {
-        let lock_obj = server.read().await;
-        let client = lock_obj.get_client()?;
-
+    pub async fn new(
+        addr: &SocketAddr,
+        version: String,
+        target_platform: TargetPlatform,
+    ) -> WebResult<Self> {
         Ok(Self {
-            addr: lock_obj.get_addr().clone(),
-            version: client.version().await?,
-            target_platform: client.target_platform().await?,
+            addr: addr.clone(),
+            version,
+            target_platform,
         })
     }
 }
@@ -39,9 +40,19 @@ pub async fn get(
     addr: Path<SocketAddr>,
 ) -> WebResult<impl Responder> {
     let lock_map = data.read().await;
-    let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
+    let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
-    Ok(Json(Response::success(Get::new(server.clone()).await?)?))
+    let lock_obj = server.read().await;
+    let client = lock_obj.get_client()?;
+
+    Ok(Json(Response::success(
+        Get::new(
+            lock_obj.get_addr(),
+            client.version().await?,
+            client.target_platform().await?,
+        )
+        .await?,
+    )?))
 }
 
 pub mod update {
@@ -54,7 +65,7 @@ pub mod update {
     ) -> WebResult<impl Responder> {
         let (addr, url) = path.into_inner();
         let lock_map = data.read().await;
-        let server = lock_map.get(&addr).ok_or(Error::ClientNotFound)?;
+        let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
         let lock_obj = server.read().await;
         let client = lock_obj.get_client()?;
