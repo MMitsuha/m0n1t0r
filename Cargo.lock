@@ -571,6 +571,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "cargo-emit"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1582e1c9e755dd6ad6b224dcffb135d199399a4568d454bd89fe515ca8425695"
+
+[[package]]
 name = "cc"
 version = "1.1.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1981,10 +1987,11 @@ dependencies = [
 
 [[package]]
 name = "m0n1t0r-client"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "actix-web",
  "anyhow",
+ "cargo-emit",
  "cfg_block",
  "cxx",
  "cxx-build",
@@ -2010,13 +2017,14 @@ dependencies = [
 
 [[package]]
 name = "m0n1t0r-common"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "async-channel",
  "async-compat",
  "async-compression",
  "async_channel_io",
+ "cargo-emit",
  "chrono",
  "cxx",
  "futures",
@@ -2042,7 +2050,7 @@ dependencies = [
 
 [[package]]
 name = "m0n1t0r-macro"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2051,7 +2059,7 @@ dependencies = [
 
 [[package]]
 name = "m0n1t0r-server"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "actix-web",
  "actix-ws",

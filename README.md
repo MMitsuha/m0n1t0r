@@ -8,6 +8,22 @@
 2. Socks5 proxy
 3. Command execution
 4. Restful web api control
+5. Screen monitor
+
+## Build
+
+- Unix
+
+1. Install `xmake` using your package management tool (such as `apt` or `pacman`)
+2. Run `./certs/generate.sh` if needed
+3. Run `cargo build`
+
+- Windows
+
+1. Install build toolchain such as `msvc` or `gcc` (usually automatically done by `rustup`)
+2. Install `xmake` and `msys2`
+3. Run `./certs/generate.sh` in `msys2` if needed
+4. Run `cargo build`
 
 ## Roadmap
 

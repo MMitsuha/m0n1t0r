@@ -5,6 +5,7 @@ authors.workspace = true
 description.workspace = true
 readme.workspace = true
 edition.workspace = true
+repository.workspace = true
 build = "build.rs"
 
 [features]
@@ -42,3 +43,4 @@ winapi = { version = "0.3.9", features = ["winbase"] }
 [build-dependencies]
 xmake = { version = "0.2.3", git = "https://github.com/MMitsuha/xmake-rs.git" }
 cxx-build = "1.0"
+cargo-emit = "0.2.1"

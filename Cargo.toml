@@ -8,9 +8,9 @@ members = [
 ]
 
 [workspace.package]
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Miyamizu Mitsuha"]
 description = "m0n1t0r RAT"
 readme = "README.md"
-# repository = "https://github.com/vu1nerab13/musubi"
+repository = "https://github.com/MMitsuha/m0n1t0r"
 edition = "2021"

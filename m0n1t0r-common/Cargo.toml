@@ -5,6 +5,8 @@ authors.workspace = true
 description.workspace = true
 readme.workspace = true
 edition.workspace = true
+repository.workspace = true
+build = "build.rs"
 
 [dependencies]
 anyhow = "1.0.93"
@@ -33,3 +35,6 @@ async-channel = "2.3.1"
 async_channel_io = "0.3.0"
 async-compat = "0.2.4"
 openh264 = "0.6.3"
+
+[build-dependencies]
+cargo-emit = "0.2.1"
