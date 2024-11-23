@@ -34,8 +34,5 @@ jobs:
     - name: Build
       run: cargo build --features windows --verbose
 
-    - name: Build ui
-      run: cd ./certs && xmake f --qt=${{ github.workspace }}/qt/ && xmake build && cd ..
-
     - name: Run tests
       run: cargo test --features windows --verbose

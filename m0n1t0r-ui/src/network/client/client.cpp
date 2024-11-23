@@ -43,16 +43,17 @@ void Client::getList() {
     auto array = object["body"].toArray();
     for (auto value : array) {
       auto system_info = value.toObject()["system_info"].toObject();
-      auto detail =
-          ret.emplace_back(value.toObject()["addr"].toString(),
-                           value.toObject()["version"].toString(),
-                           value.toObject()["target_platform"].toString(),
-                           system_info["name"].toString(),
-                           system_info["kernel_version"].toString(),
-                           system_info["long_os_version"].toString(),
-                           system_info["distribution_id"].toString(),
-                           system_info["host_name"].toString(),
-                           system_info["cpu_arch"].toString());
+      Common::ClientDetail detail = {
+          value.toObject()["addr"].toString(),
+          value.toObject()["version"].toString(),
+          value.toObject()["target_platform"].toString(),
+          system_info["name"].toString(),
+          system_info["kernel_version"].toString(),
+          system_info["long_os_version"].toString(),
+          system_info["distribution_id"].toString(),
+          system_info["host_name"].toString(),
+          system_info["cpu_arch"].toString()};
+      ret.emplace_back(detail);
     }
 
     emit getListFinished(ret);

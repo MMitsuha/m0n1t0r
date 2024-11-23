@@ -37,7 +37,7 @@ jobs:
       run: cargo build --verbose
 
     - name: Build ui
-      run: cd ./certs && xmake f --qt=${{ github.workspace }}/qt/ && xmake build && cd ..
+      run: cd ./m0n1t0r-ui && xmake f --qt=${{ github.workspace }}/qt/ -y && xmake build -y -v && cd ..
 
     - name: Run tests
       run: cargo test --verbose
