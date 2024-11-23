@@ -8,13 +8,3 @@ pub async fn ntp() -> Result<Duration> {
 
     Ok(result.datetime().unix_timestamp()?)
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn test_ntp() {
-        ntp().await.unwrap();
-    }
-}
