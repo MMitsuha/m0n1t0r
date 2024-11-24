@@ -45,7 +45,7 @@ pub async fn get(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: Path<SocketAddr>,
 ) -> WebResult<impl Responder> {
-    let lock_map = data.read().await;
+    let lock_map = &data.read().await.map;
     let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
     let lock_obj = server.read().await;
@@ -71,7 +71,7 @@ pub mod update {
         path: Path<(SocketAddr, Url)>,
     ) -> WebResult<impl Responder> {
         let (addr, url) = path.into_inner();
-        let lock_map = data.read().await;
+        let lock_map = &data.read().await.map;
         let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
         let lock_obj = server.read().await;

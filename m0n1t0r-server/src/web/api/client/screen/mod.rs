@@ -25,7 +25,7 @@ pub async fn get(
     body: Payload,
 ) -> WebResult<impl Responder> {
     let addr = path.into_inner();
-    let lock_map = data.read().await;
+    let lock_map = &data.read().await.map;
     let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
     let lock_obj = server.read().await;
@@ -33,7 +33,7 @@ pub async fn get(
     let agent = client.get_screen_agent().await?;
     let canceller = lock_obj.get_canceller();
     drop(lock_obj);
-    drop(lock_map);
+    
 
     if agent.availability().await? == false {
         return Err(Error::UnsupportedError);

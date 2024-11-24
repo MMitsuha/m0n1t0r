@@ -3,6 +3,7 @@
 
 #include "model/overview_model.h"
 #include "network/client.h"
+#include "network/ip.h"
 #include <QWidget>
 
 namespace Ui {
@@ -24,7 +25,7 @@ private:
   Ui::ClientTab *ui;
   Model::Overview *m_overview;
   Network::Client *u_client;
-  QTimer *timer;
+  Network::GeoIp *u_geoip;
 };
 } // namespace Widget
 

@@ -21,7 +21,7 @@ pub async fn get(
     body: Payload,
 ) -> WebResult<impl Responder> {
     let (addr, command) = path.into_inner();
-    let lock_map = data.read().await;
+    let lock_map = &data.read().await.map;
     let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
     let lock_obj = server.read().await;
@@ -29,7 +29,6 @@ pub async fn get(
     let agent = client.get_process_agent().await?;
     let canceller = lock_obj.get_canceller();
     drop(lock_obj);
-    drop(lock_map);
 
     let (stdin_tx, stdout_rx, stderr_rx) = agent.interactive(command).await?;
     let mut stdin_tx = stdin_tx.into_inner().await?;

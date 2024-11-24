@@ -12,16 +12,17 @@ use crate::{
 };
 use actix_web::{
     get,
-    web::{Data, Json},
-    Responder,
+    web::{Data, Json, Payload},
+    HttpRequest, Responder,
 };
-use m0n1t0r_common::client::Client as _;
+use actix_ws::Message;
+use m0n1t0r_common::client::Client;
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::{select, sync::RwLock, task};
 
 #[get("")]
 pub async fn get(data: Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder> {
-    let lock_map = data.read().await;
+    let lock_map = &data.read().await.map;
     let mut details = Vec::new();
 
     for (addr, server) in lock_map.iter() {
@@ -40,4 +41,35 @@ pub async fn get(data: Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder
     }
 
     Ok(Json(Response::success(details)?))
+}
+
+pub mod notify {
+    use super::*;
+
+    #[get("/notify")]
+    pub async fn get(
+        data: Data<Arc<RwLock<ServerMap>>>,
+        req: HttpRequest,
+        body: Payload,
+    ) -> WebResult<impl Responder> {
+        let lock_map = &data.read().await;
+        let mut rx = lock_map.notify_rx.resubscribe();
+        let (response, mut session, mut stream) = actix_ws::handle(&req, body)?;
+
+        task::spawn_local(async move {
+            loop {
+                select! {
+                    Some(msg) = stream.recv() => match msg? {
+                        Message::Ping(bytes) => session.pong(&bytes).await?,
+                        Message::Close(_) => break,
+                        _ => {}
+                    },
+                    event = rx.recv() => session.text(serde_json::to_string(&event?)?).await?,
+                }
+            }
+            session.close(None).await?;
+            Ok::<_, anyhow::Error>(())
+        });
+        Ok(response)
+    }
 }

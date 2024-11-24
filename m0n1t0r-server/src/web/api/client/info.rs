@@ -19,7 +19,7 @@ pub mod system {
         data: Data<Arc<RwLock<ServerMap>>>,
         addr: Path<SocketAddr>,
     ) -> WebResult<impl Responder> {
-        let lock_map = data.read().await;
+        let lock_map = &data.read().await.map;
         let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
         let lock_obj = server.read().await;

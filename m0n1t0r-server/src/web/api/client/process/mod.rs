@@ -28,14 +28,14 @@ pub async fn get(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: Path<SocketAddr>,
 ) -> WebResult<impl Responder> {
-    let lock_map = data.read().await;
+    let lock_map = &data.read().await.map;
     let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
     let agent = client.get_process_agent().await?;
     drop(lock_obj);
-    drop(lock_map);
+    
 
     Ok(Json(Response::success(agent.list().await?)?))
 }
@@ -46,14 +46,14 @@ pub async fn delete(
     path: Path<(SocketAddr, Type, String)>,
 ) -> WebResult<impl Responder> {
     let (addr, r#type, value) = path.into_inner();
-    let lock_map = data.read().await;
+    let lock_map = &data.read().await.map;
     let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
     let agent = client.get_process_agent().await?;
     drop(lock_obj);
-    drop(lock_map);
+    
 
     let processes = match r#type {
         Type::Pid => agent.kill_by_pid(value.parse()?).await,

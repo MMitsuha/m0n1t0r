@@ -1,11 +1,13 @@
-#ifndef CLIENT_1_H
-#define CLIENT_1_H
+#ifndef CLIENT_H
+#define CLIENT_H
 
 #include "common/client.h"
 #include <QMap>
+#include <QTimer>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequestFactory>
 #include <QtNetwork/QRestAccessManager>
+#include <QtWebSockets/QtWebSockets>
 
 namespace Network {
 class Client : public QObject {
@@ -15,20 +17,29 @@ public:
   explicit Client(QObject *parent = 0);
   ~Client();
 
-  void setBaseUrl(const QUrl &url);
-
 public Q_SLOTS:
-  void getList();
+  Client *fetchList();
+  Client *subscribeNotification();
+  Client *setBaseUrl(const QUrl &url);
 
 Q_SIGNALS:
-  void getListFinished(QVector<Common::ClientDetail> list);
-  void getListError(QString message);
+  void fetchListError(QString message);
+  void receiveNotificationError(QString message);
+  void connected(Common::ClientDetail detail);
+  void disconnected(QString addr);
 
 private:
-  QNetworkAccessManager *n_manager;
-  QRestAccessManager *r_manager;
+  QRestAccessManager *rest_manager;
   QNetworkRequestFactory *factory;
+  QWebSocket *web_socket;
+
+  std::tuple<bool, QJsonValue>
+  isRequestSucceed(QRestReply &reply, void (Client::*signal)(QString));
+  void parseClientDetail(QJsonObject object);
+
+private Q_SLOTS:
+  void onWebSocketTextMessageReceived(QString message);
 };
 } // namespace Network
 
-#endif // CLIENT_1_H
+#endif // CLIENT_H

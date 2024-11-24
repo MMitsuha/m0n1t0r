@@ -1,5 +1,5 @@
-#ifndef __CLIENT_H__
-#define __CLIENT_H__
+#ifndef __COMMON_CLIENT_H__
+#define __COMMON_CLIENT_H__
 
 #include <QString>
 
@@ -17,4 +17,4 @@ struct ClientDetail {
 };
 } // namespace Common
 
-#endif // __CLIENT_H__
+#endif // __COMMON_CLIENT_H__

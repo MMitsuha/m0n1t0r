@@ -1,5 +1,3 @@
-pub type ServerMap = HashMap<SocketAddr, Arc<RwLock<ServerObj>>>;
-
 #[cfg(debug_assertions)]
 use crate::server;
 
@@ -19,15 +17,45 @@ use remoc::{
     Cfg, Connect,
 };
 use rustls_pki_types::{pem::PemObject as _, CertificateDer, PrivateKeyDer};
+use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, net::SocketAddr, path::PathBuf, sync::Arc};
 use tokio::{
     io,
     net::{TcpListener, TcpStream},
     select,
-    sync::RwLock,
+    sync::{broadcast, RwLock},
 };
 use tokio_rustls::{server::TlsStream, TlsAcceptor};
 use tokio_util::sync::CancellationToken;
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub enum ConnectEventEnum {
+    Connect,
+    Disconnect,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct ConnectEvent {
+    event: ConnectEventEnum,
+    addr: SocketAddr,
+}
+
+pub struct ServerMap {
+    pub map: HashMap<SocketAddr, Arc<RwLock<ServerObj>>>,
+    notify_tx: broadcast::Sender<ConnectEvent>,
+    pub notify_rx: broadcast::Receiver<ConnectEvent>,
+}
+
+impl ServerMap {
+    pub fn new() -> Self {
+        let (notify_tx, notify_rx) = broadcast::channel(16);
+        Self {
+            map: HashMap::new(),
+            notify_tx,
+            notify_rx,
+        }
+    }
+}
 
 pub struct Config {
     addr: SocketAddr,
@@ -84,13 +112,14 @@ async fn server_task(
     addr: SocketAddr,
     server_server: ServerServerSharedMut<ServerObj>,
     server_map: Arc<RwLock<ServerMap>>,
-) {
+) -> Result<()> {
     select! {
         _ = server_server.serve(true) => canceller.cancel(),
         _ = canceller.cancelled() => {},
     };
 
-    match server_map.write().await.remove(&addr) {
+    let mut lock_map = server_map.write().await;
+    match lock_map.map.remove(&addr) {
         Some(_server) => {
             info!("{}: disconnected", addr);
         }
@@ -98,6 +127,12 @@ async fn server_task(
             warn!("{}: disconnected unexpectedly", addr);
         }
     }
+    lock_map.notify_tx.send(ConnectEvent {
+        event: ConnectEventEnum::Disconnect,
+        addr,
+    })?;
+    drop(lock_map);
+    Ok(())
 }
 
 pub async fn accept(
@@ -126,10 +161,15 @@ pub async fn accept(
     server.write().await.initialize(client_client);
     #[cfg(debug_assertions)]
     server::debug::run(server.clone()).await?;
-    server_map.write().await.insert(addr, server);
+    let mut lock_map = server_map.write().await;
+    lock_map.map.insert(addr, server);
+    lock_map.notify_tx.send(ConnectEvent {
+        event: ConnectEventEnum::Connect,
+        addr,
+    })?;
+    drop(lock_map);
     guard.disarm();
     info!("{}: connected", addr);
-
     Ok(())
 }
 

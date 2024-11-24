@@ -49,7 +49,7 @@ pub mod pass {
         addr: Path<SocketAddr>,
         user: Query<User>,
     ) -> WebResult<impl Responder> {
-        let lock_map = data.read().await;
+        let lock_map = &data.read().await.map;
         let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
         let lock_obj = server.read().await;
@@ -57,7 +57,7 @@ pub mod pass {
         let agent = Arc::new(client.get_proxy_agent().await?);
         let canceller = lock_obj.get_canceller();
         drop(lock_obj);
-        drop(lock_map);
+        
 
         let auth = Arc::new(UserKeyAuth::new(&user.name, &user.password));
         let listener = Server::bind("0.0.0.0:0".parse()?, auth).await?;
@@ -89,7 +89,7 @@ pub mod noauth {
         data: Data<Arc<RwLock<ServerMap>>>,
         addr: Path<SocketAddr>,
     ) -> WebResult<impl Responder> {
-        let lock_map = data.read().await;
+        let lock_map = &data.read().await.map;
         let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
         let lock_obj = server.read().await;
@@ -97,7 +97,7 @@ pub mod noauth {
         let agent = Arc::new(client.get_proxy_agent().await?);
         let canceller = lock_obj.get_canceller();
         drop(lock_obj);
-        drop(lock_map);
+        
 
         let auth = Arc::new(NoAuth::default());
         let listener = Server::bind("0.0.0.0:0".parse()?, auth).await?;

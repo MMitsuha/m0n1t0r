@@ -7,52 +7,99 @@
 
 namespace Network {
 Client::Client(QObject *parent) : QObject(parent) {
-  n_manager = new QNetworkAccessManager(this);
-  r_manager = new QRestAccessManager(n_manager, this);
+  rest_manager = new QRestAccessManager(new QNetworkAccessManager(this), this);
   factory = new QNetworkRequestFactory();
+  web_socket =
+      new QWebSocket(QString(), QWebSocketProtocol::VersionLatest, this);
+  auto reportError = [this](QString message) {
+    QMessageBox::critical(qobject_cast<QWidget *>(this), tr("Error"), message);
+  };
+
+  connect(this, &Network::Client::fetchListError, this, reportError);
+  connect(this, &Network::Client::receiveNotificationError, this, reportError);
+  connect(web_socket, &QWebSocket::textMessageReceived, this,
+          &Network::Client::onWebSocketTextMessageReceived);
 }
 
 Client::~Client() {}
 
-void Client::setBaseUrl(const QUrl &url) { factory->setBaseUrl(url); }
+Client *Client::setBaseUrl(const QUrl &url) {
+  factory->setBaseUrl(url.resolved(QUrl("client")));
+  return this;
+}
 
-void Client::getList() {
+Client *Client::fetchList() {
   auto request = factory->createRequest();
-  r_manager->get(request, this, [this](QRestReply &reply) {
-    if (reply.isSuccess() == false) {
-      emit getListError(reply.errorString());
+  rest_manager->get(request, this, [this](QRestReply &reply) {
+    auto [succeed, body] = isRequestSucceed(reply, &Client::fetchListError);
+    if (succeed == false) {
       return;
     }
 
-    auto doc = reply.readJson();
-    if (doc.has_value() == false) {
-      emit getListError(tr("Invalid JSON"));
-      return;
-    }
-
-    auto object = doc->object();
-    if (object["code"].toInt() != 0) {
-      emit getListError(object["body"].toString());
-      return;
-    }
-
-    QVector<Common::ClientDetail> ret;
-    auto array = object["body"].toArray();
+    auto array = body.toArray();
     for (auto value : array) {
-      auto system_info = value.toObject()["system_info"].toObject();
-      Common::ClientDetail detail = {
-          value.toObject()["addr"].toString(),
-          value.toObject()["version"].toString(),
-          value.toObject()["target_platform"].toString(),
-          system_info["name"].toString(),
-          system_info["kernel_version"].toString(),
-          system_info["long_os_version"].toString(),
-          system_info["distribution_id"].toString(),
-          system_info["host_name"].toString(),
-          system_info["cpu_arch"].toString()};
-      ret.emplace_back(detail);
+      parseClientDetail(value.toObject());
     }
-    emit getListFinished(ret);
   });
+  return this;
+}
+
+std::tuple<bool, QJsonValue>
+Client::isRequestSucceed(QRestReply &reply, void (Client::*signal)(QString)) {
+  if (reply.isSuccess() == false) {
+    emit(this->*signal)(reply.errorString());
+    return std::make_tuple(false, QJsonObject());
+  }
+
+  auto doc = reply.readJson();
+  if (doc.has_value() == false) {
+    emit(this->*signal)(tr("Invalid JSON"));
+    return std::make_tuple(false, QJsonObject());
+  }
+
+  auto object = doc->object();
+  if (object["code"].toInt() != 0) {
+    emit(this->*signal)(object["body"].toString());
+    return std::make_tuple(false, QJsonObject());
+  }
+  return std::make_tuple(true, object["body"]);
+}
+
+Client *Client::subscribeNotification() {
+  auto url = factory->baseUrl().resolved(QUrl("client/notify"));
+  url.setScheme("ws");
+  web_socket->open(url);
+  return this;
+}
+
+void Client::parseClientDetail(QJsonObject object) {
+  auto system_info = object["system_info"].toObject();
+  Common::ClientDetail detail = {object["addr"].toString(),
+                                 object["version"].toString(),
+                                 object["target_platform"].toString(),
+                                 system_info["name"].toString(),
+                                 system_info["kernel_version"].toString(),
+                                 system_info["long_os_version"].toString(),
+                                 system_info["distribution_id"].toString(),
+                                 system_info["host_name"].toString(),
+                                 system_info["cpu_arch"].toString()};
+  emit connected(detail);
+}
+
+void Client::onWebSocketTextMessageReceived(QString message) {
+  auto object = QJsonDocument::fromJson(message.toUtf8()).object();
+  if (object["event"].toString() == "Connect") {
+    auto addr = object["addr"].toString();
+    auto request = factory->createRequest(addr);
+    rest_manager->get(request, this, [this](QRestReply &reply) {
+      auto [succeed, body] = isRequestSucceed(reply, &Client::fetchListError);
+      if (succeed == false) {
+        return;
+      }
+      parseClientDetail(body.toObject());
+    });
+  } else if (object["event"].toString() == "Disconnect") {
+    emit disconnected(object["addr"].toString());
+  }
 }
 } // namespace Network

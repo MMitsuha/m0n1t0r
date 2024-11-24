@@ -18,14 +18,14 @@ pub async fn get(
     path: Path<(SocketAddr, Url, PathBuf)>,
 ) -> WebResult<impl Responder> {
     let (addr, url, path) = path.into_inner();
-    let lock_map = data.read().await;
+    let lock_map = &data.read().await.map;
     let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
     let agent = client.get_network_agent().await?;
     drop(lock_obj);
-    drop(lock_map);
+    
 
     Ok(Json(Response::success(agent.download(url, path).await?)?))
 }

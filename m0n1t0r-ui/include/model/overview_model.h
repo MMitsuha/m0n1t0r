@@ -2,6 +2,7 @@
 #define __OVERVIEW_MODEL_H__
 
 #include "common/client.h"
+#include "common/ip.h"
 #include <QAbstractTableModel>
 #include <QArrayData>
 
@@ -11,11 +12,13 @@ class Overview : public QAbstractTableModel {
 
 public:
   const QVector<QString> header_data = {
-      tr("Address"),         tr("Version"),
-      tr("Target Platform"), tr("Name"),
-      tr("Kernel Version"),  tr("Long OS Version"),
-      tr("Distribution ID"), tr("Host Name"),
-      tr("CPU Architecture")};
+      tr("Address"),          tr("Version"),
+      tr("Target Platform"),  tr("Name"),
+      tr("Kernel Version"),   tr("Long OS Version"),
+      tr("Distribution ID"),  tr("Host Name"),
+      tr("CPU Architecture"), tr("Country"),
+      tr("Region"),           tr("ISP"),
+  };
 
   explicit Overview(QObject *parent = nullptr);
   ~Overview();
@@ -30,7 +33,9 @@ public:
   QVector<QVector<QString>> client_list;
 
 public Q_SLOTS:
-  void updateClient(QVector<Common::ClientDetail> list);
+  void onConnect(Common::ClientDetail detail);
+  void onDisconnect(QString addr);
+  void onQueryIpFinished(QString addr, Common::GeoIpDetail detail);
 };
 } // namespace Model
 

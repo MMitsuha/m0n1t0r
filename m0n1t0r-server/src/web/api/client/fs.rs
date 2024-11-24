@@ -26,14 +26,13 @@ pub async fn get(
     path: Path<(SocketAddr, Type, PathBuf)>,
 ) -> WebResult<impl Responder> {
     let (addr, r#type, path) = path.into_inner();
-    let lock_map = data.read().await;
+    let lock_map = &data.read().await.map;
     let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
     let agent = client.get_fs_agent().await?;
     drop(lock_obj);
-    drop(lock_map);
 
     if r#type == Type::Directory {
         Ok(HttpResponse::Ok().json(Response::success(agent.list(path).await?)?))
@@ -48,14 +47,13 @@ pub async fn delete(
     path: Path<(SocketAddr, Type, PathBuf)>,
 ) -> WebResult<impl Responder> {
     let (addr, r#type, path) = path.into_inner();
-    let lock_map = data.read().await;
+    let lock_map = &data.read().await.map;
     let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
     let agent = client.get_fs_agent().await?;
     drop(lock_obj);
-    drop(lock_map);
 
     if r#type == Type::Directory {
         Ok(Json(Response::success(
@@ -73,14 +71,13 @@ pub async fn put(
     payload: Bytes,
 ) -> WebResult<impl Responder> {
     let (addr, r#type, path) = path.into_inner();
-    let lock_map = data.read().await;
+    let lock_map = &data.read().await.map;
     let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
     let agent = client.get_fs_agent().await?;
     drop(lock_obj);
-    drop(lock_map);
 
     if r#type == Type::Directory {
         Ok(Json(Response::success(
@@ -99,14 +96,13 @@ pub async fn head(
     path: Path<(SocketAddr, Type, PathBuf)>,
 ) -> WebResult<impl Responder> {
     let (addr, _, path) = path.into_inner();
-    let lock_map = data.read().await;
+    let lock_map = &data.read().await.map;
     let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
     let agent = client.get_fs_agent().await?;
     drop(lock_obj);
-    drop(lock_map);
 
     Ok(Json(Response::success(agent.file(path).await?)?))
 }

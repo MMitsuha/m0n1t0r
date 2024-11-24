@@ -32,7 +32,7 @@ target("m0n1t0r-ui")
     -- add files with Q_OBJECT meta (only for qt.moc)
     add_files("include/**/*.h")
 
-    add_frameworks("QtNetwork", "QtWidgets", "QtGui", "QtCore")
+    add_frameworks("QtNetwork", "QtWidgets", "QtGui", "QtCore", "QtWebSockets")
 
 
 --
