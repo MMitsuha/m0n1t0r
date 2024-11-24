@@ -18,12 +18,13 @@ public:
   ~ClientTab();
 
 public Q_SLOTS:
-  void connectServer(QString url, QString password);
+  void connectServer(QUrl url, QString password);
 
 private:
   Ui::ClientTab *ui;
-  Model::Overview *overview_model;
+  Model::Overview *m_overview;
   Network::Client *u_client;
+  QTimer *timer;
 };
 } // namespace Widget
 

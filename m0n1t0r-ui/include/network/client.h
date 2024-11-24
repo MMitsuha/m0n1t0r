@@ -22,6 +22,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
   void getListFinished(QVector<Common::ClientDetail> list);
+  void getListError(QString message);
 
 private:
   QNetworkAccessManager *n_manager;

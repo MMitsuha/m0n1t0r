@@ -20,22 +20,19 @@ void Client::getList() {
   auto request = factory->createRequest();
   r_manager->get(request, this, [this](QRestReply &reply) {
     if (reply.isSuccess() == false) {
-      QMessageBox::critical(qobject_cast<QWidget *>(parent()),
-                            tr("Network::Client Error"), tr("Request failed"));
+      emit getListError(reply.errorString());
       return;
     }
 
     auto doc = reply.readJson();
     if (doc.has_value() == false) {
-      QMessageBox::critical(qobject_cast<QWidget *>(parent()),
-                            tr("Network::Client Error"), tr("Invalid JSON"));
+      emit getListError(tr("Invalid JSON"));
       return;
     }
 
     auto object = doc->object();
     if (object["code"].toInt() != 0) {
-      QMessageBox::critical(qobject_cast<QWidget *>(parent()),
-                            "Network::Client Error", object["body"].toString());
+      emit getListError(object["body"].toString());
       return;
     }
 
@@ -55,7 +52,6 @@ void Client::getList() {
           system_info["cpu_arch"].toString()};
       ret.emplace_back(detail);
     }
-
     emit getListFinished(ret);
   });
 }

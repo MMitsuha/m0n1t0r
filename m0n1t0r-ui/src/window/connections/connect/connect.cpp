@@ -10,7 +10,7 @@ Connect::Connect(QWidget *parent) : QDialog(parent), ui(new Ui::Connect) {
 Connect::~Connect() { delete ui; }
 
 void Connect::on_pushButton_connect_clicked() {
-  emit connectServer(ui->lineEdit_address->text(),
+  emit connectServer(QUrl(ui->lineEdit_address->text()),
                      ui->lineEdit_password->text());
   close();
 }

@@ -2,6 +2,7 @@
 #define CONNECT_H
 
 #include <QDialog>
+#include <QUrl>
 
 namespace Ui {
 class Connect;
@@ -16,7 +17,7 @@ public:
   ~Connect();
 
 Q_SIGNALS:
-  void connectServer(QString url, QString password);
+  void connectServer(QUrl url, QString password);
 
 private:
   Ui::Connect *ui;
