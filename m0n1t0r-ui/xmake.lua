@@ -25,6 +25,7 @@ target("m0n1t0r-ui")
     add_packages("fmt~Dynamic")
     add_packages("cli~Dynamic")
     add_packages("boost~Dynamic")
+    add_packages("openh264~Dynamic")
 
     -- add qt ui file
     add_files("src/**/*.ui")

@@ -3,6 +3,8 @@
 
 #include "common/client.h"
 #include "common/ip.h"
+#include "network/client.h"
+#include "network/ip.h"
 #include <QAbstractTableModel>
 #include <QArrayData>
 
@@ -33,9 +35,17 @@ public:
   QVector<QVector<QString>> client_list;
 
 public Q_SLOTS:
+  void connectServer(QUrl url, QString password);
+
+private:
+  Network::Client *u_client;
+  Network::GeoIp *u_geoip;
+
+private Q_SLOTS:
   void onConnect(Common::ClientDetail detail);
   void onDisconnect(QString addr);
   void onQueryIpFinished(QString addr, Common::GeoIpDetail detail);
+  void clear();
 };
 } // namespace Model
 

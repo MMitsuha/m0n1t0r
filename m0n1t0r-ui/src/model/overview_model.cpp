@@ -1,7 +1,21 @@
 #include "model/overview_model.h"
+#include <QUrl>
 
 namespace Model {
-Overview::Overview(QObject *parent) : QAbstractTableModel(parent) {}
+Overview::Overview(QObject *parent) : QAbstractTableModel(parent) {
+  u_client = new Network::Client(this);
+  u_geoip = new Network::GeoIp(this);
+
+  connect(u_client, &Network::Client::connected, this,
+          &Model::Overview::onConnect);
+  connect(
+      u_client, &Network::Client::connected, this,
+      [this](Common::ClientDetail detail) { u_geoip->queryIp(detail.addr); });
+  connect(u_client, &Network::Client::disconnected, this,
+          &Model::Overview::onDisconnect);
+  connect(u_geoip, &Network::GeoIp::queryIpFinished, this,
+          &Model::Overview::onQueryIpFinished);
+}
 
 Overview::~Overview() {}
 
@@ -69,5 +83,16 @@ void Overview::onQueryIpFinished(QString addr, Common::GeoIpDetail detail) {
       break;
     }
   }
+}
+
+void Overview::clear() {
+  beginResetModel();
+  client_list.clear();
+  endResetModel();
+}
+
+void Overview::connectServer(QUrl url, QString password) {
+  clear();
+  u_client->setBaseUrl(url)->fetchList()->subscribeNotification();
 }
 } // namespace Model

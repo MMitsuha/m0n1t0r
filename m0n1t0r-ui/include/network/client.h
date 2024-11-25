@@ -1,5 +1,5 @@
-#ifndef CLIENT_H
-#define CLIENT_H
+#ifndef NETWORK_CLIENT_H
+#define NETWORK_CLIENT_H
 
 #include "common/client.h"
 #include <QMap>
@@ -42,4 +42,4 @@ private Q_SLOTS:
 };
 } // namespace Network
 
-#endif // CLIENT_H
+#endif // NETWORK_CLIENT_H

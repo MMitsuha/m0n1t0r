@@ -52,6 +52,9 @@ pub enum Error {
     #[error("unsupported error")]
     UnsupportedError = -11,
 
+    #[error("client denied request error")]
+    ClientDeniedError = -12,
+
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error) = -255,
 }

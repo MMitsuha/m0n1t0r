@@ -40,6 +40,18 @@ impl Options {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone, Copy)]
+pub struct Availability {
+    pub support: bool,
+    pub has_permission: bool,
+}
+
+impl Into<bool> for Availability {
+    fn into(self) -> bool {
+        self.support && self.has_permission
+    }
+}
+
 #[rtc::remote]
 pub trait Agent: Sync {
     async fn record(&self, options: Options) -> AppResult<Receiver<Vec<u8>>> {
@@ -70,13 +82,15 @@ pub trait Agent: Sync {
             loop {
                 let frame = recorder.get_next_frame()?;
                 let stream = match frame {
-                    scap::frame::Frame::BGRA(bgraframe) => {
+                    scap::frame::Frame::BGRA(bgraframe)
+                        if bgraframe.height * bgraframe.width != 0 =>
+                    {
                         encoder.encode(&YUVBuffer::from_rgb_source(BgraSliceU8::new(
                             &bgraframe.data,
                             (bgraframe.width.try_into()?, bgraframe.height.try_into()?),
                         )))?
                     }
-                    _ => unimplemented!(),
+                    _ => continue,
                 };
                 local_tx.send(stream.to_vec())?;
             }
@@ -98,7 +112,10 @@ pub trait Agent: Sync {
         Ok(scap::request_permission())
     }
 
-    async fn availability(&self) -> AppResult<bool> {
-        Ok(scap::is_supported() && scap::has_permission())
+    async fn availability(&self) -> AppResult<Availability> {
+        Ok(Availability {
+            support: scap::is_supported(),
+            has_permission: scap::has_permission(),
+        })
     }
 }

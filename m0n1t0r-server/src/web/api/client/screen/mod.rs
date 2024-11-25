@@ -1,10 +1,10 @@
 use crate::{
-    web::{Error, Result as WebResult},
+    web::{Error, Response, Result as WebResult},
     ServerMap,
 };
 use actix_web::{
-    get,
-    web::{Data, Path, Payload},
+    get, head, put,
+    web::{Data, Json, Path, Payload},
     HttpRequest, Responder,
 };
 use actix_ws::{Message, Session};
@@ -41,13 +41,13 @@ pub async fn get(
     let canceller = lock_obj.get_canceller();
     drop(lock_obj);
 
-    if agent.availability().await? == false {
+    if Into::<bool>::into(agent.availability().await?) == false {
         return Err(Error::UnsupportedError);
     }
 
     let mut rx = agent
         .record(Options {
-            fps: 20,
+            fps: 120,
             show_cursor: true,
             show_highlight: true,
             output_resolution: Resolution::_720p,
@@ -92,4 +92,50 @@ async fn process_frame<I: Instant>(
     Ok(())
 }
 
-// TODO: Add permission check
+#[put("")]
+pub async fn put(
+    data: Data<Arc<RwLock<ServerMap>>>,
+    path: Path<SocketAddr>,
+) -> WebResult<impl Responder> {
+    let addr = path.into_inner();
+    let lock_map = &data.read().await.map;
+    let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
+
+    let lock_obj = server.read().await;
+    let client = lock_obj.get_client()?;
+    let agent = client.get_screen_agent().await?;
+    drop(lock_obj);
+
+    let availability = agent.availability().await?;
+
+    if Into::<bool>::into(availability.clone()) == true {
+        return Ok(Json(Response::success(())?));
+    }
+
+    if availability.support == false {
+        return Err(Error::UnsupportedError);
+    }
+
+    if agent.request_permission().await? == false {
+        return Err(Error::ClientDeniedError);
+    }
+
+    Ok(Json(Response::success(())?))
+}
+
+#[head("")]
+pub async fn head(
+    data: Data<Arc<RwLock<ServerMap>>>,
+    path: Path<SocketAddr>,
+) -> WebResult<impl Responder> {
+    let addr = path.into_inner();
+    let lock_map = &data.read().await.map;
+    let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
+
+    let lock_obj = server.read().await;
+    let client = lock_obj.get_client()?;
+    let agent = client.get_screen_agent().await?;
+    drop(lock_obj);
+
+    Ok(Json(Response::success(agent.availability().await?)?))
+}

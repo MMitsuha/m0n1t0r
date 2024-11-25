@@ -57,7 +57,6 @@ pub mod pass {
         let agent = Arc::new(client.get_proxy_agent().await?);
         let canceller = lock_obj.get_canceller();
         drop(lock_obj);
-        
 
         let auth = Arc::new(UserKeyAuth::new(&user.name, &user.password));
         let listener = Server::bind("0.0.0.0:0".parse()?, auth).await?;
@@ -97,7 +96,6 @@ pub mod noauth {
         let agent = Arc::new(client.get_proxy_agent().await?);
         let canceller = lock_obj.get_canceller();
         drop(lock_obj);
-        
 
         let auth = Arc::new(NoAuth::default());
         let listener = Server::bind("0.0.0.0:0".parse()?, auth).await?;

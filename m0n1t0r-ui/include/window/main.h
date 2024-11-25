@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "widget/client_tab.h"
+#include "widget/main_tab.h"
 #include "window/connect.h"
 #include <QMainWindow>
 #include <QtNetwork/QNetworkAccessManager>
@@ -21,7 +21,7 @@ public:
 private:
   Ui::Main *ui;
   Connect *w_connect;
-  Widget::ClientTab *w_client;
+  Widget::MainTab *w_tab;
 
 private Q_SLOTS:
   void initialize();

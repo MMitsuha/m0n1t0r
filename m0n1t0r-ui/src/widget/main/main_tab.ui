@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ClientTab</class>
- <widget class="QWidget" name="ClientTab">
+ <class>MainTab</class>
+ <widget class="QWidget" name="MainTab">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -36,9 +36,9 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tabFiles">
+     <widget class="QWidget" name="tabPanel">
       <attribute name="title">
-       <string>Files</string>
+       <string>Panel</string>
       </attribute>
      </widget>
     </widget>

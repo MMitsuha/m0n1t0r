@@ -57,6 +57,7 @@ pub mod notify {
         let (response, mut session, mut stream) = actix_ws::handle(&req, body)?;
 
         task::spawn_local(async move {
+            rx.mark_unchanged();
             loop {
                 select! {
                     Some(msg) = stream.recv() => match msg? {

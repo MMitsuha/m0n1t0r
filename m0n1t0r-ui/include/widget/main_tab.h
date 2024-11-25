@@ -2,30 +2,31 @@
 #define CLIENT_TAB_H
 
 #include "model/overview_model.h"
-#include "network/client.h"
-#include "network/ip.h"
+#include "window/client.h"
+#include <QVector>
 #include <QWidget>
 
 namespace Ui {
-class ClientTab;
+class MainTab;
 }
 
 namespace Widget {
-class ClientTab : public QWidget {
+class MainTab : public QWidget {
   Q_OBJECT
 
 public:
-  explicit ClientTab(QWidget *parent = nullptr);
-  ~ClientTab();
+  explicit MainTab(QWidget *parent = nullptr);
+  ~MainTab();
 
 public Q_SLOTS:
   void connectServer(QUrl url, QString password);
+  void on_tableView_overview_doubleClicked(const QModelIndex &index);
 
 private:
-  Ui::ClientTab *ui;
+  Ui::MainTab *ui;
   Model::Overview *m_overview;
-  Network::Client *u_client;
-  Network::GeoIp *u_geoip;
+  QVector<Window::Client *> w_clients;
+  QUrl base_url;
 };
 } // namespace Widget
 

@@ -58,6 +58,7 @@ add_dynamic_require("openssl")
 add_dynamic_require("cpr")
 add_dynamic_require("boost", { configs = { coroutine = true } })
 add_dynamic_require("magic_enum")
+add_dynamic_require("openh264")
 
 -- Used in server
 add_dynamic_require("cli")
