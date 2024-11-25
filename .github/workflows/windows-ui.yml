@@ -1,0 +1,33 @@
+name: Build UI on Windows
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: xmake-io/github-action-setup-xmake@v1
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - uses: TheMrMilchmann/setup-msvc-dev@v3
+      with:
+        arch: x64
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: 6.8.0
+        dir: ${{ github.workspace }}/qt/
+        modules: 'qtwebsockets'
+
+    - name: Build ui
+      run: cd ./m0n1t0r-ui && xmake f --qt=${{ github.workspace }}/qt/ --toolchain=msvc -y && xmake build -y -v && cd ..

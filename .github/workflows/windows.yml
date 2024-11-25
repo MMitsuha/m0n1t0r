@@ -25,18 +25,8 @@ jobs:
     - name: Install cxxbridge
       run: cargo install cxxbridge-cmd
 
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: 6.8.0
-        dir: ${{ github.workspace }}/qt/
-        modules: 'qtwebsockets'
-
     - name: Build
       run: cargo build --features windows --verbose
-
-    - name: Build ui
-      run: cd ./m0n1t0r-ui && xmake f --qt=${{ github.workspace }}/qt/ -y && xmake build -y -v && cd ..
 
     - name: Run tests
       run: cargo test --features windows --verbose

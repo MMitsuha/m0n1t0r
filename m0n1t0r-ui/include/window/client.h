@@ -1,8 +1,8 @@
 #ifndef WINDOW_CLIENT_H
 #define WINDOW_CLIENT_H
 
+#include "widget/client_tab.h"
 #include <QDialog>
-#include <QUrl>
 
 namespace Ui {
 class Client;
@@ -13,12 +13,12 @@ class Client : public QDialog {
   Q_OBJECT
 
 public:
-  explicit Client(QUrl base_url, QWidget *parent = nullptr);
+  explicit Client(QUrl base_url, QString password, QWidget *parent = nullptr);
   ~Client();
 
 private:
   Ui::Client *ui;
-  QUrl base_url;
+  Widget::ClientTab *w_tab;
 };
 } // namespace Window
 

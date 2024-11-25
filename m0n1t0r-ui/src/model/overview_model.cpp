@@ -1,9 +1,10 @@
 #include "model/overview_model.h"
+#include <QMessageBox>
 #include <QUrl>
 
 namespace Model {
 Overview::Overview(QObject *parent) : QAbstractTableModel(parent) {
-  u_client = new Network::Client(this);
+  u_client = new Network::Client({}, this);
   u_geoip = new Network::GeoIp(this);
 
   connect(u_client, &Network::Client::connected, this,
@@ -11,6 +12,11 @@ Overview::Overview(QObject *parent) : QAbstractTableModel(parent) {
   connect(
       u_client, &Network::Client::connected, this,
       [this](Common::ClientDetail detail) { u_geoip->queryIp(detail.addr); });
+  connect(u_client, &Network::Client::disconnectedServer, this, [this]() {
+    clear();
+    QMessageBox::critical(qobject_cast<QWidget *>(this), tr("Error"),
+                          tr("Server Disconnected"));
+  });
   connect(u_client, &Network::Client::disconnected, this,
           &Model::Overview::onDisconnect);
   connect(u_geoip, &Network::GeoIp::queryIpFinished, this,

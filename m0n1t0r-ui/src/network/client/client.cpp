@@ -6,7 +6,7 @@
 #include <QRestReply>
 
 namespace Network {
-Client::Client(QObject *parent) : QObject(parent) {
+Client::Client(QString _addr, QObject *parent) : QObject(parent), addr(_addr) {
   rest_manager = new QRestAccessManager(new QNetworkAccessManager(this), this);
   factory = new QNetworkRequestFactory();
   web_socket =
@@ -19,6 +19,8 @@ Client::Client(QObject *parent) : QObject(parent) {
   connect(this, &Network::Client::receiveNotificationError, this, reportError);
   connect(web_socket, &QWebSocket::textMessageReceived, this,
           &Network::Client::onWebSocketTextMessageReceived);
+  connect(web_socket, &QWebSocket::disconnected, this,
+          &Network::Client::disconnectedServer);
 }
 
 Client::~Client() {}
@@ -86,6 +88,18 @@ void Client::parseClientDetail(QJsonObject object) {
   emit connected(detail);
 }
 
+void Client::parseFileDetail(QJsonArray array) {
+  for (auto value : array) {
+    auto object = value.toObject();
+    Common::FileDetail detail = {
+        object["is_dir"].toBool(),  object["is_symlink"].toBool(),
+        object["name"].toString(),  object["path"].toString(),
+        object["size"].toInteger(),
+    };
+    emit receiveFileDetail(detail);
+  }
+}
+
 void Client::onWebSocketTextMessageReceived(QString message) {
   auto object = QJsonDocument::fromJson(message.toUtf8()).object();
   if (object["event"].toString() == "Connect") {
@@ -101,5 +115,20 @@ void Client::onWebSocketTextMessageReceived(QString message) {
   } else if (object["event"].toString() == "Disconnect") {
     emit disconnected(object["addr"].toString());
   }
+}
+
+Client *Client::enumerateDirectory(QString path) {
+  qDebug() << QString("%1/fs/dir/%2").arg(addr, QUrl(path).toEncoded());
+  auto request = factory->createRequest(
+      QString("%1/fs/dir/%2").arg(addr, QUrl(path).toEncoded()));
+  rest_manager->get(request, this, [this](QRestReply &reply) {
+    auto [succeed, body] = isRequestSucceed(reply, &Client::fetchListError);
+    if (succeed == false) {
+      return;
+    }
+
+    parseFileDetail(body.toArray());
+  });
+  return this;
 }
 } // namespace Network

@@ -1,5 +1,5 @@
-#ifndef CLIENT_TAB_H
-#define CLIENT_TAB_H
+#ifndef MAIN_TAB_H
+#define MAIN_TAB_H
 
 #include "model/overview_model.h"
 #include "window/client.h"
@@ -27,7 +27,8 @@ private:
   Model::Overview *m_overview;
   QVector<Window::Client *> w_clients;
   QUrl base_url;
+  QString password;
 };
 } // namespace Widget
 
-#endif // CLIENT_TAB_H
+#endif // MAIN_TAB_H

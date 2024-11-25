@@ -6,13 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>648</width>
-    <height>440</height>
+    <width>873</width>
+    <height>526</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>client/unknown</string>
   </property>
+  <layout class="QGridLayout" name="gridLayout"/>
  </widget>
  <resources/>
  <connections/>
