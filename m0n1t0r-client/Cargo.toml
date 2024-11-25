@@ -17,23 +17,23 @@ macos = []
 
 [dependencies]
 actix-web = { version = "4.9.0", features = ["secure-cookies"] }
-anyhow = "1.0.91"
+anyhow = "1.0.93"
 remoc = { version = "0.14.0", features = ["full", "codec-message-pack", "default-codec-message-pack", "rmp-serde"], default-features = false }
-reqwest = { version = "0.12.8", features = ["json"] }
-serde = { version = "1.0.213", features = ["derive"] }
+reqwest = { version = "0.12.9", features = ["json"] }
+serde = { version = "1.0.215", features = ["derive"] }
 strum = { version = "0.26.3", features = ["derive"] }
-thiserror = "1.0.65"
-tokio = { version = "1.41.0", features = ["full"] }
+thiserror = "2.0.3"
+tokio = { version = "1.41.1", features = ["full"] }
 tokio-util = "0.7.12"
 m0n1t0r-common = { path = "../m0n1t0r-common" }
 log = "0.4.22"
-flexi_logger = { version = "0.29.4", features = ["async"] }
+flexi_logger = { version = "0.29.6", features = ["async"] }
 cfg_block = "0.2.0"
-cxx = "1.0"
+cxx = "1.0.131"
 tokio-rustls = { version = "0.26.0", features = ["ring", "logging", "tls12"], default-features = false }
-rustls = { version = "0.23.17", features = ["ring", "log", "logging", "std", "tls12"], default-features = false }
-rustls-pemfile = "2.1.2"
-rustls-pki-types = { version = "1.7.0", features = ["alloc"] }
+rustls = { version = "0.23.18", features = ["ring", "log", "logging", "std", "tls12"], default-features = false }
+rustls-pemfile = "2.2.0"
+rustls-pki-types = { version = "1.10.0", features = ["alloc"] }
 paste = "1.0.15"
 quote = "1.0.37"
 
@@ -42,5 +42,5 @@ winapi = { version = "0.3.9", features = ["winbase"] }
 
 [build-dependencies]
 xmake = { version = "0.2.3", git = "https://github.com/MMitsuha/xmake-rs.git" }
-cxx-build = "1.0"
+cxx-build = "1.0.131"
 cargo-emit = "0.2.1"
