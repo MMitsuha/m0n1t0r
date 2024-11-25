@@ -17,7 +17,7 @@ public:
       tr("Kernel Version"),   tr("Long OS Version"),
       tr("Distribution ID"),  tr("Host Name"),
       tr("CPU Architecture"), tr("Country"),
-      tr("Region"),           tr("ISP"),
+      tr("Region Name"),      tr("ISP"),
   };
 
   explicit Overview(QObject *parent = nullptr);

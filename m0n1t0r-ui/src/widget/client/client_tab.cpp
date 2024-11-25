@@ -19,6 +19,9 @@ ClientTab::ClientTab(QWidget *parent) : QWidget(parent), ui(new Ui::ClientTab) {
 
   connect(u_client, &Network::Client::connected, m_overview,
           &Model::Overview::onConnect);
+  connect(
+      u_client, &Network::Client::connected, this,
+      [this](Common::ClientDetail detail) { u_geoip->queryIp(detail.addr); });
   connect(u_client, &Network::Client::disconnected, m_overview,
           &Model::Overview::onDisconnect);
   connect(u_geoip, &Network::GeoIp::queryIpFinished, m_overview,

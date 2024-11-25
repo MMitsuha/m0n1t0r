@@ -1,15 +1,22 @@
 #include "network/ip.h"
+#include <QMessageBox>
 
 namespace Network {
 GeoIp::GeoIp(QObject *parent) : QObject(parent) {
   rest_manager = new QRestAccessManager(new QNetworkAccessManager(this), this);
   factory = new QNetworkRequestFactory(QUrl("http://ip-api.com/json"));
+  //   auto reportError = [this](QString message) {
+  //     QMessageBox::critical(qobject_cast<QWidget *>(this), tr("Error"),
+  //     message);
+  //   };
+
+  //   connect(this, &Network::GeoIp::queryIpError, this, reportError);
 }
 
 GeoIp::~GeoIp() {}
 
 void GeoIp::queryIp(QString addr) {
-  auto request = factory->createRequest(addr);
+  auto request = factory->createRequest(addr.section(':', 0, 0));
   rest_manager->get(request, this, [this, addr](QRestReply &reply) {
     if (reply.isSuccess() == false) {
       emit queryIpError(tr("Request failed"));

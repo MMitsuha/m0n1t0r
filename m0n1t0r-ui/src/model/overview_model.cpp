@@ -63,7 +63,7 @@ void Overview::onQueryIpFinished(QString addr, Common::GeoIpDetail detail) {
   for (int i = 0; i < client_list.count(); i++) {
     if (client_list[i][0] == addr) {
       client_list[i][9] = detail.country;
-      client_list[i][10] = detail.region;
+      client_list[i][10] = detail.region_name;
       client_list[i][11] = detail.isp;
       emit dataChanged(index(i, 9), index(i, 11));
       break;

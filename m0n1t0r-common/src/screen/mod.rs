@@ -1,4 +1,5 @@
 use crate::Result as AppResult;
+use anyhow::anyhow;
 use openh264::{
     encoder::Encoder,
     formats::{BgraSliceU8, YUVBuffer},
@@ -13,7 +14,7 @@ use scap::{
 };
 use serde::{Deserialize, Serialize};
 use std::thread;
-use tokio::runtime::Builder;
+use tokio::sync::mpsc;
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct Options {
@@ -45,9 +46,23 @@ pub trait Agent: Sync {
         let mut options = options;
         options.output_type = FrameType::BGRAFrame;
         let (mut tx, remote_rx) = lr::channel();
+        let (local_tx, mut local_rx) = mpsc::unbounded_channel();
+
+        tokio::spawn(async move {
+            loop {
+                tx.send(
+                    local_rx
+                        .recv()
+                        .await
+                        .ok_or(anyhow!("local channel closed"))?,
+                )
+                .await?;
+            }
+            #[allow(unreachable_code)]
+            Ok::<_, anyhow::Error>(())
+        });
 
         thread::spawn(move || {
-            let runtime = Builder::new_current_thread().enable_all().build()?;
             let mut recorder = Capturer::build(options.into_scap())?;
             let mut encoder = Encoder::new()?;
 
@@ -63,7 +78,7 @@ pub trait Agent: Sync {
                     }
                     _ => unimplemented!(),
                 };
-                runtime.block_on(tx.send(stream.to_vec()))?;
+                local_tx.send(stream.to_vec())?;
             }
             #[allow(unreachable_code)]
             Ok::<_, anyhow::Error>(())

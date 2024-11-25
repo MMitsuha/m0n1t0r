@@ -7,15 +7,22 @@ use actix_web::{
     web::{Data, Path, Payload},
     HttpRequest, Responder,
 };
-use actix_ws::Message;
-use anyhow::anyhow;
+use actix_ws::{Message, Session};
+use anyhow::{anyhow, Result};
+use libsw::{Instant, StopwatchImpl, Sw};
 use m0n1t0r_common::{
     client::Client,
     screen::{Agent, Options},
 };
 use scap::capturer::Resolution;
+use serde::{Deserialize, Serialize};
 use std::{net::SocketAddr, sync::Arc};
 use tokio::{select, sync::RwLock, task};
+
+#[derive(Serialize, Deserialize)]
+struct FrameDetail {
+    fps: f32,
+}
 
 #[get("")]
 pub async fn get(
@@ -33,7 +40,6 @@ pub async fn get(
     let agent = client.get_screen_agent().await?;
     let canceller = lock_obj.get_canceller();
     drop(lock_obj);
-    
 
     if agent.availability().await? == false {
         return Err(Error::UnsupportedError);
@@ -51,6 +57,8 @@ pub async fn get(
     let (response, mut session, mut stream) = actix_ws::handle(&req, body)?;
 
     task::spawn_local(async move {
+        let mut stopwatch = Sw::new_started();
+
         loop {
             select! {
                 Some(msg) = stream.recv() => match msg? {
@@ -58,7 +66,7 @@ pub async fn get(
                     Message::Close(_) => break,
                     _ => {}
                 },
-                frame = rx.recv() => session.binary(frame?.ok_or(anyhow!("no frame received"))?).await?,
+                frame = rx.recv() => process_frame(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut stopwatch).await?,
                 _ = canceller.cancelled() => break,
             }
         }
@@ -67,3 +75,21 @@ pub async fn get(
     });
     Ok(response)
 }
+
+async fn process_frame<I: Instant>(
+    session: &mut Session,
+    frame: Vec<u8>,
+    stopwatch: &mut StopwatchImpl<I>,
+) -> Result<()> {
+    let elapsed = stopwatch.elapsed();
+    session
+        .text(serde_json::to_string(&FrameDetail {
+            fps: 1f32 / elapsed.as_secs_f32(),
+        })?)
+        .await?;
+    session.binary(frame).await?;
+    stopwatch.reset_in_place();
+    Ok(())
+}
+
+// TODO: Add permission check

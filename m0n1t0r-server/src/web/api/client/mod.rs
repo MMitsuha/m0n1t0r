@@ -53,7 +53,7 @@ pub mod notify {
         body: Payload,
     ) -> WebResult<impl Responder> {
         let lock_map = &data.read().await;
-        let mut rx = lock_map.notify_rx.resubscribe();
+        let mut rx = lock_map.notify_rx.clone();
         let (response, mut session, mut stream) = actix_ws::handle(&req, body)?;
 
         task::spawn_local(async move {
@@ -64,7 +64,7 @@ pub mod notify {
                         Message::Close(_) => break,
                         _ => {}
                     },
-                    event = rx.recv() => session.text(serde_json::to_string(&event?)?).await?,
+                    _ = rx.changed() => session.text(serde_json::to_string(&*rx.borrow_and_update())?).await?,
                 }
             }
             session.close(None).await?;

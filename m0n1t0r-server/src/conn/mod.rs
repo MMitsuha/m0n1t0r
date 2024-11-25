@@ -23,7 +23,7 @@ use tokio::{
     io,
     net::{TcpListener, TcpStream},
     select,
-    sync::{broadcast, RwLock},
+    sync::{watch, RwLock},
 };
 use tokio_rustls::{server::TlsStream, TlsAcceptor};
 use tokio_util::sync::CancellationToken;
@@ -32,6 +32,13 @@ use tokio_util::sync::CancellationToken;
 pub enum ConnectEventEnum {
     Connect,
     Disconnect,
+    Invalid,
+}
+
+impl Default for ConnectEventEnum {
+    fn default() -> Self {
+        Self::Invalid
+    }
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
@@ -40,15 +47,24 @@ pub struct ConnectEvent {
     addr: SocketAddr,
 }
 
+impl Default for ConnectEvent {
+    fn default() -> Self {
+        Self {
+            event: ConnectEventEnum::default(),
+            addr: ([0, 0, 0, 0], 0).into(),
+        }
+    }
+}
+
 pub struct ServerMap {
     pub map: HashMap<SocketAddr, Arc<RwLock<ServerObj>>>,
-    notify_tx: broadcast::Sender<ConnectEvent>,
-    pub notify_rx: broadcast::Receiver<ConnectEvent>,
+    notify_tx: watch::Sender<ConnectEvent>,
+    pub notify_rx: watch::Receiver<ConnectEvent>,
 }
 
 impl ServerMap {
     pub fn new() -> Self {
-        let (notify_tx, notify_rx) = broadcast::channel(16);
+        let (notify_tx, notify_rx) = watch::channel(ConnectEvent::default());
         Self {
             map: HashMap::new(),
             notify_tx,

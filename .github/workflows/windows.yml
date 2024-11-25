@@ -30,6 +30,7 @@ jobs:
       with:
         version: 6.8.0
         dir: ${{ github.workspace }}/qt/
+        modules: 'QtNetwork QtWidgets QtGui QtCore QtWebSockets'
 
     - name: Build
       run: cargo build --features windows --verbose

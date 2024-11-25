@@ -411,6 +411,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-stream"
+version = "0.3.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b5a71a6f37880a80d1d7f19efd781e4b5de42c88f0722cc13bcb6cc2cfe8476"
+dependencies = [
+ "async-stream-impl",
+ "futures-core",
+ "pin-project-lite",
+]
+
+[[package]]
+name = "async-stream-impl"
+version = "0.3.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c7c24de15d275a1ecfd47a380fb4d5ec9bfe0933f309ed5e705b775596a3574d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "async-trait"
 version = "0.1.83"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1921,6 +1943,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "libsw"
+version = "3.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0673364c1ef7a1674241dbad9ba2415354103d6126451f01eeb7aaa25d6b4fce"
+
+[[package]]
 name = "link-cplusplus"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2023,6 +2051,7 @@ dependencies = [
  "async-channel",
  "async-compat",
  "async-compression",
+ "async-stream",
  "async_channel_io",
  "cargo-emit",
  "chrono",
@@ -2070,6 +2099,7 @@ dependencies = [
  "async-compression",
  "async_channel_io",
  "flexi_logger",
+ "libsw",
  "log",
  "m0n1t0r-common",
  "minimp4",
