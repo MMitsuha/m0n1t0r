@@ -506,15 +506,12 @@ dependencies = [
  "itertools",
  "lazy_static",
  "lazycell",
- "log",
- "prettyplease",
  "proc-macro2",
  "quote",
  "regex",
  "rustc-hash",
  "shlex",
  "syn",
- "which",
 ]
 
 [[package]]
@@ -1484,15 +1481,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "home"
-version = "0.5.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3d1354bf6b7235cb4a0576c2619fd4ed18183f689b12b006a0ee7329eeff9a5"
-dependencies = [
- "windows-sys 0.52.0",
-]
-
-[[package]]
 name = "http"
 version = "0.2.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2102,7 +2090,6 @@ dependencies = [
  "libsw",
  "log",
  "m0n1t0r-common",
- "minimp4",
  "remoc",
  "reqwest",
  "rmp-serde",
@@ -2151,26 +2138,6 @@ name = "minimal-lexical"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
-
-[[package]]
-name = "minimp4"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dedfad4c0e1879118fe4fe2ecc1024dd8e9709eee96fe7c86ec4cfacd017b1db"
-dependencies = [
- "libc",
- "minimp4-sys",
-]
-
-[[package]]
-name = "minimp4-sys"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee8b16b28870f2144fbc63ee0e4a8b2f7021ba201410478bf1617a3486eac740"
-dependencies = [
- "bindgen",
- "cc",
-]
 
 [[package]]
 name = "miniz_oxide"
@@ -2519,16 +2486,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77957b295656769bb8ad2b6a6b09d897d94f05c41b069aede1fcdaa675eaea04"
 dependencies = [
  "zerocopy",
-]
-
-[[package]]
-name = "prettyplease"
-version = "0.2.25"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64d1ec885c64d0457d564db4ec299b2dae3f9c02808b8ad9c3a089c591b18033"
-dependencies = [
- "proc-macro2",
- "syn",
 ]
 
 [[package]]
@@ -3736,18 +3693,6 @@ checksum = "f6488b90108c040df0fe62fa815cbdee25124641df01814dd7282749234c6112"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "which"
-version = "4.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87ba24419a2078cd2b0f2ede2691b6c66d8e47836da3b6db8265ebad47afbfc7"
-dependencies = [
- "either",
- "home",
- "once_cell",
- "rustix",
 ]
 
 [[package]]
