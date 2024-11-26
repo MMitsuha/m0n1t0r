@@ -2,11 +2,11 @@
 #include "ui_client.h"
 
 namespace Window {
-Client::Client(QUrl base_url, QString password, QWidget *parent)
+Client::Client(QString addr, QUrl base_url, QString password, QWidget *parent)
     : QDialog(parent), ui(new Ui::Client) {
   ui->setupUi(this);
 
-  w_tab = new Widget::ClientTab(base_url, password, this);
+  w_tab = new Widget::ClientTab(addr, base_url, password, this);
 
   ui->gridLayout->addWidget(w_tab);
 }

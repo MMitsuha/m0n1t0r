@@ -13,8 +13,7 @@ use scap::{
     frame::FrameType,
 };
 use serde::{Deserialize, Serialize};
-use std::thread;
-use tokio::sync::mpsc;
+use std::{num::NonZero, thread};
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct Options {
@@ -58,17 +57,13 @@ pub trait Agent: Sync {
         let mut options = options;
         options.output_type = FrameType::BGRAFrame;
         let (mut tx, remote_rx) = lr::channel();
-        let (local_tx, mut local_rx) = mpsc::unbounded_channel();
+        let (local_tx, local_rx) = ring_channel::ring_channel(
+            NonZero::new((options.fps * 2) as usize).ok_or(anyhow!("fps is zero"))?,
+        );
 
         tokio::spawn(async move {
             loop {
-                tx.send(
-                    local_rx
-                        .recv()
-                        .await
-                        .ok_or(anyhow!("local channel closed"))?,
-                )
-                .await?;
+                tx.send(local_rx.recv()?).await?;
             }
             #[allow(unreachable_code)]
             Ok::<_, anyhow::Error>(())

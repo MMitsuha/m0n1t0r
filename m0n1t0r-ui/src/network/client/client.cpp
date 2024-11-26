@@ -118,9 +118,8 @@ void Client::onWebSocketTextMessageReceived(QString message) {
 }
 
 Client *Client::enumerateDirectory(QString path) {
-  qDebug() << QString("%1/fs/dir/%2").arg(addr, QUrl(path).toEncoded());
   auto request = factory->createRequest(
-      QString("%1/fs/dir/%2").arg(addr, QUrl(path).toEncoded()));
+      QString("%1/fs/dir/").arg(addr).append(QUrl::toPercentEncoding(path)));
   rest_manager->get(request, this, [this](QRestReply &reply) {
     auto [succeed, body] = isRequestSucceed(reply, &Client::fetchListError);
     if (succeed == false) {

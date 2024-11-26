@@ -36,6 +36,8 @@ async_channel_io = "0.3.0"
 async-compat = "0.2.4"
 openh264 = "0.6.3"
 async-stream = "0.3.6"
+rustls = { version = "0.23.18", features = ["ring", "log", "logging", "std", "tls12"], default-features = false }
+ring-channel = "0.12"
 
 [build-dependencies]
 cargo-emit = "0.2.1"

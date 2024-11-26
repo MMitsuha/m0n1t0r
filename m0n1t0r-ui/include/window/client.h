@@ -13,7 +13,8 @@ class Client : public QDialog {
   Q_OBJECT
 
 public:
-  explicit Client(QUrl base_url, QString password, QWidget *parent = nullptr);
+  explicit Client(QString addr, QUrl base_url, QString password,
+                  QWidget *parent = nullptr);
   ~Client();
 
 private:

@@ -9,7 +9,7 @@ class Directory : QObject {
   Q_OBJECT
 
 public:
-  explicit Directory(Network::Client *u_client, QString path, bool start,
+  explicit Directory(Network::Client *u_client, bool start,
                      Common::FileDetail current, Directory *parent = nullptr);
   ~Directory();
 
@@ -33,7 +33,6 @@ private:
   Network::Client *u_client;
   Directory *parent_;
   QVector<Directory *> children;
-  QString path;
   bool start;
   Common::FileDetail current;
 };
@@ -42,7 +41,8 @@ class DirectoryModel : public QAbstractItemModel {
   Q_OBJECT
 
 public:
-  explicit DirectoryModel(QString addr, QObject *parent = nullptr);
+  explicit DirectoryModel(QString addr, QUrl base_url,
+                          QObject *parent = nullptr);
   ~DirectoryModel();
 
   QVariant data(const QModelIndex &index, int role) const override;
@@ -57,6 +57,7 @@ public:
 
 private:
   Network::Client *u_client;
+  Model::Directory *root;
 };
 } // namespace Model
 

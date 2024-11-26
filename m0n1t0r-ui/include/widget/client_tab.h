@@ -14,7 +14,7 @@ class ClientTab : public QWidget {
   Q_OBJECT
 
 public:
-  explicit ClientTab(QUrl base_url, QString password,
+  explicit ClientTab(QString addr, QUrl base_url, QString password,
                      QWidget *parent = nullptr);
   ~ClientTab();
 

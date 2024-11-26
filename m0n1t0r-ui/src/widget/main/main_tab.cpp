@@ -26,8 +26,9 @@ void MainTab::connectServer(QUrl url, QString _password) {
 
 void MainTab::on_tableView_overview_doubleClicked(const QModelIndex &index) {
   auto addr = m_overview->client_list[index.row()][0];
-  auto relative = QString("client/%1").arg(addr);
-  auto client = new Window::Client(base_url.resolved(relative), password, this);
+  auto relative = QString("%1").arg(addr);
+  auto client =
+      new Window::Client(addr, base_url.resolved(relative), password, this);
   client->setWindowTitle(relative);
   w_clients.push_back(client);
   client->show();

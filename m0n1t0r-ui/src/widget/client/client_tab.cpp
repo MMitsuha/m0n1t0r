@@ -2,12 +2,13 @@
 #include "ui_client_tab.h"
 
 namespace Widget {
-ClientTab::ClientTab(QUrl _base_url, QString _password, QWidget *parent)
+ClientTab::ClientTab(QString addr, QUrl _base_url, QString _password,
+                     QWidget *parent)
     : QWidget(parent), ui(new Ui::ClientTab), base_url(_base_url),
       password(_password) {
   ui->setupUi(this);
 
-  w_fileview = new Widget::FileView(ui->tabFiles);
+  w_fileview = new Widget::FileView(addr, base_url, ui->tabFiles);
 
   connectServer(base_url, password);
 }
