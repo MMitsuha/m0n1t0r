@@ -22,8 +22,10 @@ jobs:
       with:
         arch: x64
 
-    - name: Setup anew (or from cache) vcpkg (and does not build any package)
+    - name: Setup a new (or from cache) vcpkg (and does not build any package)
       uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: 'cd124b84feb0c02a24a2d90981e8358fdee0e077'
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
@@ -31,6 +33,9 @@ jobs:
         version: 6.8.0
         dir: ${{ github.workspace }}/qt/
         modules: 'qtwebsockets'
+
+    - name: Build sdk
+      run: cd ./m0n1t0r-sdk && xmake build -y -v && xmake package && cd ..
 
     - name: Build ui
       run: cd ./m0n1t0r-ui && xmake f --qt=${{ github.workspace }}/qt/ --toolchain=msvc -y && xmake build -y -v && cd ..
