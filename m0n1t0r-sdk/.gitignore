@@ -1,0 +1,5 @@
+# Build files
+build/
+
+# Ignore xmake build directory
+.xmake/

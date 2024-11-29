@@ -57,10 +57,10 @@ pub mod pass {
         let agent = Arc::new(client.get_proxy_agent().await?);
         let canceller = lock_obj.get_canceller();
         drop(lock_obj);
-
         let auth = Arc::new(UserKeyAuth::new(&user.name, &user.password));
         let listener = Server::bind("0.0.0.0:0".parse()?, auth).await?;
         let addr = listener.local_addr()?;
+
         tokio::spawn(async move {
             loop {
                 let agent = agent.clone();
@@ -75,7 +75,6 @@ pub mod pass {
 
             Ok::<_, anyhow::Error>(())
         });
-
         Ok(Json(Response::success(addr)?))
     }
 }
@@ -100,6 +99,7 @@ pub mod noauth {
         let auth = Arc::new(NoAuth::default());
         let listener = Server::bind("0.0.0.0:0".parse()?, auth).await?;
         let addr = listener.local_addr()?;
+
         tokio::spawn(async move {
             loop {
                 let agent = agent.clone();
@@ -114,7 +114,6 @@ pub mod noauth {
 
             Ok::<_, anyhow::Error>(())
         });
-
         Ok(Json(Response::success(addr)?))
     }
 }

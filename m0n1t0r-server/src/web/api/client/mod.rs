@@ -39,7 +39,6 @@ pub async fn get(data: Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder
             .await?,
         );
     }
-
     Ok(Json(Response::success(details)?))
 }
 

@@ -18,6 +18,7 @@ use remoc::{
 };
 use rustls_pki_types::{pem::PemObject as _, CertificateDer, PrivateKeyDer};
 use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::{collections::HashMap, net::SocketAddr, path::PathBuf, sync::Arc};
 use tokio::{
     io,
@@ -28,7 +29,8 @@ use tokio::{
 use tokio_rustls::{server::TlsStream, TlsAcceptor};
 use tokio_util::sync::CancellationToken;
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize_repr, Deserialize_repr)]
+#[repr(i16)]
 pub enum ConnectEventEnum {
     Connect,
     Disconnect,

@@ -3,7 +3,7 @@ use crate::{
     ServerMap,
 };
 use actix_web::{
-    delete, get, head, put,
+    delete, get, put,
     web::{Bytes, Data, Json, Path},
     HttpResponse, Responder,
 };
@@ -90,19 +90,23 @@ pub async fn put(
     }
 }
 
-#[head("/{type}/{path}")]
-pub async fn head(
-    data: Data<Arc<RwLock<ServerMap>>>,
-    path: Path<(SocketAddr, Type, PathBuf)>,
-) -> WebResult<impl Responder> {
-    let (addr, _, path) = path.into_inner();
-    let lock_map = &data.read().await.map;
-    let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
+pub mod metadata {
+    use super::*;
 
-    let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
-    let agent = client.get_fs_agent().await?;
-    drop(lock_obj);
+    #[get("/metadata/{path}")]
+    pub async fn get(
+        data: Data<Arc<RwLock<ServerMap>>>,
+        path: Path<(SocketAddr, PathBuf)>,
+    ) -> WebResult<impl Responder> {
+        let (addr, path) = path.into_inner();
+        let lock_map = &data.read().await.map;
+        let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
-    Ok(Json(Response::success(agent.file(path).await?)?))
+        let lock_obj = server.read().await;
+        let client = lock_obj.get_client()?;
+        let agent = client.get_fs_agent().await?;
+        drop(lock_obj);
+
+        Ok(Json(Response::success(agent.file(path).await?)?))
+    }
 }

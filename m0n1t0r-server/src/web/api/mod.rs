@@ -45,10 +45,10 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                             .service(client::client::update::get)
                             .service(
                                 web::scope("/fs")
+                                    .service(client::fs::metadata::get)
                                     .service(client::fs::get)
                                     .service(client::fs::delete)
-                                    .service(client::fs::put)
-                                    .service(client::fs::head),
+                                    .service(client::fs::put),
                             )
                             .service(
                                 web::scope("/process")

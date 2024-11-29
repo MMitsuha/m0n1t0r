@@ -6,7 +6,7 @@ set_license("LGPL-3.0")
 
 includes("xmake")
 
-target("m0n1t0r-ui")
+target("s")
     set_kind("binary")
     set_languages("c++20")
 
