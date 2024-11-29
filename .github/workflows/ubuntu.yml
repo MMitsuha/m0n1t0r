@@ -19,7 +19,7 @@ jobs:
     - uses: xmake-io/github-action-setup-xmake@v1
 
     - name: Install dependencies
-      run: sudo apt install -y libpipewire-0.3-dev clang libdbus-glib-1-dev libclang-dev libspa-0.2-dev libboost-all-dev
+      run: sudo apt install -y libpipewire-0.3-dev clang libdbus-glib-1-dev libclang-dev libspa-0.2-dev libboost-all-dev autoconf automake python3 autoconf-archive
     
     - name: Generate certificates
       run: cd ./certs && ./generate.sh && cd ..
@@ -27,7 +27,7 @@ jobs:
     - name: Install cxxbridge
       run: cargo install cxxbridge-cmd
 
-    - name: Setup a new (or from cache) vcpkg (and does not build any package)
+    - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgGitCommitId: 'cd124b84feb0c02a24a2d90981e8358fdee0e077'
@@ -42,11 +42,20 @@ jobs:
     - name: Build
       run: cargo build --verbose
 
-    - name: Build sdk
-      run: cd ./m0n1t0r-sdk && xmake build -y -v && xmake package && cd ..
+    - name: Build release
+      run: cargo build -r --verbose
 
-    - name: Build ui
-      run: cd ./m0n1t0r-ui && xmake f --qt=${{ github.workspace }}/qt/ -y && xmake build -y -v && cd ..
+    - name: Build debug sdk
+      run: cd ./m0n1t0r-sdk && xmake f -m debug -y -v && xmake build -y -v && xmake package && cd ..
 
+    - name: Build release sdk
+      run: cd ./m0n1t0r-sdk && xmake f -m release -y -v && xmake build -y -v && xmake package && cd ..
+    
+    - name: Build debug ui
+      run: cd ./m0n1t0r-ui && xmake f -m debug --qt=${{ github.workspace }}/qt/ -v -y && xmake build -y -v && cd ..
+     
+    - name: Build release ui
+      run: cd ./m0n1t0r-ui && xmake f -m release --qt=${{ github.workspace }}/qt/ -v -y && xmake build -y -v && cd ..
+   
     - name: Run tests
       run: cargo test --verbose

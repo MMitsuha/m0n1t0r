@@ -10,11 +10,11 @@
 4. Restful web api control
 5. Screen monitor
 
-## Build
+## Build (Without UI)
 
 - Unix
 
-1. Install `xmake`, `libpipewire-0.3-dev`, `clang`, `libdbus-glib-1-dev`, `libclang-dev`, `libspa-0.2-dev` using your package management tool (such as `apt` or `pacman`)
+1. Install `xmake`, `libpipewire-0.3-dev`, `clang`, `libdbus-glib-1-dev`, `libclang-dev`, `libspa-0.2-dev`, `libboost-all-dev` using your package management tool (such as `apt` or `pacman`)
 2. Run `./certs/generate.sh` if needed
 3. Run `cargo build`
 

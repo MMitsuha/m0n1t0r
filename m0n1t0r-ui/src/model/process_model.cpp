@@ -3,7 +3,7 @@
 namespace Model {
 Process::Process(std::shared_ptr<m0n1t0r::Client> _client, QObject *parent)
     : QAbstractTableModel(parent), client(_client) {
-  client->listProcesses();
+  refresh();
 }
 
 Process::~Process() {}

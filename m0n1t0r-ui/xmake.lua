@@ -13,24 +13,24 @@ target("m0n1t0r-ui")
 
     add_rules("qt.widgetapp")
 
-    add_packages("spdlog")
-    add_packages("magic_enum")
-    add_packages("jwt-cpp")
-    add_packages("nlohmann_json")
-    add_packages("fmt")
-    add_packages("cli")
-    add_packages("openh264")
-    add_packages("m0n1t0r-sdk")
-
     add_includedirs("include")
-    add_files("src/**/*.cpp")
+    add_files("src/**.cpp")
     add_files("src/main.cpp")
 
     -- add qt ui file
-    add_files("src/**/*.ui")
+    add_files("src/**.ui")
 
     -- add files with Q_OBJECT meta (only for qt.moc)
-    add_files("include/**/*.h")
+    add_files("include/**.h")
+
+    add_packages("spdlog~Dynamic")
+    add_packages("magic_enum~Dynamic")
+    add_packages("jwt-cpp~Dynamic")
+    add_packages("nlohmann_json~Dynamic")
+    add_packages("fmt~Dynamic")
+    add_packages("cpr~Dynamic")
+    add_packages("openh264~Dynamic")
+    add_packages("m0n1t0r-sdk~Static")
 
     add_frameworks("QtNetwork", "QtWidgets", "QtGui", "QtCore", "QtWebSockets")
 

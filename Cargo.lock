@@ -2110,6 +2110,7 @@ dependencies = [
  "libsw",
  "log",
  "m0n1t0r-common",
+ "openh264",
  "remoc",
  "reqwest",
  "rmp-serde",

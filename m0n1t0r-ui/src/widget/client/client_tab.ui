@@ -31,6 +31,12 @@
       </attribute>
       <layout class="QGridLayout" name="gridLayout_4"/>
      </widget>
+     <widget class="QWidget" name="tabScreen">
+      <attribute name="title">
+       <string>Screen</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_3"/>
+     </widget>
     </widget>
    </item>
   </layout>
