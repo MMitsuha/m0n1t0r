@@ -1,7 +1,8 @@
 #ifndef CLIENT_TAB_H
 #define CLIENT_TAB_H
 
-#include "widget/filetree.h"
+#include "widget/file_tree.h"
+#include "widget/process_table.h"
 #include <QUrl>
 #include <QWidget>
 #include <m0n1t0r-sdk.h>
@@ -24,7 +25,8 @@ public Q_SLOTS:
 private:
   Ui::ClientTab *ui;
   std::shared_ptr<m0n1t0r::Client> client;
-  Widget::FileTree *w_filewidget;
+  Widget::FileTree *w_filetree;
+  Widget::ProcessTable *w_processtable;
 };
 } // namespace Widget
 

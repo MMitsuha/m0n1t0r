@@ -12,8 +12,6 @@ MainTab::MainTab(QWidget *parent) : QWidget(parent), ui(new Ui::MainTab) {
   ui->tableView_overview->horizontalHeader()->setSectionResizeMode(
       QHeaderView::ResizeToContents);
   ui->tableView_overview->setModel(m_overview);
-  ui->tableView_overview->setSelectionBehavior(QAbstractItemView::SelectRows);
-  ui->tableView_overview->setSelectionMode(QAbstractItemView::SingleSelection);
 }
 
 MainTab::~MainTab() { delete ui; }

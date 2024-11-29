@@ -1,5 +1,5 @@
-#ifndef __FS_H__
-#define __FS_H__
+#ifndef __M0N1T0R_M0N1T0R_UI_INCLUDE_COMMON_FS_H_
+#define __M0N1T0R_M0N1T0R_UI_INCLUDE_COMMON_FS_H_
 
 #include <QString>
 
@@ -13,4 +13,4 @@ struct FileDetail {
 };
 } // namespace Common
 
-#endif // __FS_H__
+#endif // __M0N1T0R_M0N1T0R_UI_INCLUDE_COMMON_FS_H_

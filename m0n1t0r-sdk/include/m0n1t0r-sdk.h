@@ -5,9 +5,8 @@
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <string>
-#include <websocketpp/config/asio_no_tls_client.hpp>
-
 #include <websocketpp/client.hpp>
+#include <websocketpp/config/asio_no_tls_client.hpp>
 
 namespace m0n1t0r {
 using ws_client = websocketpp::client<websocketpp::config::asio_client>;

@@ -16,3 +16,6 @@ certs/*.key
 certs/*.srl
 certs/*.csr
 certs/*.der
+
+# Code counter
+.VSCodeCounter

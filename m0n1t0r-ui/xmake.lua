@@ -9,7 +9,7 @@ includes("xmake")
 
 target("m0n1t0r-ui")
     set_kind("binary")
-    set_languages("cxx20")
+    set_languages("cxx17")
 
     add_rules("qt.widgetapp")
 
@@ -19,7 +19,6 @@ target("m0n1t0r-ui")
     add_packages("nlohmann_json")
     add_packages("fmt")
     add_packages("cli")
-    add_packages("boost")
     add_packages("openh264")
     add_packages("m0n1t0r-sdk")
 

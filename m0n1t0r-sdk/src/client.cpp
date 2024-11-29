@@ -1,5 +1,6 @@
 #include "m0n1t0r-sdk.h"
 #include <cpr/cpr.h>
+#include <fmt/format.h>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
@@ -7,7 +8,7 @@ using json = nlohmann::json;
 
 namespace m0n1t0r {
 Client::Client(const std::string &_base_url, const std::string &_addr)
-    : base_url(std::format("{}/client/{}", normalizeUrl(_base_url), addr)),
+    : base_url(fmt::format("{}/client/{}", normalizeUrl(_base_url), addr)),
       addr(_addr) {}
 
 Client::SystemInfo Client::SystemInfo::fromJson(nlohmann::json json) {
@@ -49,7 +50,7 @@ Client::File Client::File::fromJson(nlohmann::json json) {
 
 std::vector<Client::File> Client::listFiles(const std::string &path) {
   auto res = cpr::Get(cpr::Url(
-      std::format("{}/fs/dir/{}", base_url, cpr::util::urlEncode(path))));
+      fmt::format("{}/fs/dir/{}", base_url, cpr::util::urlEncode(path))));
   auto array = getBodyJson(res);
   auto ret = std::vector<Client::File>();
 
@@ -61,30 +62,30 @@ std::vector<Client::File> Client::listFiles(const std::string &path) {
 
 std::string Client::getFile(const std::string &path) {
   auto res = cpr::Get(cpr::Url(
-      std::format("{}/fs/file/{}", base_url, cpr::util::urlEncode(path))));
+      fmt::format("{}/fs/file/{}", base_url, cpr::util::urlEncode(path))));
   return res.text;
 }
 
 void Client::deleteFile(const std::string &path) {
   auto res = cpr::Delete(cpr::Url(
-      std::format("{}/fs/file/{}", base_url, cpr::util::urlEncode(path))));
+      fmt::format("{}/fs/file/{}", base_url, cpr::util::urlEncode(path))));
   auto json = getBodyJson(res);
 }
 
 void Client::deleteDirectory(const std::string &path) {
   auto res = cpr::Delete(cpr::Url(
-      std::format("{}/fs/dir/{}", base_url, cpr::util::urlEncode(path))));
+      fmt::format("{}/fs/dir/{}", base_url, cpr::util::urlEncode(path))));
   auto json = getBodyJson(res);
 }
 
 void Client::createDirectory(const std::string &path) {
   auto res = cpr::Put(cpr::Url(
-      std::format("{}/fs/dir/{}", base_url, cpr::util::urlEncode(path))));
+      fmt::format("{}/fs/dir/{}", base_url, cpr::util::urlEncode(path))));
   auto json = getBodyJson(res);
 }
 
 void Client::uploadFile(const std::string &path, const std::string &content) {
-  auto res = cpr::Put(cpr::Url(std::format("{}/fs/file/{}", base_url,
+  auto res = cpr::Put(cpr::Url(fmt::format("{}/fs/file/{}", base_url,
                                            cpr::util::urlEncode(path))),
                       cpr::Body(content));
   auto json = getBodyJson(res);
@@ -92,21 +93,21 @@ void Client::uploadFile(const std::string &path, const std::string &content) {
 
 Client::File Client::getFileInfo(const std::string &path) {
   auto res = cpr::Get(cpr::Url(
-      std::format("{}/fs/metadata/{}", base_url, cpr::util::urlEncode(path))));
+      fmt::format("{}/fs/metadata/{}", base_url, cpr::util::urlEncode(path))));
   auto json = getBodyJson(res);
   return File::fromJson(json);
 }
 
 std::string Client::proxySocks5() {
   auto res =
-      cpr::Get(cpr::Url(std::format("{}/proxy/socks5/noauth", base_url)));
+      cpr::Get(cpr::Url(fmt::format("{}/proxy/socks5/noauth", base_url)));
   auto json = getBodyJson(res);
   return json;
 }
 
 std::string Client::proxySocks5(const std::string &name,
                                 const std::string &password) {
-  auto res = cpr::Get(cpr::Url(std::format("{}/proxy/socks5/pass", base_url)),
+  auto res = cpr::Get(cpr::Url(fmt::format("{}/proxy/socks5/pass", base_url)),
                       cpr::Parameters{{"name", name}, {"password", password}});
   auto json = getBodyJson(res);
   return json;
@@ -121,7 +122,7 @@ Client::CommandOutput Client::CommandOutput::fromJson(nlohmann::json json) {
 }
 
 Client::CommandOutput Client::executeCommand(const std::string &command) {
-  auto res = cpr::Get(cpr::Url(std::format("{}/process/execute/{}", base_url,
+  auto res = cpr::Get(cpr::Url(fmt::format("{}/process/execute/{}", base_url,
                                            cpr::util::urlEncode(command))));
   auto json = getBodyJson(res);
   return CommandOutput::fromJson(json);
@@ -137,7 +138,7 @@ Client::Process Client::Process::fromJson(nlohmann::json json) {
 }
 
 std::vector<Client::Process> Client::listProcesses() {
-  auto res = cpr::Get(cpr::Url(std::format("{}/process", base_url)));
+  auto res = cpr::Get(cpr::Url(fmt::format("{}/process", base_url)));
   auto array = getBodyJson(res);
   auto ret = std::vector<Client::Process>();
 
@@ -148,14 +149,14 @@ std::vector<Client::Process> Client::listProcesses() {
 }
 
 void Client::download(const std::string &path, const std::string &url) {
-  auto res = cpr::Put(cpr::Url(std::format("{}/network/download/{}/{}",
+  auto res = cpr::Put(cpr::Url(fmt::format("{}/network/download/{}/{}",
                                            base_url, cpr::util::urlEncode(url),
                                            cpr::util::urlEncode(path))));
   auto json = getBodyJson(res);
 }
 
 Client::SystemInfo Client::getSystemInfo() {
-  auto res = cpr::Get(cpr::Url(std::format("{}/info/system", base_url)));
+  auto res = cpr::Get(cpr::Url(fmt::format("{}/info/system", base_url)));
   auto json = getBodyJson(res);
   return SystemInfo::fromJson(json);
 }
@@ -175,7 +176,7 @@ std::thread Client::executeCommandInteractive(
 
       if (ec) {
         auto message =
-            std::format("Could not send message because: {}", ec.message());
+            fmt::format("Could not send message because: {}", ec.message());
         spdlog::error(message);
         handle->close(websocketpp::close::status::normal,
                       "Error sending message");
@@ -194,7 +195,7 @@ std::thread Client::executeCommandInteractive(
 
       if (ec) {
         auto message =
-            std::format("Could not send message because: {}", ec.message());
+            fmt::format("Could not send message because: {}", ec.message());
         spdlog::error(message);
         handle->close(websocketpp::close::status::normal,
                       "Error sending message");
@@ -202,13 +203,13 @@ std::thread Client::executeCommandInteractive(
     });
 
     ws_client::connection_ptr con =
-        c.get_connection(std::format("ws://{}/process/interactive/{}", base_url,
+        c.get_connection(fmt::format("ws://{}/process/interactive/{}", base_url,
                                      cpr::util::urlEncode(proc)),
                          ec);
 
     if (ec) {
       auto message =
-          std::format("Could not create connection because: {}", ec.message());
+          fmt::format("Could not create connection because: {}", ec.message());
       spdlog::error(message);
       throw std::runtime_error(message);
     }
@@ -240,11 +241,11 @@ Client::captureScreen(std::function<bool(const std::string &)> callback) {
     c.set_message_handler(on_message);
 
     ws_client::connection_ptr con =
-        c.get_connection(std::format("ws://{}/screen", base_url), ec);
+        c.get_connection(fmt::format("ws://{}/screen", base_url), ec);
 
     if (ec) {
       auto message =
-          std::format("Could not create connection because: {}", ec.message());
+          fmt::format("Could not create connection because: {}", ec.message());
       spdlog::error(message);
       throw std::runtime_error(message);
     }

@@ -1,6 +1,6 @@
 #include "m0n1t0r-sdk.h"
-#include <boost/beast.hpp>
 #include <cpr/cpr.h>
+#include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
 using json = nlohmann::json;
@@ -20,7 +20,7 @@ std::string normalizeUrl(std::string url) {
 
 nlohmann::json getBodyJson(const cpr::Response &res) {
   if (res.error) {
-    auto message = std::format("Failed send request: {}", res.error.message);
+    auto message = fmt::format("Failed send request: {}", res.error.message);
     spdlog::error(message);
     throw std::runtime_error(message);
   }
@@ -28,7 +28,7 @@ nlohmann::json getBodyJson(const cpr::Response &res) {
   auto json = json::parse(res.text);
 
   if (json["code"] != 0) {
-    auto message = std::format("Failed to get JSON: {}",
+    auto message = fmt::format("Failed to get JSON: {}",
                                static_cast<std::string>(json["body"]));
     spdlog::error(message);
     throw std::runtime_error(message);

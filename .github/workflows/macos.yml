@@ -29,6 +29,12 @@ jobs:
       with:
         vcpkgGitCommitId: 'cd124b84feb0c02a24a2d90981e8358fdee0e077'
 
+    - name: Integrate vcpkg
+      run: vcpkg integrate install
+        
+    - name: Install boost
+      run: vcpkg install boost
+
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
       with:

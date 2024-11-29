@@ -1,5 +1,6 @@
-# Build files
+# Xmake cache
+.xmake/
 build/
 
-# Ignore xmake build directory
-.xmake/
+# MacOS Cache
+.DS_Store

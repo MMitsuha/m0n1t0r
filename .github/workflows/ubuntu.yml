@@ -19,7 +19,7 @@ jobs:
     - uses: xmake-io/github-action-setup-xmake@v1
 
     - name: Install dependencies
-      run: sudo apt install -y libpipewire-0.3-dev clang libdbus-glib-1-dev libclang-dev libspa-0.2-dev
+      run: sudo apt install -y libpipewire-0.3-dev clang libdbus-glib-1-dev libclang-dev libspa-0.2-dev libboost-all-dev
     
     - name: Generate certificates
       run: cd ./certs && ./generate.sh && cd ..

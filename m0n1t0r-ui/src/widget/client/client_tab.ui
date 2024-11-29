@@ -23,11 +23,13 @@
       <attribute name="title">
        <string>Files</string>
       </attribute>
+      <layout class="QGridLayout" name="gridLayout_2"/>
      </widget>
-     <widget class="QWidget" name="tabScreen">
+     <widget class="QWidget" name="tabProcesses">
       <attribute name="title">
-       <string>Screen</string>
+       <string>Processes</string>
       </attribute>
+      <layout class="QGridLayout" name="gridLayout_4"/>
      </widget>
     </widget>
    </item>

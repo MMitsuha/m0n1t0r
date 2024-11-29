@@ -1,6 +1,7 @@
 #include "m0n1t0r-sdk.h"
 #include <boost/beast.hpp>
 #include <cpr/cpr.h>
+#include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
 using json = nlohmann::json;
@@ -18,7 +19,7 @@ Server::Notification Server::Notification::fromJson(nlohmann::json json) {
 std::vector<std::shared_ptr<Client>> Server::allClient() {
   auto ret = std::vector<std::shared_ptr<Client>>();
   auto res =
-      cpr::Get(cpr::Url(std::format("{}/client", normalizeUrl(base_url))));
+      cpr::Get(cpr::Url(fmt::format("{}/client", normalizeUrl(base_url))));
   auto json = getBodyJson(res);
 
   for (auto &detail : json) {
@@ -46,11 +47,11 @@ std::thread Server::notify(std::function<bool(const Notification &)> callback) {
     c.set_message_handler(on_message);
 
     ws_client::connection_ptr con = c.get_connection(
-        std::format("ws://{}/client/notify", normalizeUrl(base_url)), ec);
+        fmt::format("ws://{}/client/notify", normalizeUrl(base_url)), ec);
 
     if (ec) {
       auto message =
-          std::format("Could not create connection because: {}", ec.message());
+          fmt::format("Could not create connection because: {}", ec.message());
       spdlog::error(message);
       throw std::runtime_error(message);
     }
