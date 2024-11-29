@@ -1,7 +1,6 @@
 #ifndef M0N1T0R_SDK_H
 #define M0N1T0R_SDK_H
 
-#include <cpr/cpr.h>
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <string>
@@ -111,9 +110,6 @@ public:
 private:
   std::string base_url;
 };
-
-std::string normalizeUrl(std::string url);
-nlohmann::json getBodyJson(const cpr::Response &res);
 } // namespace m0n1t0r
 
 #endif // M0N1T0R_SDK_H

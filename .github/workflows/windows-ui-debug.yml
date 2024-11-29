@@ -1,4 +1,4 @@
-name: Build UI on Windows
+name: Build Debug UI on Windows
 
 on:
   push:
@@ -18,11 +18,7 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
-    - uses: TheMrMilchmann/setup-msvc-dev@v3
-      with:
-        arch: x64
-
-    - name: Setup a new (or from cache) vcpkg (and does not build any package)
+    - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgGitCommitId: 'cd124b84feb0c02a24a2d90981e8358fdee0e077'
@@ -31,7 +27,7 @@ jobs:
       run: vcpkg integrate install
         
     - name: Install boost
-      run: vcpkg install boost
+      run: vcpkg install boost:x64-windows-static
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
@@ -40,8 +36,8 @@ jobs:
         dir: ${{ github.workspace }}/qt/
         modules: 'qtwebsockets'
 
-    - name: Build sdk
-      run: cd ./m0n1t0r-sdk && xmake build -y -v && xmake package && cd ..
+    - name: Build debug sdk
+      run: cd ./m0n1t0r-sdk && xmake f -m debug --runtimes=MTd -y -v && xmake build -y -v && xmake package && cd ..
 
-    - name: Build ui
-      run: cd ./m0n1t0r-ui && xmake f --qt=${{ github.workspace }}/qt/ --toolchain=msvc -y && xmake build -y -v && cd ..
+    - name: Build debug ui
+      run: cd ./m0n1t0r-ui && xmake f -m debug --runtimes=MTd --qt=${{ github.workspace }}/qt/ --toolchain=msvc -v -y && xmake build -y -v && cd ..

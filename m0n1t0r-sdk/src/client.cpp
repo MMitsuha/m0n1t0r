@@ -1,3 +1,4 @@
+#include "common.h"
 #include "m0n1t0r-sdk.h"
 #include <cpr/cpr.h>
 #include <fmt/format.h>
@@ -13,23 +14,18 @@ Client::Client(const std::string &_base_url, const std::string &_addr)
 
 Client::SystemInfo Client::SystemInfo::fromJson(nlohmann::json json) {
   return SystemInfo{
-      .boot_time = json["boot_time"],
-      .cpu_arch = json["cpu_arch"],
-      .distribution_id = json["distribution_id"],
-      .host_name = json["host_name"],
-      .kernel_version = json["kernel_version"],
-      .long_os_version = json["long_os_version"],
-      .name = json["name"],
-      .uptime = json["uptime"],
+      json["boot_time"], json["cpu_arch"],       json["distribution_id"],
+      json["host_name"], json["kernel_version"], json["long_os_version"],
+      json["name"],      json["uptime"],
   };
 }
 
 Client::Detail Client::Detail::fromJson(nlohmann::json json) {
   return Detail{
-      .addr = json["addr"],
-      .system_info = SystemInfo::fromJson(json["system_info"]),
-      .target_platform = json["target_platform"],
-      .version = json["version"],
+      json["addr"],
+      SystemInfo::fromJson(json["system_info"]),
+      json["target_platform"],
+      json["version"],
   };
 }
 
@@ -40,11 +36,8 @@ Client::Detail Client::getDetail() {
 
 Client::File Client::File::fromJson(nlohmann::json json) {
   return File{
-      .is_dir = json["is_dir"],
-      .is_symlink = json["is_symlink"],
-      .name = json["name"],
-      .path = json["path"],
-      .size = json["size"],
+      json["is_dir"], json["is_symlink"], json["name"],
+      json["path"],   json["size"],
   };
 }
 
@@ -115,9 +108,9 @@ std::string Client::proxySocks5(const std::string &name,
 
 Client::CommandOutput Client::CommandOutput::fromJson(nlohmann::json json) {
   return CommandOutput{
-      ._stderr = json["stderr"],
-      ._stdout = json["stdout"],
-      .success = json["success"],
+      json["stderr"],
+      json["stdout"],
+      json["success"],
   };
 }
 
@@ -130,10 +123,10 @@ Client::CommandOutput Client::executeCommand(const std::string &command) {
 
 Client::Process Client::Process::fromJson(nlohmann::json json) {
   return Process{
-      .cmd = json["cmd"],
-      .exe = json["exe"],
-      .name = json["name"],
-      .pid = json["pid"],
+      json["cmd"],
+      json["exe"],
+      json["name"],
+      json["pid"],
   };
 }
 
@@ -164,7 +157,7 @@ Client::SystemInfo Client::getSystemInfo() {
 std::thread Client::executeCommandInteractive(
     const std::string &proc, const std::string &command,
     std::function<bool(const std::string &, std::string &)> callback) {
-  return std::thread([=, this]() {
+  return std::thread([=]() {
     ws_client c;
     websocketpp::lib::error_code ec;
     auto on_message = [=, &c](websocketpp::connection_hdl h,
@@ -220,7 +213,7 @@ std::thread Client::executeCommandInteractive(
 
 std::thread
 Client::captureScreen(std::function<bool(const std::string &)> callback) {
-  return std::thread([=, this]() {
+  return std::thread([=]() {
     ws_client c;
     websocketpp::lib::error_code ec;
     auto on_message = [=, &c](websocketpp::connection_hdl h,

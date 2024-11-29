@@ -1,5 +1,5 @@
+#include "common.h"
 #include "m0n1t0r-sdk.h"
-#include <boost/beast.hpp>
 #include <cpr/cpr.h>
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
@@ -11,8 +11,8 @@ Server::Server(const std::string &_base_url) : base_url(_base_url) {}
 
 Server::Notification Server::Notification::fromJson(nlohmann::json json) {
   return Notification{
-      .addr = json["addr"],
-      .event = json["event"],
+      json["addr"],
+      json["event"],
   };
 }
 
@@ -29,7 +29,7 @@ std::vector<std::shared_ptr<Client>> Server::allClient() {
 }
 
 std::thread Server::notify(std::function<bool(const Notification &)> callback) {
-  return std::thread([=, this]() {
+  return std::thread([=]() {
     ws_client c;
     websocketpp::lib::error_code ec;
     auto on_message = [=, &c](websocketpp::connection_hdl h,

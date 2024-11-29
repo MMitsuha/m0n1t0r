@@ -8,7 +8,6 @@ ProcessTable::ProcessTable(std::shared_ptr<m0n1t0r::Client> _client,
   ui->setupUi(this);
 
   m_process = new Model::Process(client, this);
-  m_process->refresh();
 
   ui->tableView->horizontalHeader()->setSectionResizeMode(
       QHeaderView::ResizeToContents);

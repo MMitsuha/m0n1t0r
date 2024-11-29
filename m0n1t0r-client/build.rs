@@ -36,11 +36,11 @@ fn main() {
     let _ = cxx_build::bridge("src/client/windows/process.rs");
 
     for path in xmake_build() {
-        println!("cargo:rustc-link-search={}", path.display());
+        cargo_emit::rustc_link_search!(path.display());
     }
 
     #[cfg(feature = "windows")]
     PROJECT_LIST_WINDOWS.iter().for_each(|x| {
-        println!("cargo:rustc-link-lib={}", x);
+        cargo_emit::rustc_link_lib!(x);
     });
 }

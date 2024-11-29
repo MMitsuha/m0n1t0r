@@ -23,7 +23,6 @@ pub trait Agent: Sync {
                 _ = io::copy(&mut rx, &mut stream_tx) => {},
                 _ = io::copy(&mut stream_rx, &mut tx) => {},
             }
-
             Ok::<_, Error>(())
         });
 

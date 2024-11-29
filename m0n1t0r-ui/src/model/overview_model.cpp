@@ -95,11 +95,11 @@ void Overview::connectServer(std::shared_ptr<m0n1t0r::Server> _server) {
   }
 
   server
-      ->notify([this](const m0n1t0r::Server::Notification &noti) {
-        if (noti.event == 0) {
-          onConnect(server->client(noti.addr));
-        } else if (noti.event == 1) {
-          onDisconnect(noti.addr);
+      ->notify([this](const m0n1t0r::Server::Notification &notification) {
+        if (notification.event == 0) {
+          onConnect(server->client(notification.addr));
+        } else if (notification.event == 1) {
+          onDisconnect(notification.addr);
         }
         return true;
       })
