@@ -3,6 +3,7 @@
 
 #include "widget/client_tab.h"
 #include <QDialog>
+#include <m0n1t0r-sdk.h>
 
 namespace Ui {
 class Client;
@@ -13,13 +14,14 @@ class Client : public QDialog {
   Q_OBJECT
 
 public:
-  explicit Client(QString addr, QUrl base_url, QString password,
+  explicit Client(std::shared_ptr<m0n1t0r::Client> client,
                   QWidget *parent = nullptr);
   ~Client();
 
 private:
   Ui::Client *ui;
   Widget::ClientTab *w_tab;
+  std::shared_ptr<m0n1t0r::Client> client;
 };
 } // namespace Window
 

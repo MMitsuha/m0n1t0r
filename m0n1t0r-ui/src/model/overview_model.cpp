@@ -4,23 +4,10 @@
 
 namespace Model {
 Overview::Overview(QObject *parent) : QAbstractTableModel(parent) {
-  u_client = new Network::Client({}, this);
   u_geoip = new Network::GeoIp(this);
 
-  connect(u_client, &Network::Client::connected, this,
-          &Model::Overview::onConnect);
-  connect(
-      u_client, &Network::Client::connected, this,
-      [this](Common::ClientDetail detail) { u_geoip->queryIp(detail.addr); });
-  connect(u_client, &Network::Client::disconnectedServer, this, [this]() {
-    clear();
-    QMessageBox::critical(qobject_cast<QWidget *>(this), tr("Error"),
-                          tr("Server Disconnected"));
-  });
-  connect(u_client, &Network::Client::disconnected, this,
-          &Model::Overview::onDisconnect);
   connect(u_geoip, &Network::GeoIp::queryIpFinished, this,
-          &Model::Overview::onQueryIpFinished);
+          &Overview::onQueryIpFinished);
 }
 
 Overview::~Overview() {}
@@ -35,7 +22,7 @@ int Overview::columnCount(const QModelIndex &parent) const {
 
 QVariant Overview::data(const QModelIndex &index, int role) const {
   if (role == Qt::DisplayRole) {
-    return client_list[index.row()][index.column()];
+    return std::get<1>(client_list[index.row()])[index.column()];
   }
   return QVariant();
 }
@@ -50,27 +37,30 @@ QVariant Overview::headerData(int section, Qt::Orientation orientation,
   return QVariant();
 }
 
-void Overview::onConnect(Common::ClientDetail detail) {
+void Overview::onConnect(std::shared_ptr<m0n1t0r::Client> client) {
+  auto detail = client->getDetail();
   beginInsertRows(QModelIndex(), rowCount(), rowCount());
-  QVector<QString> row = {detail.addr,
-                          detail.version,
-                          detail.target_platform,
-                          detail.name,
-                          detail.kernel_version,
-                          detail.long_os_version,
-                          detail.distribution_id,
-                          detail.host_name,
-                          detail.cpu_arch,
-                          tr("Unknown"),
-                          tr("Unknown"),
-                          tr("Unknown")};
-  client_list.append(row);
+  QVector<QString> row = {
+      QString::fromStdString(detail.addr),
+      QString::fromStdString(detail.version),
+      QString::fromStdString(detail.target_platform),
+      QString::fromStdString(detail.system_info.name),
+      QString::fromStdString(detail.system_info.kernel_version),
+      QString::fromStdString(detail.system_info.long_os_version),
+      QString::fromStdString(detail.system_info.distribution_id),
+      QString::fromStdString(detail.system_info.host_name),
+      QString::fromStdString(detail.system_info.cpu_arch),
+      tr("Unknown"),
+      tr("Unknown"),
+      tr("Unknown")};
+  client_list.append(std::make_tuple(client, row));
   endInsertRows();
+  u_geoip->queryIp(QString::fromStdString(detail.addr));
 }
 
-void Overview::onDisconnect(QString addr) {
+void Overview::onDisconnect(std::string addr) {
   for (int i = 0; i < client_list.count(); i++) {
-    if (client_list[i][0] == addr) {
+    if (std::get<1>(client_list[i])[0] == addr) {
       beginRemoveRows(QModelIndex(), i, i);
       client_list.remove(i);
       endRemoveRows();
@@ -81,10 +71,10 @@ void Overview::onDisconnect(QString addr) {
 
 void Overview::onQueryIpFinished(QString addr, Common::GeoIpDetail detail) {
   for (int i = 0; i < client_list.count(); i++) {
-    if (client_list[i][0] == addr) {
-      client_list[i][9] = detail.country;
-      client_list[i][10] = detail.region_name;
-      client_list[i][11] = detail.isp;
+    if (std::get<1>(client_list[i])[0] == addr) {
+      std::get<1>(client_list[i])[9] = detail.country;
+      std::get<1>(client_list[i])[10] = detail.region_name;
+      std::get<1>(client_list[i])[11] = detail.isp;
       emit dataChanged(index(i, 9), index(i, 11));
       break;
     }
@@ -97,8 +87,22 @@ void Overview::clear() {
   endResetModel();
 }
 
-void Overview::connectServer(QUrl url, QString password) {
-  clear();
-  u_client->setBaseUrl(url)->fetchList()->subscribeNotification();
+void Overview::connectServer(std::shared_ptr<m0n1t0r::Server> _server) {
+  server = _server;
+
+  for (auto &client : server->allClient()) {
+    onConnect(client);
+  }
+
+  server
+      ->notify([this](const m0n1t0r::Server::Notification &noti) {
+        if (noti.event == 0) {
+          onConnect(server->client(noti.addr));
+        } else if (noti.event == 1) {
+          onDisconnect(noti.addr);
+        }
+        return true;
+      })
+      .detach();
 }
 } // namespace Model

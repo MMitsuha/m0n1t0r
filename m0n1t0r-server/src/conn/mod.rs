@@ -32,9 +32,9 @@ use tokio_util::sync::CancellationToken;
 #[derive(Debug, Clone, Copy, Serialize_repr, Deserialize_repr)]
 #[repr(i16)]
 pub enum ConnectEventEnum {
-    Connect,
-    Disconnect,
-    Invalid,
+    Connect = 0,
+    Disconnect = 1,
+    Invalid = 2,
 }
 
 impl Default for ConnectEventEnum {

@@ -18,18 +18,14 @@ MainTab::MainTab(QWidget *parent) : QWidget(parent), ui(new Ui::MainTab) {
 
 MainTab::~MainTab() { delete ui; }
 
-void MainTab::connectServer(QUrl url, QString _password) {
-  base_url = url;
-  password = _password;
-  m_overview->connectServer(url, password);
+void MainTab::connectServer(std::shared_ptr<m0n1t0r::Server> _server) {
+  server = _server;
+  m_overview->connectServer(server);
 }
 
 void MainTab::on_tableView_overview_doubleClicked(const QModelIndex &index) {
-  auto addr = m_overview->client_list[index.row()][0];
-  auto relative = QString("%1").arg(addr);
-  auto client =
-      new Window::Client(addr, base_url.resolved(relative), password, this);
-  client->setWindowTitle(relative);
+  auto addr = std::get<0>(m_overview->client_list[index.row()]);
+  auto client = new Window::Client(addr, this);
   w_clients.push_back(client);
   client->show();
 }

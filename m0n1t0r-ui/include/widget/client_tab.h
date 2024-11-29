@@ -1,9 +1,10 @@
 #ifndef CLIENT_TAB_H
 #define CLIENT_TAB_H
 
-#include "widget/fileview.h"
+#include "widget/filetree.h"
 #include <QUrl>
 #include <QWidget>
+#include <m0n1t0r-sdk.h>
 
 namespace Ui {
 class ClientTab;
@@ -14,18 +15,16 @@ class ClientTab : public QWidget {
   Q_OBJECT
 
 public:
-  explicit ClientTab(QString addr, QUrl base_url, QString password,
+  explicit ClientTab(std::shared_ptr<m0n1t0r::Client> client,
                      QWidget *parent = nullptr);
   ~ClientTab();
 
 public Q_SLOTS:
-  void connectServer(QUrl url, QString password);
 
 private:
   Ui::ClientTab *ui;
-  QUrl base_url;
-  QString password;
-  Widget::FileView *w_fileview;
+  std::shared_ptr<m0n1t0r::Client> client;
+  Widget::FileTree *w_filewidget;
 };
 } // namespace Widget
 

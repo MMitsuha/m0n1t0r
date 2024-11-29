@@ -2,21 +2,12 @@
 #include "ui_client_tab.h"
 
 namespace Widget {
-ClientTab::ClientTab(QString addr, QUrl _base_url, QString _password,
-                     QWidget *parent)
-    : QWidget(parent), ui(new Ui::ClientTab), base_url(_base_url),
-      password(_password) {
+ClientTab::ClientTab(std::shared_ptr<m0n1t0r::Client> _client, QWidget *parent)
+    : QWidget(parent), ui(new Ui::ClientTab), client(_client) {
   ui->setupUi(this);
 
-  w_fileview = new Widget::FileView(addr, base_url, ui->tabFiles);
-
-  connectServer(base_url, password);
+  w_filewidget = new Widget::FileTree(client, ui->tabFiles);
 }
 
 ClientTab::~ClientTab() { delete ui; }
-
-void ClientTab::connectServer(QUrl url, QString _password) {
-  base_url = url;
-  password = _password;
-}
 } // namespace Widget

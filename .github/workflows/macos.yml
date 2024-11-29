@@ -24,6 +24,9 @@ jobs:
     - name: Install cxxbridge
       run: cargo install cxxbridge-cmd
 
+    - name: Setup anew (or from cache) vcpkg (and does not build any package)
+      uses: lukka/run-vcpkg@v11
+
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
       with:

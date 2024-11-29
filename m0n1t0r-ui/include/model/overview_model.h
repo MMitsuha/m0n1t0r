@@ -3,10 +3,10 @@
 
 #include "common/client.h"
 #include "common/ip.h"
-#include "network/client.h"
 #include "network/ip.h"
 #include <QAbstractTableModel>
 #include <QArrayData>
+#include <m0n1t0r-sdk.h>
 
 namespace Model {
 class Overview : public QAbstractTableModel {
@@ -32,18 +32,19 @@ public:
   QVariant headerData(int section, Qt::Orientation orientation,
                       int role = Qt::DisplayRole) const override;
 
-  QVector<QVector<QString>> client_list;
+  QVector<std::tuple<std::shared_ptr<m0n1t0r::Client>, QVector<QString>>>
+      client_list;
 
 public Q_SLOTS:
-  void connectServer(QUrl url, QString password);
+  void connectServer(std::shared_ptr<m0n1t0r::Server> server);
 
 private:
-  Network::Client *u_client;
+  std::shared_ptr<m0n1t0r::Server> server;
   Network::GeoIp *u_geoip;
 
 private Q_SLOTS:
-  void onConnect(Common::ClientDetail detail);
-  void onDisconnect(QString addr);
+  void onConnect(std::shared_ptr<m0n1t0r::Client> client);
+  void onDisconnect(std::string addr);
   void onQueryIpFinished(QString addr, Common::GeoIpDetail detail);
   void clear();
 };

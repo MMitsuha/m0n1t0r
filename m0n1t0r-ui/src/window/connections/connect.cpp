@@ -10,8 +10,8 @@ Connect::Connect(QWidget *parent) : QDialog(parent), ui(new Ui::Connect) {
 Connect::~Connect() { delete ui; }
 
 void Connect::on_pushButton_connect_clicked() {
-  emit connectServer(QUrl(ui->lineEdit_address->text()),
-                     ui->lineEdit_password->text());
+  emit connectServer(std::make_shared<m0n1t0r::Server>(
+      ui->lineEdit_address->text().toStdString()));
   close();
 }
 } // namespace Window

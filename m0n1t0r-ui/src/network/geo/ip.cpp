@@ -5,12 +5,6 @@ namespace Network {
 GeoIp::GeoIp(QObject *parent) : QObject(parent) {
   rest_manager = new QRestAccessManager(new QNetworkAccessManager(this), this);
   factory = new QNetworkRequestFactory(QUrl("http://ip-api.com/json"));
-  //   auto reportError = [this](QString message) {
-  //     QMessageBox::critical(qobject_cast<QWidget *>(this), tr("Error"),
-  //     message);
-  //   };
-
-  //   connect(this, &Network::GeoIp::queryIpError, this, reportError);
 }
 
 GeoIp::~GeoIp() {}

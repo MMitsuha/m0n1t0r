@@ -5,6 +5,7 @@
 #include "window/client.h"
 #include <QVector>
 #include <QWidget>
+#include <m0n1t0r-sdk.h>
 
 namespace Ui {
 class MainTab;
@@ -19,15 +20,14 @@ public:
   ~MainTab();
 
 public Q_SLOTS:
-  void connectServer(QUrl url, QString password);
+  void connectServer(std::shared_ptr<m0n1t0r::Server> server);
   void on_tableView_overview_doubleClicked(const QModelIndex &index);
 
 private:
   Ui::MainTab *ui;
   Model::Overview *m_overview;
   QVector<Window::Client *> w_clients;
-  QUrl base_url;
-  QString password;
+  std::shared_ptr<m0n1t0r::Server> server;
 };
 } // namespace Widget
 

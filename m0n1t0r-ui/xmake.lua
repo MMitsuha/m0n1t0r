@@ -4,28 +4,28 @@ set_project("m0n1t0r-ui")
 set_version("0.0.1", {build = "%Y%m%d%H%M"})
 set_license("LGPL-3.0")
 
+add_repositories("local-repo ../m0n1t0r-sdk/build")
 includes("xmake")
 
-target("s")
+target("m0n1t0r-ui")
     set_kind("binary")
-    set_languages("c++20")
+    set_languages("cxx20")
 
-    add_rules("config.dynamic_mode")
     add_rules("qt.widgetapp")
 
+    add_packages("spdlog")
+    add_packages("magic_enum")
+    add_packages("jwt-cpp")
+    add_packages("nlohmann_json")
+    add_packages("fmt")
+    add_packages("cli")
+    add_packages("boost")
+    add_packages("openh264")
+    add_packages("m0n1t0r-sdk")
+
     add_includedirs("include")
-    add_headerfiles("include/**/*.h")
     add_files("src/**/*.cpp")
     add_files("src/main.cpp")
-
-    add_packages("spdlog~Dynamic")
-    add_packages("magic_enum~Dynamic")
-    add_packages("jwt-cpp~Dynamic")
-    add_packages("nlohmann_json~Dynamic")
-    add_packages("fmt~Dynamic")
-    add_packages("cli~Dynamic")
-    add_packages("boost~Dynamic")
-    add_packages("openh264~Dynamic")
 
     -- add qt ui file
     add_files("src/**/*.ui")

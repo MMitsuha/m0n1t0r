@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QUrl>
+#include <m0n1t0r-sdk.h>
 
 namespace Ui {
 class Connect;
@@ -17,7 +18,7 @@ public:
   ~Connect();
 
 Q_SIGNALS:
-  void connectServer(QUrl url, QString password);
+  void connectServer(std::shared_ptr<m0n1t0r::Server> server);
 
 private:
   Ui::Connect *ui;

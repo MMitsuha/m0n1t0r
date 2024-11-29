@@ -10,16 +10,7 @@
 #include <websocketpp/client.hpp>
 
 namespace m0n1t0r {
-class Server {
-public:
-  explicit Server(const std::string &base_url);
-  ~Server() = default;
-
-  std::string getBaseUrl() const { return base_url; }
-
-private:
-  std::string base_url;
-};
+using ws_client = websocketpp::client<websocketpp::config::asio_client>;
 
 class Client {
 public:
@@ -72,15 +63,6 @@ public:
     static Process fromJson(nlohmann::json json);
   };
 
-  struct Notification {
-    std::string addr;
-    int16_t event;
-
-    static Notification fromJson(nlohmann::json json);
-  };
-
-  using ws_client = websocketpp::client<websocketpp::config::asio_client>;
-
   Client(const std::string &base_url, const std::string &addr);
   ~Client() = default;
 
@@ -100,16 +82,34 @@ public:
   CommandOutput executeCommand(const std::string &command);
   std::vector<Process> listProcesses();
   void download(const std::string &path, const std::string &url);
-  static std::thread notify(const std::string &base_url,
-                            std::function<bool(const Notification &)> callback);
   std::thread executeCommandInteractive(
       const std::string &proc, const std::string &command,
       std::function<bool(const std::string &, std::string &)> callback);
   std::thread captureScreen(std::function<bool(const std::string &)> callback);
-  static std::vector<std::shared_ptr<Client>> all(const std::string &base_url);
 
 private:
   std::string addr;
+  std::string base_url;
+};
+
+class Server {
+public:
+  struct Notification {
+    std::string addr;
+    int16_t event;
+
+    static Notification fromJson(nlohmann::json json);
+  };
+
+  explicit Server(const std::string &base_url);
+  ~Server() = default;
+
+  std::string getBaseUrl() const { return base_url; }
+  std::vector<std::shared_ptr<Client>> allClient();
+  std::thread notify(std::function<bool(const Notification &)> callback);
+  std::shared_ptr<Client> client(const std::string &addr);
+
+private:
   std::string base_url;
 };
 
