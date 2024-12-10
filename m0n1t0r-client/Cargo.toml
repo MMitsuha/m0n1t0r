@@ -31,7 +31,7 @@ flexi_logger = { version = "0.29.6", features = ["async"] }
 cfg_block = "0.2.0"
 cxx = "1.0.131"
 tokio-rustls = { version = "0.26.0", features = ["ring", "logging", "tls12"], default-features = false }
-rustls = { version = "0.23.18", features = ["ring", "log", "logging", "std", "tls12"], default-features = false }
+rustls = { version = "0.23.19", features = ["ring", "log", "logging", "std", "tls12"], default-features = false }
 rustls-pemfile = "2.2.0"
 rustls-pki-types = { version = "1.10.0", features = ["alloc"] }
 paste = "1.0.15"

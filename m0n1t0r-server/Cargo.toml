@@ -29,7 +29,7 @@ socks5-impl = "0.5.17"
 as-any = "0.3.1"
 url = { version = "2.5.4", features = ["serde"] }
 tokio-rustls = { version = "0.26.0", features = ["ring", "logging", "tls12"], default-features = false }
-rustls = { version = "0.23.18", features = ["ring", "log", "logging", "std", "tls12"], default-features = false }
+rustls = { version = "0.23.19", features = ["ring", "log", "logging", "std", "tls12"], default-features = false }
 rustls-pemfile = "2.2.0"
 rustls-pki-types = "1.10.0"
 scap = { version = "0.0.9", git = "https://github.com/MMitsuha/scap.git"}
