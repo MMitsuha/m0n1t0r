@@ -4,7 +4,7 @@ mod agent;
 #[cfg(feature = "windows")]
 mod windows;
 
-#[cfg(not(feature = "general"))]
+#[cfg(any(feature = "windows", feature = "linux", feature = "macos"))]
 use m0n1t0r_common::client::TargetPlatform;
 
 use m0n1t0r_common::{client::Client, server::ServerClient, Result as AppResult};
