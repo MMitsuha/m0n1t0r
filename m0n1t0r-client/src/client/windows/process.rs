@@ -83,7 +83,7 @@ impl mcprocess::Agent for AgentObj {
     }
 
     async fn get_id_by_name(&self, name: String) -> AppResult<u32> {
-        Ok(ffi::get_id_by_name(name)?.into())
+        Ok(ffi::get_id_by_name(name)?)
     }
 }
 

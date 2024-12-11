@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
-use sysinfo::System as SysSystem;
+use sysinfo::{CpuRefreshKind, System as SystemInfo};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct System {
@@ -11,19 +13,46 @@ pub struct System {
     distribution_id: String,
     host_name: Option<String>,
     cpu_arch: Option<String>,
+    cpu: Cpu,
 }
 
 impl System {
     pub fn new() -> Self {
         Self {
-            uptime: SysSystem::uptime(),
-            boot_time: SysSystem::boot_time(),
-            name: SysSystem::name(),
-            kernel_version: SysSystem::kernel_version(),
-            long_os_version: SysSystem::long_os_version(),
-            distribution_id: SysSystem::distribution_id(),
-            host_name: SysSystem::host_name(),
-            cpu_arch: SysSystem::cpu_arch(),
+            uptime: SystemInfo::uptime(),
+            boot_time: SystemInfo::boot_time(),
+            name: SystemInfo::name(),
+            kernel_version: SystemInfo::kernel_version(),
+            long_os_version: SystemInfo::long_os_version(),
+            distribution_id: SystemInfo::distribution_id(),
+            host_name: SystemInfo::host_name(),
+            cpu_arch: SystemInfo::cpu_arch(),
+            cpu: Cpu::new(),
         }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct Cpu {
+    count: HashMap<String, u32>,
+}
+
+impl Cpu {
+    pub fn new() -> Self {
+        let mut cpu = Cpu::default();
+        let info = SystemInfo::new_with_specifics(
+            sysinfo::RefreshKind::new().with_cpu(CpuRefreshKind::new()),
+        );
+        let cpus = info.cpus();
+        cpus.iter()
+            .map(|cpu| cpu.brand())
+            .for_each(|brand| match cpu.count.get_mut(brand) {
+                Some(count) => *count += 1,
+                None => {
+                    cpu.count.insert(brand.to_string(), 1);
+                }
+            });
+
+        cpu
     }
 }
