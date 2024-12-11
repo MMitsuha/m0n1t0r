@@ -6,10 +6,10 @@ use url::Url;
 
 const UPDATE_TEMP_PATH: &str = "tmp.bin";
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum TargetPlatform {
     General,
-    Specific,
+    Windows,
 }
 
 #[rtc::remote]

@@ -3,7 +3,7 @@ add_rules("mode.debug", "mode.release")
 
 target("m0n1t0r-cpp-windows-lib")
     set_kind("static")
-    set_languages("c++17")
+    set_languages("c++20")
     on_load(function (target)
         target:add("ffi.rust.files", "../src/client/windows/process.rs")
     end)

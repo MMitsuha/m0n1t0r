@@ -24,6 +24,9 @@ pub enum Error {
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error),
 
+    #[error("unsupported procedure")]
+    Unsupported,
+
     #[error("procedure unimplemented")]
     Unimplemented,
 }

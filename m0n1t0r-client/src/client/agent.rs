@@ -22,7 +22,7 @@ macro_rules! declare_agents {
 
 #[macro_export]
 macro_rules! declare_agents_with_platform {
-    (windows, $($name:ident), *) => {
+    ($platform:literal, $($name:ident), *) => {
         $(
             #[cfg(all(
                 feature = "general",
@@ -32,7 +32,7 @@ macro_rules! declare_agents_with_platform {
             ))]
             declare_agent!($name);
 
-            #[cfg(feature = "windows")]
+            #[cfg(feature = $platform)]
             use windows::$name;
         )*
     };

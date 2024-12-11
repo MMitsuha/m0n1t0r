@@ -2,14 +2,14 @@ pub mod execute;
 mod interactive;
 mod list;
 
-use crate::Result as AppResult;
+use crate::{Error, Result as AppResult};
 use remoc::{
     rch::bin::{Receiver, Sender},
     rtc,
 };
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use sysinfo::{Pid, Process as SysProcess, ProcessRefreshKind, RefreshKind, System};
+use sysinfo::{Pid, Process as ProcessInfo, ProcessRefreshKind, RefreshKind, System};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Process {
@@ -20,7 +20,7 @@ pub struct Process {
 }
 
 impl Process {
-    fn from_process(pid: &Pid, process: &SysProcess) -> Self {
+    fn from_process(pid: &Pid, process: &ProcessInfo) -> Self {
         Self {
             name: process.name().to_string_lossy().to_string(),
             cmd: process
@@ -48,7 +48,7 @@ pub trait Agent: Sync {
         Ok(list::list().await)
     }
 
-    async fn kill_by_pid(&self, pid: u32) -> AppResult<Vec<Process>> {
+    async fn kill_by_id(&self, pid: u32) -> AppResult<Vec<Process>> {
         Ok(kill_by(|p, _| p.as_u32() == pid)?)
     }
 
@@ -57,11 +57,25 @@ pub trait Agent: Sync {
             process.name().to_string_lossy() == name
         })?)
     }
+
+    async fn inject_shellcode_by_id(
+        &self,
+        _pid: u32,
+        _shellcode: Vec<u8>,
+        _ep_offset: u32,
+        _parameter: Vec<u8>,
+    ) -> AppResult<()> {
+        Err(Error::Unsupported)
+    }
+
+    async fn get_id_by_name(&self, _name: String) -> AppResult<u32> {
+        Err(Error::Unsupported)
+    }
 }
 
 fn kill_by<F>(function: F) -> AppResult<Vec<Process>>
 where
-    F: Fn(&&Pid, &&SysProcess) -> bool,
+    F: Fn(&&Pid, &&ProcessInfo) -> bool,
 {
     let process = System::new_with_specifics(
         RefreshKind::new().with_processes(ProcessRefreshKind::everything()),

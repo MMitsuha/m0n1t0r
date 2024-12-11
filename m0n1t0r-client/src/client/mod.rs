@@ -14,7 +14,7 @@ use tokio::sync::RwLock;
 use tokio_util::sync::CancellationToken;
 
 declare_agents!(screen, proxy, network, fs);
-declare_agents_with_platform!(windows, process);
+declare_agents_with_platform!("windows", process);
 
 pub struct ClientObj {
     _addr: SocketAddr,
@@ -53,9 +53,9 @@ impl Client for ClientObj {
         Ok(())
     }
 
-    #[cfg(not(feature = "general"))]
+    #[cfg(feature = "windows")]
     async fn target_platform(&self) -> AppResult<TargetPlatform> {
-        Ok(TargetPlatform::Specific)
+        Ok(TargetPlatform::Windows)
     }
 
     async fn get_fs_agent(&self) -> AppResult<m0n1t0r_common::fs::AgentClient> {

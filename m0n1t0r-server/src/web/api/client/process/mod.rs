@@ -35,7 +35,6 @@ pub async fn get(
     let client = lock_obj.get_client()?;
     let agent = client.get_process_agent().await?;
     drop(lock_obj);
-    
 
     Ok(Json(Response::success(agent.list().await?)?))
 }
@@ -53,10 +52,9 @@ pub async fn delete(
     let client = lock_obj.get_client()?;
     let agent = client.get_process_agent().await?;
     drop(lock_obj);
-    
 
     let processes = match r#type {
-        Type::Pid => agent.kill_by_pid(value.parse()?).await,
+        Type::Pid => agent.kill_by_id(value.parse()?).await,
         Type::Name => agent.kill_by_name(value).await,
     }?;
 
