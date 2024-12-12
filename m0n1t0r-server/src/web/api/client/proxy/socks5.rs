@@ -7,7 +7,7 @@ use actix_web::{
     web::{Data, Json, Path, Query},
     Responder,
 };
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, bail, Result};
 use as_any::Downcast;
 use m0n1t0r_common::{
     client::Client,
@@ -132,7 +132,7 @@ where
         match auth {
             Ok(b) => {
                 if *b == false {
-                    return Err(anyhow!("auth failed"));
+                    bail!("auth failed");
                 }
             }
             Err(e) => return Err(serde_error::Error::new(e).into()),

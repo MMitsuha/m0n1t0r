@@ -106,14 +106,6 @@ async fn process_raw(session: &mut Session, frame: Vec<u8>) -> Result<()> {
     Ok(())
 }
 
-#[derive(Serialize, Debug, Clone)]
-pub struct YuvData<'a> {
-    pub display_time: u64,
-    pub dimensions: (usize, usize),
-    pub yuv: (&'a [u8], &'a [u8], &'a [u8]),
-    pub strides: (usize, usize, usize),
-}
-
 async fn process_struct(
     session: &mut Session,
     frame: Vec<u8>,
@@ -130,6 +122,14 @@ async fn process_struct(
             .await?;
     }
     Ok(())
+}
+
+#[derive(Serialize, Debug, Clone)]
+pub struct YuvData<'a> {
+    pub display_time: u64,
+    pub dimensions: (usize, usize),
+    pub yuv: (&'a [u8], &'a [u8], &'a [u8]),
+    pub strides: (usize, usize, usize),
 }
 
 async fn process_yuy2(session: &mut Session, frame: Vec<u8>, decoder: &mut Decoder) -> Result<()> {

@@ -27,7 +27,7 @@ url = { version = "2.5", features = ["serde"] }
 self-replace = "1.5"
 cxx = "1.0"
 m0n1t0r-macro = { path = "../m0n1t0r-macro" }
-scap = { version = "0.0.10", git = "https://github.com/MMitsuha/scap.git"}
+scap = { version = "0.0.11", git = "https://github.com/MMitsuha/scap.git" }
 rmp-serde = "1.3"
 async-compression = { version = "0.4", features = ["lzma", "tokio"] }
 futures = "0.3"
