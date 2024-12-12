@@ -2892,8 +2892,8 @@ dependencies = [
 
 [[package]]
 name = "scap"
-version = "0.0.10"
-source = "git+https://github.com/MMitsuha/scap.git#0a2d7e32ca15a71c4b5679cfcbb7c71a6f9215c2"
+version = "0.0.11"
+source = "git+https://github.com/MMitsuha/scap.git#fe43bab0ac55450f79636db5f16d32c390605aea"
 dependencies = [
  "cocoa",
  "core-graphics-helmer-fork",
@@ -3832,7 +3832,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
