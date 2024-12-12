@@ -3,6 +3,7 @@ mod interactive;
 mod list;
 
 use crate::{Error, Result as AppResult};
+use rayon::prelude::{IntoParallelIterator, ParallelIterator as _};
 use remoc::{
     rch::bin::{Receiver, Sender},
     rtc,
@@ -75,14 +76,14 @@ pub trait Agent: Sync {
 
 fn kill_by<F>(function: F) -> AppResult<Vec<Process>>
 where
-    F: Fn(&&Pid, &&ProcessInfo) -> bool,
+    F: Fn(&&Pid, &&ProcessInfo) -> bool + Sync + Send,
 {
     let process = System::new_with_specifics(
-        RefreshKind::new().with_processes(ProcessRefreshKind::everything()),
+        RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()),
     );
     let processes = process
         .processes()
-        .into_iter()
+        .into_par_iter()
         .filter(|(pid, process)| function(pid, process))
         .map(|(pid, process)| {
             process.kill();

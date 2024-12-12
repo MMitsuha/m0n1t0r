@@ -43,6 +43,8 @@ pub async fn get(data: Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder
 }
 
 pub mod notify {
+    use crate::web;
+
     use super::*;
 
     #[get("/notify")]
@@ -55,7 +57,7 @@ pub mod notify {
         let mut rx = lock_map.notify_rx.clone();
         let (response, mut session, mut stream) = actix_ws::handle(&req, body)?;
 
-        task::spawn_local(async move {
+        task::spawn_local(web::handle_websocket(session.clone(), async move {
             rx.mark_unchanged();
             loop {
                 select! {
@@ -67,9 +69,8 @@ pub mod notify {
                     _ = rx.changed() => session.text(serde_json::to_string(&*rx.borrow_and_update())?).await?,
                 }
             }
-            session.close(None).await?;
             Ok::<_, anyhow::Error>(())
-        });
+        }));
         Ok(response)
     }
 }

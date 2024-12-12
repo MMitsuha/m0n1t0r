@@ -12,7 +12,7 @@ pub struct System {
     long_os_version: Option<String>,
     distribution_id: String,
     host_name: Option<String>,
-    cpu_arch: Option<String>,
+    cpu_arch: String,
     cpu: Cpu,
 }
 
@@ -41,7 +41,7 @@ impl Cpu {
     pub fn new() -> Self {
         let mut cpu = Cpu::default();
         let info = SystemInfo::new_with_specifics(
-            sysinfo::RefreshKind::new().with_cpu(CpuRefreshKind::new()),
+            sysinfo::RefreshKind::nothing().with_cpu(CpuRefreshKind::everything()),
         );
         let cpus = info.cpus();
         cpus.iter()

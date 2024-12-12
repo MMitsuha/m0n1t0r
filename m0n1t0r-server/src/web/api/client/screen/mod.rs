@@ -1,5 +1,5 @@
 use crate::{
-    web::{Error, Response, Result as WebResult},
+    web::{self, Error, Response, Result as WebResult},
     ServerMap,
 };
 use actix_web::{
@@ -9,12 +9,13 @@ use actix_web::{
 };
 use actix_ws::{Message, Session};
 use anyhow::{anyhow, Result};
-use libsw::{Instant, StopwatchImpl, Sw};
+use libsw::Sw;
 use m0n1t0r_common::{
     client::Client,
     screen::{Agent, Options},
 };
-use scap::capturer::Resolution;
+use openh264::{decoder::Decoder, formats::YUVSource};
+use scap::{capturer::Resolution, frame::FrameType};
 use serde::{Deserialize, Serialize};
 use std::{net::SocketAddr, sync::Arc};
 use tokio::{select, sync::RwLock, task};
@@ -24,14 +25,22 @@ struct FrameDetail {
     fps: f32,
 }
 
-#[get("")]
+#[derive(Serialize, Deserialize, PartialEq)]
+enum Type {
+    #[serde(rename = "raw")]
+    Raw,
+    #[serde(rename = "decoded")]
+    Decoded,
+}
+
+#[get("/{type}")]
 pub async fn get(
     data: Data<Arc<RwLock<ServerMap>>>,
-    path: Path<SocketAddr>,
+    path: Path<(SocketAddr, Type)>,
     req: HttpRequest,
     body: Payload,
 ) -> WebResult<impl Responder> {
-    let addr = path.into_inner();
+    let (addr, r#type) = path.into_inner();
     let lock_map = &data.read().await.map;
     let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
 
@@ -51,13 +60,15 @@ pub async fn get(
             show_cursor: true,
             show_highlight: true,
             output_resolution: Resolution::_720p,
+            output_type: FrameType::YUVFrame,
             ..Default::default()
         })
         .await?;
     let (response, mut session, mut stream) = actix_ws::handle(&req, body)?;
 
-    task::spawn_local(async move {
+    task::spawn_local(web::handle_websocket(session.clone(), async move {
         let mut stopwatch = Sw::new_started();
+        let mut decoder = Decoder::new()?;
 
         loop {
             select! {
@@ -66,29 +77,55 @@ pub async fn get(
                     Message::Close(_) => break,
                     _ => {}
                 },
-                frame = rx.recv() => process_frame(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut stopwatch).await?,
+                frame = rx.recv() => {
+                    let elapsed = stopwatch.elapsed();
+                    session
+                        .text(serde_json::to_string(&FrameDetail {
+                            fps: 1f32 / elapsed.as_secs_f32(),
+                        })?)
+                        .await?;
+                    match r#type {
+                        Type::Raw => process_raw(&mut session, frame?.ok_or(anyhow!("no frame received"))?).await?,
+                        Type::Decoded => process_decoded(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut decoder).await?,
+                    }
+                    stopwatch.reset_in_place();
+                },
                 _ = canceller.cancelled() => break,
             }
         }
-        session.close(None).await?;
         Ok::<_, anyhow::Error>(())
-    });
+    }));
     Ok(response)
 }
 
-async fn process_frame<I: Instant>(
+async fn process_raw(session: &mut Session, frame: Vec<u8>) -> Result<()> {
+    session.binary(frame).await?;
+    Ok(())
+}
+
+#[derive(Serialize, Debug, Clone)]
+pub struct YuvData<'a> {
+    pub display_time: u64,
+    pub dimensions: (usize, usize),
+    pub yuv: (&'a [u8], &'a [u8], &'a [u8]),
+    pub strides: (usize, usize, usize),
+}
+
+async fn process_decoded(
     session: &mut Session,
     frame: Vec<u8>,
-    stopwatch: &mut StopwatchImpl<I>,
+    decoder: &mut Decoder,
 ) -> Result<()> {
-    let elapsed = stopwatch.elapsed();
-    session
-        .text(serde_json::to_string(&FrameDetail {
-            fps: 1f32 / elapsed.as_secs_f32(),
-        })?)
-        .await?;
-    session.binary(frame).await?;
-    stopwatch.reset_in_place();
+    if let Some(frame) = decoder.decode(&frame)? {
+        session
+            .binary(rmp_serde::to_vec(&YuvData {
+                display_time: frame.timestamp().as_millis(),
+                dimensions: frame.dimensions(),
+                yuv: (frame.y(), frame.u(), frame.v()),
+                strides: frame.strides(),
+            })?)
+            .await?;
+    }
     Ok(())
 }
 

@@ -1,5 +1,5 @@
 use crate::{
-    web::{Error, Result as WebResult},
+    web::{self, Error, Result as WebResult},
     ServerMap,
 };
 use actix_web::{
@@ -36,7 +36,7 @@ pub async fn get(
     let mut stderr_rx = stderr_rx.into_inner().await?;
     let (response, mut session, mut stream) = actix_ws::handle(&req, body)?;
 
-    task::spawn_local(async move {
+    task::spawn_local(web::handle_websocket(session.clone(), async move {
         loop {
             select! {
                 Some(msg) = stream.recv() => match msg? {
@@ -51,8 +51,7 @@ pub async fn get(
                 _ = canceller.cancelled() => break,
             }
         }
-        session.close(None).await?;
         Ok::<_, anyhow::Error>(())
-    });
+    }));
     Ok(response)
 }

@@ -32,7 +32,7 @@ tokio-rustls = { version = "0.26", features = ["ring", "logging", "tls12"], defa
 rustls = { version = "0.23", features = ["ring", "log", "logging", "std", "tls12"], default-features = false }
 rustls-pemfile = "2.2"
 rustls-pki-types = "1.10"
-scap = { version = "0.0.9", git = "https://github.com/MMitsuha/scap.git"}
+scap = { version = "0.0.10", git = "https://github.com/MMitsuha/scap.git"}
 rmp-serde = "1.3"
 async-compression = { version = "0.4", features = ["lzma", "tokio"] }
 async-channel = "2.3"
@@ -42,3 +42,5 @@ tokio-stream = "0.1"
 libsw = "3.0"
 serde_repr = "0.1"
 openh264 = "0.6"
+rayon = "1.10.0"
+async_fn_traits = "0.1.1"
