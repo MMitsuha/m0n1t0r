@@ -29,8 +29,10 @@ struct FrameDetail {
 enum Type {
     #[serde(rename = "raw")]
     Raw,
-    #[serde(rename = "decoded")]
-    Decoded,
+    #[serde(rename = "yuy2")]
+    Yuy2,
+    #[serde(rename = "struct")]
+    Struct,
 }
 
 #[get("/{type}")]
@@ -59,7 +61,7 @@ pub async fn get(
             fps: 120,
             show_cursor: true,
             show_highlight: true,
-            output_resolution: Resolution::_720p,
+            output_resolution: Resolution::_1080p,
             output_type: FrameType::YUVFrame,
             ..Default::default()
         })
@@ -86,7 +88,8 @@ pub async fn get(
                         .await?;
                     match r#type {
                         Type::Raw => process_raw(&mut session, frame?.ok_or(anyhow!("no frame received"))?).await?,
-                        Type::Decoded => process_decoded(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut decoder).await?,
+                        Type::Struct => process_struct(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut decoder).await?,
+                        Type::Yuy2 => process_yuy2(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut decoder).await?,
                     }
                     stopwatch.reset_in_place();
                 },
@@ -111,7 +114,7 @@ pub struct YuvData<'a> {
     pub strides: (usize, usize, usize),
 }
 
-async fn process_decoded(
+async fn process_struct(
     session: &mut Session,
     frame: Vec<u8>,
     decoder: &mut Decoder,
@@ -125,6 +128,28 @@ async fn process_decoded(
                 strides: frame.strides(),
             })?)
             .await?;
+    }
+    Ok(())
+}
+
+async fn process_yuy2(session: &mut Session, frame: Vec<u8>, decoder: &mut Decoder) -> Result<()> {
+    if let Some(frame) = decoder.decode(&frame)? {
+        let (width, height) = frame.dimensions();
+        let (y_stride, uv_stride, _) = frame.strides();
+        let mut buffer = Vec::with_capacity(width * height * 2);
+        for y in 0..height {
+            for x in (0..width).step_by(2) {
+                let y1_index = y * y_stride + x;
+                let y2_index = y * y_stride + x + 1;
+                let uv_index = (y / 2) * uv_stride + (x / 2);
+                let y1 = frame.y()[y1_index];
+                let y2 = frame.y()[y2_index];
+                let u = frame.u()[uv_index];
+                let v = frame.v()[uv_index];
+                buffer.extend_from_slice(&[y1, u, y2, v]);
+            }
+        }
+        session.binary(buffer).await?;
     }
     Ok(())
 }
