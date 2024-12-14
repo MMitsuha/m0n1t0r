@@ -9,13 +9,10 @@ use actix_web::{
 };
 use actix_ws::{Message, Session};
 use anyhow::{anyhow, Result};
+use capscreen::capturer::Config;
 use libsw::Sw;
-use m0n1t0r_common::{
-    client::Client,
-    screen::{Agent, Options},
-};
+use m0n1t0r_common::{client::Client, screen::Agent};
 use openh264::{decoder::Decoder, formats::YUVSource};
-use scap::{capturer::Resolution, frame::FrameType};
 use serde::{Deserialize, Serialize};
 use std::{net::SocketAddr, sync::Arc};
 use tokio::{select, sync::RwLock, task};
@@ -29,10 +26,8 @@ struct FrameDetail {
 enum Type {
     #[serde(rename = "raw")]
     Raw,
-    #[serde(rename = "yuy2")]
-    Yuy2,
-    #[serde(rename = "struct")]
-    Struct,
+    #[serde(rename = "nv12")]
+    Nv12,
 }
 
 #[get("/{type}")]
@@ -56,16 +51,7 @@ pub async fn get(
         return Err(Error::UnsupportedError);
     }
 
-    let mut rx = agent
-        .record(Options {
-            fps: 120,
-            show_cursor: true,
-            show_highlight: true,
-            output_resolution: Resolution::_1080p,
-            output_type: FrameType::YUVFrame,
-            ..Default::default()
-        })
-        .await?;
+    let mut rx = agent.record(Config::main(120)).await?;
     let (response, mut session, mut stream) = actix_ws::handle(&req, body)?;
 
     task::spawn_local(web::handle_websocket(session.clone(), async move {
@@ -88,8 +74,7 @@ pub async fn get(
                         .await?;
                     match r#type {
                         Type::Raw => process_raw(&mut session, frame?.ok_or(anyhow!("no frame received"))?).await?,
-                        Type::Struct => process_struct(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut decoder).await?,
-                        Type::Yuy2 => process_yuy2(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut decoder).await?,
+                       Type::Nv12 => process_nv12(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut decoder).await?,
                     }
                     stopwatch.reset_in_place();
                 },
@@ -106,33 +91,7 @@ async fn process_raw(session: &mut Session, frame: Vec<u8>) -> Result<()> {
     Ok(())
 }
 
-async fn process_struct(
-    session: &mut Session,
-    frame: Vec<u8>,
-    decoder: &mut Decoder,
-) -> Result<()> {
-    if let Some(frame) = decoder.decode(&frame)? {
-        session
-            .binary(rmp_serde::to_vec(&YuvData {
-                display_time: frame.timestamp().as_millis(),
-                dimensions: frame.dimensions(),
-                yuv: (frame.y(), frame.u(), frame.v()),
-                strides: frame.strides(),
-            })?)
-            .await?;
-    }
-    Ok(())
-}
-
-#[derive(Serialize, Debug, Clone)]
-pub struct YuvData<'a> {
-    pub display_time: u64,
-    pub dimensions: (usize, usize),
-    pub yuv: (&'a [u8], &'a [u8], &'a [u8]),
-    pub strides: (usize, usize, usize),
-}
-
-async fn process_yuy2(session: &mut Session, frame: Vec<u8>, decoder: &mut Decoder) -> Result<()> {
+async fn process_nv12(session: &mut Session, frame: Vec<u8>, decoder: &mut Decoder) -> Result<()> {
     if let Some(frame) = decoder.decode(&frame)? {
         let (width, height) = frame.dimensions();
         let (y_stride, uv_stride, _) = frame.strides();

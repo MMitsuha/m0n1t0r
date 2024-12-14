@@ -1,0 +1,33 @@
+[package]
+name = "capscreen"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sysinfo = "0.33"
+thiserror = "2.0"
+version-compare = "0.2"
+cfg_block = "0.2"
+ring-channel = "0.12"
+serde = { version = "1.0", features = ["derive"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows-capture = { version= "1.4.10", git = "https://github.com/MMitsuha/windows-capture.git" }
+windows = { version = "0.58", features = [
+	"Win32_Foundation",
+	"Win32_Graphics_Gdi",
+	"Win32_UI_HiDpi",
+	"Win32_UI_WindowsAndMessaging",
+] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+core-graphics-helmer-fork = "0.24"
+screencapturekit = "0.3"
+screencapturekit-sys = "0.2"
+cocoa = "0.26"
+objc = "0.2"
+core-foundation = "0.10"
+core-graphics-types = "0.2"
+core-media-rs = "0.3"
+core-video-rs = "0.3"
+libc = "0.2"

@@ -21,6 +21,9 @@ pub enum Error {
     #[error("ffi error: {0}")]
     FfiException(serde_error::Error),
 
+    #[error("failed to capture screen: {0}")]
+    CaptureScreenFailed(#[from] capscreen::Error),
+
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error),
 
