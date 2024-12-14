@@ -25,7 +25,7 @@ serde_with = "3.11"
 serde-error = "0.1"
 actix-ws = "0.3"
 shell-words = "1.1"
-socks5-impl = "0.5"
+socks5-impl = { version = "0.6", features = ["client", "serde", "server", "tokio"] }
 as-any = "0.3"
 url = { version = "2.5", features = ["serde"] }
 tokio-rustls = { version = "0.26", features = ["ring", "logging", "tls12"], default-features = false }

@@ -54,6 +54,7 @@ pub async fn get(
     let mut rx = agent.record(Config::main(120)).await?;
     let (response, mut session, mut stream) = actix_ws::handle(&req, body)?;
 
+    stream = stream.max_frame_size(134217728);
     task::spawn_local(web::handle_websocket(session.clone(), async move {
         let mut stopwatch = Sw::new_started();
         let mut decoder = Decoder::new()?;

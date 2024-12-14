@@ -1,5 +1,5 @@
 use crate::Result as AppResult;
-use anyhow::{anyhow, bail, Result};
+use anyhow::{anyhow, Result};
 use capscreen::{
     capturer::{Capturer, Config, Engine},
     frame::Frame,
