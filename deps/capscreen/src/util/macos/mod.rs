@@ -39,7 +39,9 @@ impl Screen {
             .into_iter()
             .find(|d| d.display_id() as usize == id)
             .map(|d| (&d).into())
-            .ok_or(Error::NoDisplayFound)?)
+            .ok_or(Error::NoDisplayFound(
+                "can not get sc display from id".into(),
+            ))?)
     }
 
     pub fn as_sc_display(&self) -> Result<SCDisplay> {
@@ -48,7 +50,9 @@ impl Screen {
             .displays()
             .into_iter()
             .find(|d| d.display_id() as usize == self.id)
-            .ok_or(Error::NoDisplayFound)?)
+            .ok_or(Error::NoDisplayFound(
+                "can not convert to sc display".into(),
+            ))?)
     }
 }
 
@@ -70,7 +74,9 @@ impl super::Display for Screen {
         Self: Sized,
     {
         let screen = CGDisplay::main();
-        let mode = screen.display_mode().ok_or(Error::NoDisplayFound)?;
+        let mode = screen
+            .display_mode()
+            .ok_or(Error::NoDisplayFound("can not get sc display mode".into()))?;
         Ok(Self {
             id: screen.id as usize,
             width: mode.width() as u32,

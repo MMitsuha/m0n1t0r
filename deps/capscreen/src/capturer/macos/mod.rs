@@ -50,14 +50,12 @@ impl super::Engine for Capturer {
             Some(id) => Screen::from_display_id(id),
             None => Screen::main(),
         }?;
-        let width = config.width.unwrap_or(screen.width);
-        let height = config.height.unwrap_or(screen.height);
         let filter =
             SCContentFilter::new().with_display_excluding_windows(&screen.as_sc_display()?, &[]);
         let config = SCStreamConfiguration::new()
-            .set_width(width)
+            .set_width(screen.width)
             .map_err(|e| Error::EditConfigFailed(e.into()))?
-            .set_height(height)
+            .set_height(screen.height)
             .map_err(|e| Error::EditConfigFailed(e.into()))?
             .set_source_rect(screen.get_full_screen_rect())
             .map_err(|e| Error::EditConfigFailed(e.into()))?
