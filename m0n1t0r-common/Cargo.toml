@@ -39,6 +39,7 @@ async-stream = "0.3"
 rustls = { version = "0.23", features = ["ring", "log", "logging", "std", "tls12"], default-features = false }
 ring-channel = "0.12"
 rayon = "1.10.0"
+yuvutils-rs = "0.5"
 
 [build-dependencies]
 cargo-emit = "0.2"

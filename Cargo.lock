@@ -604,6 +604,7 @@ dependencies = [
  "version-compare",
  "windows 0.58.0",
  "windows-capture",
+ "yuvutils-rs",
 ]
 
 [[package]]
@@ -1878,6 +1879,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7943c866cc5cd64cbc25b2e01621d07fa8eb2a1a23160ee81ce38704e97b8ecf"
 
 [[package]]
+name = "itertools"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2065,6 +2075,7 @@ dependencies = [
  "tokio",
  "tokio-util",
  "url",
+ "yuvutils-rs",
 ]
 
 [[package]]
@@ -2091,6 +2102,7 @@ dependencies = [
  "async_fn_traits",
  "capscreen",
  "flexi_logger",
+ "itertools",
  "libsw",
  "log",
  "m0n1t0r-common",
@@ -3926,6 +3938,15 @@ dependencies = [
  "quote",
  "syn 2.0.90",
  "synstructure",
+]
+
+[[package]]
+name = "yuvutils-rs"
+version = "0.5.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5d4a3125a318143f6eee6f9a2d1ae831beca902eabb39ccc14523c26bda2ffa1"
+dependencies = [
+ "num-traits",
 ]
 
 [[package]]

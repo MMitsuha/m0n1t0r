@@ -5,10 +5,7 @@ use capscreen::{
     frame::Frame,
     util::{self, Permission},
 };
-use openh264::{
-    encoder::Encoder,
-    formats::{BgraSliceU8, YUVBuffer, YUVSlices},
-};
+use openh264::{encoder::Encoder, formats::YUVSlices};
 use rayon::prelude::{
     IndexedParallelIterator as _, IntoParallelRefIterator, ParallelIterator as _,
 };
@@ -19,6 +16,9 @@ use remoc::{
 use ring_channel::RingSender;
 use serde::{Deserialize, Serialize};
 use std::{num::NonZero, thread};
+use yuvutils_rs::{
+    bgra_to_yuv_nv12, YuvBiPlanarImageMut, YuvChromaSubsampling, YuvRange, YuvStandardMatrix,
+};
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
 pub struct Availability {
@@ -40,9 +40,45 @@ fn process_frame(
     loop {
         let frame = capturer.get_frame()?;
         let stream = match frame {
-            Frame::Bgra8(bgra8) => encoder.encode(&YUVBuffer::from_rgb_source(
-                BgraSliceU8::new(&bgra8.data, (bgra8.width as usize, bgra8.height as usize)),
-            ))?,
+            Frame::Bgra8(bgra8) => {
+                let mut planar = YuvBiPlanarImageMut::<u8>::alloc(
+                    bgra8.width,
+                    bgra8.height,
+                    YuvChromaSubsampling::Yuv420,
+                );
+                bgra_to_yuv_nv12(
+                    &mut planar,
+                    &bgra8.data,
+                    bgra8.row_stride,
+                    YuvRange::Limited,
+                    YuvStandardMatrix::Bt601,
+                )?;
+                let u = planar
+                    .uv_plane
+                    .borrow()
+                    .par_iter()
+                    .enumerate()
+                    .filter(|(i, _)| i % 2 == 0)
+                    .map(|(_, byte)| *byte)
+                    .collect::<Vec<_>>();
+                let v = planar
+                    .uv_plane
+                    .borrow()
+                    .par_iter()
+                    .enumerate()
+                    .filter(|(i, _)| i % 2 == 1)
+                    .map(|(_, byte)| *byte)
+                    .collect::<Vec<_>>();
+                encoder.encode(&YUVSlices::new(
+                    (planar.y_plane.borrow(), &u, &v),
+                    (planar.width as usize, planar.height as usize),
+                    (
+                        planar.y_stride as usize,
+                        planar.uv_stride as usize / 2,
+                        planar.uv_stride as usize / 2,
+                    ),
+                ))?
+            }
             Frame::Nv12(nv12) => {
                 let u = nv12
                     .uv

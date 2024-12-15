@@ -25,7 +25,6 @@ struct InternalEngine {
 impl SCStreamOutputTrait for InternalEngine {
     fn did_output_sample_buffer(&self, sample_buffer: CMSampleBuffer, of_type: SCStreamOutputType) {
         assert_eq!(of_type, SCStreamOutputType::Screen);
-        println!("Output");
 
         let _ = self.tx.send(sample_buffer).unwrap();
     }

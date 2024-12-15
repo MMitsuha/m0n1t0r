@@ -13,6 +13,10 @@ use capscreen::capturer::Config;
 use libsw::Sw;
 use m0n1t0r_common::{client::Client, screen::Agent};
 use openh264::{decoder::Decoder, formats::YUVSource};
+use rayon::prelude::{
+    IndexedParallelIterator, IntoParallelIterator, ParallelIterator as _, ParallelSlice,
+    ParallelSliceMut,
+};
 use serde::{Deserialize, Serialize};
 use std::{net::SocketAddr, sync::Arc};
 use tokio::{select, sync::RwLock, task};
@@ -26,6 +30,8 @@ struct FrameDetail {
 enum Type {
     #[serde(rename = "raw")]
     Raw,
+    #[serde(rename = "yuv2")]
+    Yuy2,
     #[serde(rename = "nv12")]
     Nv12,
 }
@@ -75,7 +81,8 @@ pub async fn get(
                         .await?;
                     match r#type {
                         Type::Raw => process_raw(&mut session, frame?.ok_or(anyhow!("no frame received"))?).await?,
-                       Type::Nv12 => process_nv12(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut decoder).await?,
+                        Type::Yuy2 => process_yuy2(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut decoder).await?,
+                        Type::Nv12 => process_nv12(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut decoder).await?,
                     }
                     stopwatch.reset_in_place();
                 },
@@ -92,11 +99,12 @@ async fn process_raw(session: &mut Session, frame: Vec<u8>) -> Result<()> {
     Ok(())
 }
 
-async fn process_nv12(session: &mut Session, frame: Vec<u8>, decoder: &mut Decoder) -> Result<()> {
+async fn process_yuy2(session: &mut Session, frame: Vec<u8>, decoder: &mut Decoder) -> Result<()> {
     if let Some(frame) = decoder.decode(&frame)? {
         let (width, height) = frame.dimensions();
         let (y_stride, uv_stride, _) = frame.strides();
         let mut buffer = Vec::with_capacity(width * height * 2);
+
         for y in 0..height {
             for x in (0..width).step_by(2) {
                 let y1_index = y * y_stride + x;
@@ -109,6 +117,44 @@ async fn process_nv12(session: &mut Session, frame: Vec<u8>, decoder: &mut Decod
                 buffer.extend_from_slice(&[y1, u, y2, v]);
             }
         }
+        session.binary(buffer).await?;
+    }
+    Ok(())
+}
+
+async fn process_nv12(session: &mut Session, frame: Vec<u8>, decoder: &mut Decoder) -> Result<()> {
+    if let Some(frame) = decoder.decode(&frame)? {
+        let (width, height) = frame.dimensions();
+        let (y_stride, uv_stride, _) = frame.strides();
+        let mut buffer = vec![0u8; width * height * 3 / 2];
+        let (buffer_y, buffer_uv) = buffer.split_at_mut(width * height);
+
+        frame
+            .y()
+            .par_chunks(y_stride)
+            .map(|y_row| &y_row[..width])
+            .zip(buffer_y.par_chunks_mut(width))
+            .for_each(|(src, dst)| {
+                dst.copy_from_slice(src);
+            });
+        frame
+            .u()
+            .par_chunks(uv_stride)
+            .map(|u_row| &u_row[..width / 2])
+            .zip(
+                frame
+                    .v()
+                    .par_chunks(uv_stride)
+                    .map(|v_row| &v_row[..width / 2]),
+            )
+            .zip(buffer_uv.par_chunks_mut(width))
+            .for_each(|((u_row, v_row), dst_row)| {
+                u_row
+                    .into_par_iter()
+                    .zip(v_row.into_par_iter())
+                    .zip(dst_row.par_chunks_mut(2))
+                    .for_each(|((u, v), dst)| dst.copy_from_slice(&[*u, *v]))
+            });
         session.binary(buffer).await?;
     }
     Ok(())
