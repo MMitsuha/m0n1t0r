@@ -15,7 +15,6 @@ target("m0n1t0r-ui")
 
     add_includedirs("include")
     add_files("src/**.cpp")
-    add_files("src/main.cpp")
 
     -- add qt ui file
     add_files("src/**.ui")

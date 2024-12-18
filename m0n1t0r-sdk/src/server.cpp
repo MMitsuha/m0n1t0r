@@ -28,7 +28,8 @@ std::vector<std::shared_ptr<Client>> Server::allClient() {
   return ret;
 }
 
-std::thread Server::notify(std::function<bool(const Notification &)> callback) {
+std::thread
+Server::notifyConnect(std::function<bool(const Notification &)> callback) {
   return std::thread([=]() {
     ws_client c;
     websocketpp::lib::error_code ec;
@@ -45,6 +46,29 @@ std::thread Server::notify(std::function<bool(const Notification &)> callback) {
 
     c.init_asio();
     c.set_message_handler(on_message);
+
+    ws_client::connection_ptr con = c.get_connection(
+        fmt::format("ws://{}/client/notify", normalizeUrl(base_url)), ec);
+
+    if (ec) {
+      auto message =
+          fmt::format("Could not create connection because: {}", ec.message());
+      spdlog::error(message);
+      throw std::runtime_error(message);
+    }
+    c.connect(con);
+    c.run();
+  });
+}
+
+std::thread Server::notifyClose(std::function<void()> close) {
+  return std::thread([=]() {
+    ws_client c;
+    websocketpp::lib::error_code ec;
+    auto on_close = [=, &c](websocketpp::connection_hdl) { close(); };
+
+    c.init_asio();
+    c.set_close_handler(on_close);
 
     ws_client::connection_ptr con = c.get_connection(
         fmt::format("ws://{}/client/notify", normalizeUrl(base_url)), ec);

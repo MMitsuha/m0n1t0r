@@ -61,6 +61,13 @@ public:
     static Process fromJson(nlohmann::json json);
   };
 
+  struct Availability {
+    bool has_permission;
+    bool support;
+
+    static Availability fromJson(nlohmann::json json);
+  };
+
   Client(const std::string &base_url, const std::string &addr);
   ~Client() = default;
 
@@ -80,10 +87,16 @@ public:
   CommandOutput executeCommand(const std::string &command);
   std::vector<Process> listProcesses();
   void download(const std::string &path, const std::string &url);
-  std::thread executeCommandInteractive(
-      const std::string &proc, const std::string &command,
-      std::function<bool(const std::string &, std::string &)> callback);
-  std::thread captureScreen(std::function<bool(const std::string &)> callback);
+  std::thread
+  executeCommandInteractive(const std::string &proc, const std::string &command,
+                            std::function<bool(const std::string & /*output*/,
+                                               std::string & /*input*/)>
+                                callback);
+  std::thread captureScreenNv12(
+      std::function<bool(const std::string & /*frame*/)> callback);
+  Availability canCaptureScreen();
+  bool requestCapturePermission();
+  std::thread notifyClose(std::function<void()> callback);
 
 private:
   std::string addr;
@@ -104,7 +117,8 @@ public:
 
   std::string getBaseUrl() const { return base_url; }
   std::vector<std::shared_ptr<Client>> allClient();
-  std::thread notify(std::function<bool(const Notification &)> callback);
+  std::thread notifyConnect(std::function<bool(const Notification &)> callback);
+  std::thread notifyClose(std::function<void()> callback);
   std::shared_ptr<Client> client(const std::string &addr);
 
 private:

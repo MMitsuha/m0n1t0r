@@ -23,37 +23,37 @@ pub enum Error {
     SerializeError(serde_error::Error) = -1,
 
     #[error("specified object not find error")]
-    NotFoundError = -2,
+    NotFound = -2,
 
     #[error("remote call error: {0}")]
-    RemoteCallError(m0n1t0r_common::Error) = -3,
+    RtcFailed(m0n1t0r_common::Error) = -3,
 
     #[error("web framework error: {0}")]
-    WebFrameworkError(serde_error::Error) = -4,
+    WebFrameworkException(serde_error::Error) = -4,
 
     #[error("channel connect error: {0}")]
-    ChannelConnectError(#[from] ConnectError) = -5,
+    RchFailed(#[from] ConnectError) = -5,
 
     #[error("parse command error: {0}")]
-    ParseCommandError(serde_error::Error) = -6,
+    InvalidCommand(serde_error::Error) = -6,
 
     #[error("io error: {0}")]
-    IoError(serde_error::Error) = -7,
+    TokioIoFailed(serde_error::Error) = -7,
 
     #[error("parse addr error: {0}")]
-    ParseAddrError(serde_error::Error) = -8,
+    InvalidIpAddress(serde_error::Error) = -8,
 
     #[error("extractor error: {0}")]
-    ExtractorError(serde_error::Error) = -9,
+    InvalidParameter(serde_error::Error) = -9,
 
     #[error("parse int error: {0}")]
-    ParseIntError(serde_error::Error) = -10,
+    InvalidInt(serde_error::Error) = -10,
 
     #[error("unsupported error")]
-    UnsupportedError = -11,
+    Unsupported = -11,
 
     #[error("client denied request error")]
-    ClientDeniedError = -12,
+    ClientDeniedRequest = -12,
 
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error) = -255,
@@ -74,7 +74,7 @@ impl ResponseError for Error {
     fn status_code(&self) -> StatusCode {
         match *self {
             Error::Okay => StatusCode::OK,
-            Error::NotFoundError => StatusCode::NOT_FOUND,
+            Error::NotFound => StatusCode::NOT_FOUND,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
@@ -94,48 +94,48 @@ impl From<serde_json::Error> for Error {
 
 impl From<m0n1t0r_common::Error> for Error {
     fn from(e: m0n1t0r_common::Error) -> Self {
-        Self::RemoteCallError(e)
+        Self::RtcFailed(e)
     }
 }
 
 impl From<actix_web::Error> for Error {
     fn from(e: actix_web::Error) -> Self {
-        Self::WebFrameworkError(serde_error::Error::new(&e))
+        Self::WebFrameworkException(serde_error::Error::new(&e))
     }
 }
 
 impl From<ParseError> for Error {
     fn from(e: ParseError) -> Self {
-        Self::ParseCommandError(serde_error::Error::new(&e))
+        Self::InvalidCommand(serde_error::Error::new(&e))
     }
 }
 
 impl From<io::Error> for Error {
     fn from(e: io::Error) -> Self {
-        Self::IoError(serde_error::Error::new(&e))
+        Self::TokioIoFailed(serde_error::Error::new(&e))
     }
 }
 
 impl From<AddrParseError> for Error {
     fn from(e: AddrParseError) -> Self {
-        Self::ParseAddrError(serde_error::Error::new(&e))
+        Self::InvalidIpAddress(serde_error::Error::new(&e))
     }
 }
 
 impl From<ParseIntError> for Error {
     fn from(e: ParseIntError) -> Self {
-        Self::ParseIntError(serde_error::Error::new(&e))
+        Self::InvalidInt(serde_error::Error::new(&e))
     }
 }
 
 impl From<PathError> for Error {
     fn from(e: PathError) -> Self {
-        Self::ExtractorError(serde_error::Error::new(&e))
+        Self::InvalidParameter(serde_error::Error::new(&e))
     }
 }
 
 impl From<QueryPayloadError> for Error {
     fn from(e: QueryPayloadError) -> Self {
-        Self::ExtractorError(serde_error::Error::new(&e))
+        Self::InvalidParameter(serde_error::Error::new(&e))
     }
 }

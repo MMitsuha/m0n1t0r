@@ -3,7 +3,7 @@ use crate::{
     ServerMap,
 };
 use actix_web::{
-    get, head, put,
+    get, put,
     web::{Data, Json, Path, Payload},
     HttpRequest, Responder,
 };
@@ -45,7 +45,7 @@ pub async fn get(
 ) -> WebResult<impl Responder> {
     let (addr, r#type) = path.into_inner();
     let lock_map = &data.read().await.map;
-    let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
+    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
@@ -54,7 +54,7 @@ pub async fn get(
     drop(lock_obj);
 
     if Into::<bool>::into(agent.availability().await?) == false {
-        return Err(Error::UnsupportedError);
+        return Err(Error::Unsupported);
     }
 
     let mut rx = agent.record(Config::main(120)).await?;
@@ -167,7 +167,7 @@ pub async fn put(
 ) -> WebResult<impl Responder> {
     let addr = path.into_inner();
     let lock_map = &data.read().await.map;
-    let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
+    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
@@ -181,24 +181,24 @@ pub async fn put(
     }
 
     if availability.support == false {
-        return Err(Error::UnsupportedError);
+        return Err(Error::Unsupported);
     }
 
     if agent.request_permission().await? == false {
-        return Err(Error::ClientDeniedError);
+        return Err(Error::ClientDeniedRequest);
     }
 
     Ok(Json(Response::success(())?))
 }
 
-#[head("")]
+#[get("")]
 pub async fn head(
     data: Data<Arc<RwLock<ServerMap>>>,
     path: Path<SocketAddr>,
 ) -> WebResult<impl Responder> {
     let addr = path.into_inner();
     let lock_map = &data.read().await.map;
-    let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
+    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;

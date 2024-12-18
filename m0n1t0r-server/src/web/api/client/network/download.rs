@@ -19,7 +19,7 @@ pub async fn get(
 ) -> WebResult<impl Responder> {
     let (addr, url, path) = path.into_inner();
     let lock_map = &data.read().await.map;
-    let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
+    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;

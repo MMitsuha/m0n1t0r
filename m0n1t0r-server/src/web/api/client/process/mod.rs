@@ -29,7 +29,7 @@ pub async fn get(
     addr: Path<SocketAddr>,
 ) -> WebResult<impl Responder> {
     let lock_map = &data.read().await.map;
-    let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
+    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
@@ -46,7 +46,7 @@ pub async fn delete(
 ) -> WebResult<impl Responder> {
     let (addr, r#type, value) = path.into_inner();
     let lock_map = &data.read().await.map;
-    let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
+    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;

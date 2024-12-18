@@ -43,9 +43,8 @@ pub async fn get(data: Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder
 }
 
 pub mod notify {
-    use crate::web;
-
     use super::*;
+    use crate::web;
 
     #[get("/notify")]
     pub async fn get(

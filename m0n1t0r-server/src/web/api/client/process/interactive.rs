@@ -7,7 +7,7 @@ use actix_web::{
     web::{Buf, Data, Path, Payload},
     HttpRequest, Responder,
 };
-use actix_ws::Message;
+use actix_ws::{CloseReason, Message};
 use anyhow::anyhow;
 use m0n1t0r_common::{client::Client, process::Agent as _};
 use std::{net::SocketAddr, sync::Arc};
@@ -22,7 +22,7 @@ pub async fn get(
 ) -> WebResult<impl Responder> {
     let (addr, command) = path.into_inner();
     let lock_map = &data.read().await.map;
-    let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
+    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;

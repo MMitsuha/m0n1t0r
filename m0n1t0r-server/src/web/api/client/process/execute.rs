@@ -18,13 +18,12 @@ pub async fn get(
 ) -> WebResult<impl Responder> {
     let (addr, command) = path.into_inner();
     let lock_map = &data.read().await.map;
-    let server = lock_map.get(&addr).ok_or(Error::NotFoundError)?;
+    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
 
     let lock_obj = server.read().await;
     let client = lock_obj.get_client()?;
     let agent = client.get_process_agent().await?;
     drop(lock_obj);
-    
 
     let mut command = shell_words::split(&command)?;
     let program = command.remove(0);

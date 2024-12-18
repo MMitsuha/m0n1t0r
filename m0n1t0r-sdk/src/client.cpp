@@ -130,6 +130,13 @@ Client::Process Client::Process::fromJson(nlohmann::json json) {
   };
 }
 
+Client::Availability Client::Availability::fromJson(nlohmann::json json) {
+  return Availability{
+      json["has_permission"],
+      json["support"],
+  };
+}
+
 std::vector<Client::Process> Client::listProcesses() {
   auto res = cpr::Get(cpr::Url(fmt::format("{}/process", base_url)));
   auto array = getBodyJson(res);
@@ -152,6 +159,18 @@ Client::SystemInfo Client::getSystemInfo() {
   auto res = cpr::Get(cpr::Url(fmt::format("{}/info/system", base_url)));
   auto json = getBodyJson(res);
   return SystemInfo::fromJson(json);
+}
+
+Client::Availability Client::canCaptureScreen() {
+  auto res = cpr::Head(cpr::Url(fmt::format("{}/screen", base_url)));
+  auto json = getBodyJson(res);
+  return Availability::fromJson(json);
+}
+
+bool Client::requestCapturePermission() {
+  auto res = cpr::Put(cpr::Url(fmt::format("{}/screen", base_url)));
+  auto json = getBodyJson(res);
+  return true;
 }
 
 std::thread Client::executeCommandInteractive(
@@ -212,7 +231,7 @@ std::thread Client::executeCommandInteractive(
 }
 
 std::thread
-Client::captureScreen(std::function<bool(const std::string &)> callback) {
+Client::captureScreenNv12(std::function<bool(const std::string &)> callback) {
   return std::thread([=]() {
     ws_client c;
     websocketpp::lib::error_code ec;
@@ -234,7 +253,30 @@ Client::captureScreen(std::function<bool(const std::string &)> callback) {
     c.set_message_handler(on_message);
 
     ws_client::connection_ptr con =
-        c.get_connection(fmt::format("ws://{}/screen", base_url), ec);
+        c.get_connection(fmt::format("ws://{}/screen/nv12", base_url), ec);
+
+    if (ec) {
+      auto message =
+          fmt::format("Could not create connection because: {}", ec.message());
+      spdlog::error(message);
+      throw std::runtime_error(message);
+    }
+    c.connect(con);
+    c.run();
+  });
+}
+
+std::thread Client::notifyClose(std::function<void()> close) {
+  return std::thread([=]() {
+    ws_client c;
+    websocketpp::lib::error_code ec;
+    auto on_close = [=, &c](websocketpp::connection_hdl) { close(); };
+
+    c.init_asio();
+    c.set_close_handler(on_close);
+
+    ws_client::connection_ptr con = c.get_connection(
+        fmt::format("ws://{}/notify", normalizeUrl(base_url)), ec);
 
     if (ec) {
       auto message =
