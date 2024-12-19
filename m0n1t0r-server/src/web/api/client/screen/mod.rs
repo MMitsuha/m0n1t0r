@@ -10,7 +10,6 @@ use actix_web::{
 use actix_ws::{Message, Session};
 use anyhow::{anyhow, Result};
 use capscreen::capturer::Config;
-use libsw::Sw;
 use m0n1t0r_common::{client::Client, screen::Agent};
 use openh264::{decoder::Decoder, formats::YUVSource};
 use rayon::prelude::{
@@ -62,7 +61,6 @@ pub async fn get(
 
     stream = stream.max_frame_size(134217728);
     task::spawn_local(web::handle_websocket(session.clone(), async move {
-        let mut stopwatch = Sw::new_started();
         let mut decoder = Decoder::new()?;
 
         loop {
@@ -72,19 +70,10 @@ pub async fn get(
                     Message::Close(_) => break,
                     _ => {}
                 },
-                frame = rx.recv() => {
-                    let elapsed = stopwatch.elapsed();
-                    session
-                        .text(serde_json::to_string(&FrameDetail {
-                            fps: 1f32 / elapsed.as_secs_f32(),
-                        })?)
-                        .await?;
-                    match r#type {
-                        Type::Raw => process_raw(&mut session, frame?.ok_or(anyhow!("no frame received"))?).await?,
-                        Type::Yuy2 => process_yuy2(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut decoder).await?,
-                        Type::Nv12 => process_nv12(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut decoder).await?,
-                    }
-                    stopwatch.reset_in_place();
+                frame = rx.recv() => match r#type {
+                    Type::Raw => process_raw(&mut session, frame?.ok_or(anyhow!("no frame received"))?).await?,
+                    Type::Yuy2 => process_yuy2(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut decoder).await?,
+                    Type::Nv12 => process_nv12(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut decoder).await?,
                 },
                 _ = canceller.cancelled() => break,
             }
