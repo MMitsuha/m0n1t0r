@@ -1,11 +1,15 @@
 cfg_block! {
     #[cfg(target_os = "macos")] {
-        mod macos;
+        pub(crate) mod macos;
         pub use macos::*;
     }
     #[cfg(target_os = "windows")] {
         pub(crate) mod windows;
         pub use windows::*;
+    }
+    #[cfg(target_os = "linux")] {
+        pub(crate) mod linux;
+        pub use linux::*;
     }
 }
 

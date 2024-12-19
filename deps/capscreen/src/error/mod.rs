@@ -9,6 +9,10 @@ cfg_block! {
         pub(crate) mod windows;
         pub use windows::*;
     }
+    #[cfg(target_os = "linux")] {
+        pub(crate) mod linux;
+        pub use linux::*;
+    }
 }
 
 use crate::frame::Frame;

@@ -45,3 +45,4 @@ openh264 = { version = "0.6", features = ["backtrace"] }
 rayon = "1.10.0"
 async_fn_traits = "0.1.1"
 itertools = "0.13"
+yuvutils-rs = "0.5"

@@ -2128,6 +2128,7 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "url",
+ "yuvutils-rs",
 ]
 
 [[package]]

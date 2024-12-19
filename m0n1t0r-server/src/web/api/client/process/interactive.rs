@@ -7,7 +7,7 @@ use actix_web::{
     web::{Buf, Data, Path, Payload},
     HttpRequest, Responder,
 };
-use actix_ws::{CloseReason, Message};
+use actix_ws::Message;
 use anyhow::anyhow;
 use m0n1t0r_common::{client::Client, process::Agent as _};
 use std::{net::SocketAddr, sync::Arc};
