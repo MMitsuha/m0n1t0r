@@ -1,14 +1,17 @@
 cfg_block! {
     #[cfg(target_os = "macos")] {
         mod macos;
+        #[allow(unused_imports)]
         pub use macos::*;
     }
     #[cfg(target_os = "windows")] {
         pub(crate) mod windows;
+        #[allow(unused_imports)]
         pub use windows::*;
     }
     #[cfg(target_os = "linux")] {
         pub(crate) mod linux;
+        #[allow(unused_imports)]
         pub use linux::*;
     }
 }
