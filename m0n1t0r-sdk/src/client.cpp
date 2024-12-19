@@ -162,7 +162,7 @@ Client::SystemInfo Client::getSystemInfo() {
 }
 
 Client::Availability Client::canCaptureScreen() {
-  auto res = cpr::Head(cpr::Url(fmt::format("{}/screen", base_url)));
+  auto res = cpr::Get(cpr::Url(fmt::format("{}/screen", base_url)));
   auto json = getBodyJson(res);
   return Availability::fromJson(json);
 }
@@ -174,45 +174,23 @@ bool Client::requestCapturePermission() {
 }
 
 std::thread Client::executeCommandInteractive(
-    const std::string &proc, const std::string &command,
-    std::function<bool(const std::string &, std::string &)> callback) {
-  return std::thread([=]() {
+    const std::string &proc, std::function<bool(const std::string &)> callback,
+    std::function<void()> close, msd::channel<std::string> &input) {
+  return std::thread([=, &input]() {
     ws_client c;
     websocketpp::lib::error_code ec;
     auto on_message = [=, &c](websocketpp::connection_hdl h,
                               ws_client::message_ptr msg) {
-      std::string reply;
-      auto handle = c.get_con_from_hdl(h);
-      auto cont = callback(msg->get_payload(), reply);
-      auto ec = handle->send(reply);
-
-      if (ec) {
-        auto message =
-            fmt::format("Could not send message because: {}", ec.message());
-        spdlog::error(message);
-        handle->close(websocketpp::close::status::normal,
-                      "Error sending message");
-      }
-
-      if (cont == false) {
+      if (callback(msg->get_payload()) == false) {
+        auto handle = c.get_con_from_hdl(h);
         handle->close(websocketpp::close::status::normal, "Bye");
       }
     };
+    auto on_close = [=, &c](websocketpp::connection_hdl) { close(); };
 
     c.init_asio();
     c.set_message_handler(on_message);
-    c.set_open_handler([=, &c](websocketpp::connection_hdl h) {
-      auto handle = c.get_con_from_hdl(h);
-      auto ec = handle->send(command);
-
-      if (ec) {
-        auto message =
-            fmt::format("Could not send message because: {}", ec.message());
-        spdlog::error(message);
-        handle->close(websocketpp::close::status::normal,
-                      "Error sending message");
-      }
-    });
+    c.set_close_handler(on_close);
 
     ws_client::connection_ptr con =
         c.get_connection(fmt::format("ws://{}/process/interactive/{}", base_url,
@@ -226,6 +204,21 @@ std::thread Client::executeCommandInteractive(
       throw std::runtime_error(message);
     }
     c.connect(con);
+
+    std::thread([=, &input]() {
+      for (const auto &command : input) {
+        auto ec = con->send(command);
+
+        if (ec) {
+          auto message =
+              fmt::format("Could not send message because: {}", ec.message());
+          spdlog::error(message);
+          input << command;
+          return;
+        }
+      }
+    }).detach();
+
     c.run();
   });
 }

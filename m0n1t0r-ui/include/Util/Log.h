@@ -7,7 +7,7 @@
 void logError(const QString &message,
               const QString &title = QObject::tr("Undefined"),
               QWidget *parent = nullptr);
-void logError(const QString &_message, const std::runtime_error &e,
+void logError(const QString &_message, const std::exception &e,
               const QString &title = QObject::tr("Undefined"),
               QWidget *parent = nullptr);
 

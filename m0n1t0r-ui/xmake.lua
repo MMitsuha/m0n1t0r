@@ -30,6 +30,7 @@ target("m0n1t0r-ui")
     add_packages("cpr~Dynamic")
     add_packages("openh264~Dynamic")
     add_packages("m0n1t0r-sdk~Static")
+    add_packages("cpp-channel~Static")
 
     add_frameworks("QtNetwork", "QtWidgets", "QtGui", "QtCore", "QtWebSockets")
 

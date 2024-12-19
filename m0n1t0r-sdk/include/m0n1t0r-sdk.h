@@ -2,6 +2,7 @@
 #define M0N1T0R_SDK_H
 
 #include <memory>
+#include <msd/channel.hpp>
 #include <nlohmann/json.hpp>
 #include <string>
 #include <websocketpp/client.hpp>
@@ -87,11 +88,10 @@ public:
   CommandOutput executeCommand(const std::string &command);
   std::vector<Process> listProcesses();
   void download(const std::string &path, const std::string &url);
-  std::thread
-  executeCommandInteractive(const std::string &proc, const std::string &command,
-                            std::function<bool(const std::string & /*output*/,
-                                               std::string & /*input*/)>
-                                callback);
+  std::thread executeCommandInteractive(
+      const std::string &proc,
+      std::function<bool(const std::string & /*output*/)> callback,
+      std::function<void()> close, msd::channel<std::string> &input);
   std::thread captureScreenNv12(
       std::function<bool(const std::string & /*frame*/)> callback);
   Availability canCaptureScreen();

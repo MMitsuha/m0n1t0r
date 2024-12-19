@@ -6,7 +6,9 @@ ClientWindow::ClientWindow(std::shared_ptr<m0n1t0r::Client> _client,
     : QDialog(parent), ui(new Ui::ClientWindow), client(_client),
       process_table(new ProcessTable(client, this)),
       file_tree(new FileTree(client, this)),
-      client_tab(new ClientTab(process_table, file_tree, this)) {
+      interactive_shell_tab(new InteractiveShellTab(client, this)),
+      client_tab(new ClientTab(client, process_table, file_tree,
+                               interactive_shell_tab, this)) {
   ui->setupUi(this);
   ui->gridLayout->addWidget(client_tab);
 
@@ -19,4 +21,5 @@ ClientWindow::~ClientWindow() {
   client_tab->deleteLater();
   process_table->deleteLater();
   file_tree->deleteLater();
+  interactive_shell_tab->deleteLater();
 }

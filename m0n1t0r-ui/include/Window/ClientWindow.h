@@ -28,6 +28,7 @@ private:
   std::shared_ptr<m0n1t0r::Client> client;
   ProcessTable *process_table;
   FileTree *file_tree;
+  InteractiveShellTab *interactive_shell_tab;
   ClientTab *client_tab;
 };
 
