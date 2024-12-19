@@ -1,14 +1,16 @@
+use crate::{error::Result, Error};
+
 pub struct Screen {}
 
 impl super::Display for Screen {
-    fn list() -> crate::Result<Vec<Self>>
+    fn list() -> Result<Vec<Self>>
     where
         Self: Sized,
     {
         todo!()
     }
 
-    fn main() -> crate::Result<Self>
+    fn main() -> Result<Self>
     where
         Self: Sized,
     {
@@ -20,14 +22,14 @@ pub struct Availability;
 
 impl super::Permission for Availability {
     fn has_permission() -> bool {
-        todo!()
+        false
     }
 
     fn request_permission() -> bool {
-        todo!()
+        false
     }
 
-    fn is_supported() -> crate::Result<bool> {
-        todo!()
+    fn is_supported() -> Result<bool> {
+        Ok(false)
     }
 }
