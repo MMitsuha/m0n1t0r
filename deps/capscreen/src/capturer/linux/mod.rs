@@ -1,22 +1,24 @@
+use crate::{frame::Frame, Error, Result};
+
 pub struct Capturer {}
 
 impl super::Engine for Capturer {
-    fn new(config: &super::Config) -> crate::Result<Self>
+    fn new(config: &super::Config) -> Result<Self>
     where
         Self: Sized,
     {
+        Err(Error::NotImplemented)
+    }
+
+    fn start(&mut self) -> Result<()> {
         todo!()
     }
 
-    fn start(&mut self) -> crate::Result<()> {
+    fn stop(&mut self) -> Result<()> {
         todo!()
     }
 
-    fn stop(&mut self) -> crate::Result<()> {
-        todo!()
-    }
-
-    fn get_frame(&mut self) -> crate::Result<crate::frame::Frame> {
+    fn get_frame(&mut self) -> Result<Frame> {
         todo!()
     }
 }

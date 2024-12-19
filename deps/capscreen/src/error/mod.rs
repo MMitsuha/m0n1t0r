@@ -59,6 +59,8 @@ pub enum Error {
     AlreadyStopped,
     #[error("failed to stop capture: {0}")]
     CaptureStopFailed(Detail),
+    #[error("not implemented")]
+    NotImplemented,
 }
 
 impl From<ring_channel::RecvError> for Error {
