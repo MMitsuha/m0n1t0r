@@ -224,7 +224,8 @@ std::thread Client::executeCommandInteractive(
 }
 
 std::thread
-Client::captureScreenNv12(std::function<bool(const std::string &)> callback) {
+Client::captureScreen(std::function<bool(const std::string &)> callback,
+                      std::function<void()> close, const std::string &format) {
   return std::thread([=]() {
     ws_client c;
     websocketpp::lib::error_code ec;
@@ -241,12 +242,14 @@ Client::captureScreenNv12(std::function<bool(const std::string &)> callback) {
         handle->close(websocketpp::close::status::normal, "Bye");
       }
     };
+    auto on_close = [=, &c](websocketpp::connection_hdl) { close(); };
 
     c.init_asio();
     c.set_message_handler(on_message);
+    c.set_close_handler(on_close);
 
-    ws_client::connection_ptr con =
-        c.get_connection(fmt::format("ws://{}/screen/nv12", base_url), ec);
+    ws_client::connection_ptr con = c.get_connection(
+        fmt::format("ws://{}/screen/{}", base_url, format), ec);
 
     if (ec) {
       auto message =

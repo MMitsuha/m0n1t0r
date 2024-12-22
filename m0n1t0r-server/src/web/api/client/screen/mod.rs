@@ -29,8 +29,6 @@ struct FrameDetail {
 enum Type {
     #[serde(rename = "raw")]
     Raw,
-    #[serde(rename = "yuv2")]
-    Yuy2,
     #[serde(rename = "nv12")]
     Nv12,
 }
@@ -72,7 +70,6 @@ pub async fn get(
                 },
                 frame = rx.recv() => match r#type {
                     Type::Raw => process_raw(&mut session, frame?.ok_or(anyhow!("no frame received"))?).await?,
-                    Type::Yuy2 => process_yuy2(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut decoder).await?,
                     Type::Nv12 => process_nv12(&mut session, frame?.ok_or(anyhow!("no frame received"))?, &mut decoder).await?,
                 },
                 _ = canceller.cancelled() => break,
@@ -88,33 +85,10 @@ async fn process_raw(session: &mut Session, frame: Vec<u8>) -> Result<()> {
     Ok(())
 }
 
-async fn process_yuy2(session: &mut Session, frame: Vec<u8>, decoder: &mut Decoder) -> Result<()> {
-    if let Some(frame) = decoder.decode(&frame)? {
-        let (width, height) = frame.dimensions();
-        let (y_stride, uv_stride, _) = frame.strides();
-        let mut buffer = Vec::with_capacity(width * height * 2);
-
-        for y in 0..height {
-            for x in (0..width).step_by(2) {
-                let y1_index = y * y_stride + x;
-                let y2_index = y * y_stride + x + 1;
-                let uv_index = (y / 2) * uv_stride + (x / 2);
-                let y1 = frame.y()[y1_index];
-                let y2 = frame.y()[y2_index];
-                let u = frame.u()[uv_index];
-                let v = frame.v()[uv_index];
-                buffer.extend_from_slice(&[y1, u, y2, v]);
-            }
-        }
-        session.binary(buffer).await?;
-    }
-    Ok(())
-}
-
 async fn process_nv12(session: &mut Session, frame: Vec<u8>, decoder: &mut Decoder) -> Result<()> {
     if let Some(frame) = decoder.decode(&frame)? {
         let (width, height) = frame.dimensions();
-        let (y_stride, uv_stride, _) = frame.strides();
+        let (y_stride, u_stride, v_stride) = frame.strides();
         let mut buffer = vec![0u8; width * height * 3 / 2];
         let (buffer_y, buffer_uv) = buffer.split_at_mut(width * height);
 
@@ -128,12 +102,12 @@ async fn process_nv12(session: &mut Session, frame: Vec<u8>, decoder: &mut Decod
             });
         frame
             .u()
-            .par_chunks(uv_stride)
+            .par_chunks(u_stride)
             .map(|u_row| &u_row[..width / 2])
             .zip(
                 frame
                     .v()
-                    .par_chunks(uv_stride)
+                    .par_chunks(v_stride)
                     .map(|v_row| &v_row[..width / 2]),
             )
             .zip(buffer_uv.par_chunks_mut(width))

@@ -23,14 +23,14 @@ public:
   void setTermination(bool termination);
 
 Q_SIGNALS:
-  void outputReceived(QString output);
+  void outputReceived(std::shared_ptr<QString> output);
   void terminationChanged(bool termination);
 
 public Q_SLOTS:
   void on_pushButton_run_program_clicked();
   void on_pushButton_terminate_clicked();
   void on_pushButton_send_clicked();
-  void onOutputReceived(QString output);
+  void onOutputReceived(std::shared_ptr<QString> output);
   void onTerminationChanged(bool termination);
 
 private:

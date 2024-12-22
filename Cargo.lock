@@ -2326,8 +2326,7 @@ checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
 [[package]]
 name = "openh264"
 version = "0.6.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74a9642727b5d58ed5a73a7476a44a855f420c9a2974aa81c56b0b1fa1073038"
+source = "git+https://github.com/MMitsuha/openh264-rs.git#97b30edcf5107e28dcb30b1f4c5f68f2b3045e7e"
 dependencies = [
  "openh264-sys2",
  "wide",
@@ -2336,8 +2335,7 @@ dependencies = [
 [[package]]
 name = "openh264-sys2"
 version = "0.6.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0758b46293295940ea288a1bfd83a28a95e228f5535fb14c9e30816bf6eae778"
+source = "git+https://github.com/MMitsuha/openh264-rs.git#97b30edcf5107e28dcb30b1f4c5f68f2b3045e7e"
 dependencies = [
  "cc",
  "nasm-rs",
@@ -3948,6 +3946,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d4a3125a318143f6eee6f9a2d1ae831beca902eabb39ccc14523c26bda2ffa1"
 dependencies = [
  "num-traits",
+ "rayon",
 ]
 
 [[package]]

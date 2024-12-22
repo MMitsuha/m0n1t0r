@@ -5,12 +5,14 @@
 ClientTab::ClientTab(std::shared_ptr<m0n1t0r::Client> _client,
                      ProcessTable *process_table, FileTree *file_tree,
                      InteractiveShellTab *interactive_shell_tab,
+                     RemoteDesktopWidget *remote_desktop_widget,
                      QWidget *parent)
     : QWidget(parent), ui(new Ui::ClientTab), client(_client) {
   ui->setupUi(this);
   ui->layout_processes->addWidget(process_table);
   ui->layout_files->addWidget(file_tree);
   ui->layout_interactive_shell->addWidget(interactive_shell_tab);
+  ui->layout_remote_desktop->addWidget(remote_desktop_widget);
   ui->checkBox_has_permission->setAttribute(Qt::WA_TransparentForMouseEvents);
   ui->checkBox_support->setAttribute(Qt::WA_TransparentForMouseEvents);
 

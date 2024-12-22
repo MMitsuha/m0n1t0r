@@ -41,8 +41,8 @@ async-compat = "0.2"
 tokio-stream = "0.1"
 libsw = "3.0"
 serde_repr = "0.1"
-openh264 = { version = "0.6", features = ["backtrace"] }
-rayon = "1.10.0"
-async_fn_traits = "0.1.1"
+openh264 = { version = "0.6", git = "https://github.com/MMitsuha/openh264-rs.git" }
+rayon = "1.10"
+async_fn_traits = "0.1"
 itertools = "0.13"
-yuvutils-rs = "0.5"
+yuvutils-rs = { version = "0.5", features = ["rayon"] }

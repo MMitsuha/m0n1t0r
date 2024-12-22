@@ -31,7 +31,8 @@ void InteractiveShellTab::on_pushButton_run_program_clicked() {
         ->executeCommandInteractive(
             program.toStdString(),
             [=](const std::string &output) {
-              emit outputReceived(QString::fromStdString(output));
+              emit outputReceived(
+                  std::make_shared<QString>(QString::fromStdString(output)));
               return m_termination == false;
             },
             [=]() { setTermination(true); }, channel)
@@ -50,9 +51,9 @@ void InteractiveShellTab::on_pushButton_send_clicked() {
   channel << input.toStdString();
 }
 
-void InteractiveShellTab::onOutputReceived(QString output) {
+void InteractiveShellTab::onOutputReceived(std::shared_ptr<QString> output) {
   ui->plainTextEdit_output->insertPlainText("<< ");
-  ui->plainTextEdit_output->insertPlainText(output);
+  ui->plainTextEdit_output->insertPlainText(*output);
   ui->plainTextEdit_output->ensureCursorVisible();
 }
 

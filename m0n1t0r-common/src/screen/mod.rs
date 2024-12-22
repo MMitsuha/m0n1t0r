@@ -1,5 +1,5 @@
 use crate::Result as AppResult;
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use capscreen::{
     capturer::{Capturer, Config, Engine},
     frame::Frame,
@@ -7,15 +7,15 @@ use capscreen::{
 };
 use openh264::{encoder::Encoder, formats::YUVSlices};
 use rayon::prelude::{
-    IndexedParallelIterator as _, IntoParallelRefIterator, ParallelIterator as _,
+    IndexedParallelIterator as _, IntoParallelRefIterator as _, ParallelIterator as _,
 };
 use remoc::{
-    rch::lr::{self, Receiver},
+    rch::lr::{self, Receiver, Sender},
     rtc,
 };
-use ring_channel::RingSender;
 use serde::{Deserialize, Serialize};
-use std::{num::NonZero, thread};
+use std::thread;
+use tokio::runtime::Runtime;
 use yuvutils_rs::{YuvChromaSubsampling, YuvPlanarImageMut, YuvRange, YuvStandardMatrix};
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
@@ -30,10 +30,11 @@ impl Into<bool> for Availability {
     }
 }
 
-fn process_frame(
+fn process_frames(
     capturer: &mut Capturer,
     encoder: &mut Encoder,
-    tx: RingSender<Vec<u8>>,
+    runtime: &Runtime,
+    tx: &mut Sender<Vec<u8>>,
 ) -> Result<()> {
     loop {
         let frame = capturer.get_frame()?;
@@ -89,7 +90,7 @@ fn process_frame(
             Frame::Empty => continue,
         };
 
-        tx.send(stream.to_vec())?;
+        runtime.block_on(tx.send(stream.to_vec()))?;
     }
 }
 
@@ -98,24 +99,14 @@ pub trait Agent: Sync {
     async fn record(&self, options: Config) -> AppResult<Receiver<Vec<u8>>> {
         let options = options;
         let (mut tx, remote_rx) = lr::channel();
-        let (local_tx, local_rx) = ring_channel::ring_channel(
-            NonZero::new(options.buffer_size).ok_or(anyhow!("buffer size is zero"))?,
-        );
-
-        tokio::spawn(async move {
-            loop {
-                tx.send(local_rx.recv()?).await?;
-            }
-            #[allow(unreachable_code)]
-            Ok::<_, anyhow::Error>(())
-        });
 
         thread::spawn(move || {
             let mut capturer = Capturer::new(&options)?;
             let mut encoder = Encoder::new()?;
+            let runtime = Runtime::new()?;
 
             capturer.start()?;
-            let _ = process_frame(&mut capturer, &mut encoder, local_tx);
+            let _ = process_frames(&mut capturer, &mut encoder, &runtime, &mut tx);
             capturer.stop()?;
             Ok::<_, anyhow::Error>(())
         });
