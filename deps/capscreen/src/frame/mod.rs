@@ -21,6 +21,8 @@ use cfg_block::cfg_block;
 pub enum Frame {
     Nv12(Nv12),
     Bgra8(Bgra8),
+    Rgba8(Rgba8),
+    Rgba16F(Rgba16F),
     Empty,
 }
 
@@ -34,6 +36,22 @@ pub struct Nv12 {
 }
 
 pub struct Bgra8 {
+    pub width: u32,
+    pub row_stride: u32,
+    pub height: u32,
+    pub height_stride: u32,
+    pub data: Vec<u8>,
+}
+
+pub struct Rgba8 {
+    pub width: u32,
+    pub row_stride: u32,
+    pub height: u32,
+    pub height_stride: u32,
+    pub data: Vec<u8>,
+}
+
+pub struct Rgba16F {
     pub width: u32,
     pub row_stride: u32,
     pub height: u32,

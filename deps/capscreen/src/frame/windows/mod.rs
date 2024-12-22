@@ -1,4 +1,4 @@
-use super::{Bgra8, Frame};
+use super::{Bgra8, Frame, Rgba16F, Rgba8};
 use crate::{Error, Result};
 use windows_capture::{
     frame::{Frame as RawFrame, FrameBuffer},
@@ -6,6 +6,32 @@ use windows_capture::{
 };
 
 impl From<FrameBuffer<'_>> for Bgra8 {
+    fn from(value: FrameBuffer<'_>) -> Self {
+        let buffer = value.as_raw_buffer();
+        Self {
+            width: value.width(),
+            row_stride: value.row_pitch(),
+            height: value.height(),
+            height_stride: value.depth_pitch(),
+            data: buffer.to_vec(),
+        }
+    }
+}
+
+impl From<FrameBuffer<'_>> for Rgba8 {
+    fn from(value: FrameBuffer<'_>) -> Self {
+        let buffer = value.as_raw_buffer();
+        Self {
+            width: value.width(),
+            row_stride: value.row_pitch(),
+            height: value.height(),
+            height_stride: value.depth_pitch(),
+            data: buffer.to_vec(),
+        }
+    }
+}
+
+impl From<FrameBuffer<'_>> for Rgba16F {
     fn from(value: FrameBuffer<'_>) -> Self {
         let buffer = value.as_raw_buffer();
         Self {
@@ -28,7 +54,8 @@ impl TryFrom<&mut RawFrame<'_>> for Frame {
             .map_err(|e| Error::ParseFrameFailed(e.into()))?;
         Ok(match color_format {
             ColorFormat::Bgra8 => Frame::Bgra8(buffer.into()),
-            _ => todo!(),
+            ColorFormat::Rgba8 => Frame::Rgba8(buffer.into()),
+            ColorFormat::Rgba16F => Frame::Rgba16F(buffer.into()),
         })
     }
 }

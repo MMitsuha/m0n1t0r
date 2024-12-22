@@ -57,3 +57,9 @@ impl From<cxx::Exception> for Error {
         Self::FfiException(serde_error::Error::new(&e))
     }
 }
+
+impl From<tokio::sync::oneshot::error::RecvError> for Error {
+    fn from(e: tokio::sync::oneshot::error::RecvError) -> Self {
+        Self::FfiException(serde_error::Error::new(&e))
+    }
+}

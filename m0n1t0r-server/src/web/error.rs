@@ -1,17 +1,9 @@
 pub type Result<T> = std::result::Result<T, Error>;
 
 use crate::web::Response;
-use actix_web::{
-    error::{PathError, QueryPayloadError, ResponseError},
-    http::StatusCode,
-    HttpResponse,
-};
-use remoc::rch::ConnectError;
+use actix_web::{http::StatusCode, HttpResponse};
 use serde::Serialize;
-use shell_words::ParseError;
-use std::{net::AddrParseError, num::ParseIntError};
 use thiserror::Error;
-use tokio::io;
 
 #[derive(Error, Debug, Serialize, Clone)]
 #[repr(i16)]
@@ -32,7 +24,7 @@ pub enum Error {
     WebFrameworkException(serde_error::Error) = -4,
 
     #[error("channel connect error: {0}")]
-    RchFailed(#[from] ConnectError) = -5,
+    RchFailed(#[from] remoc::rch::ConnectError) = -5,
 
     #[error("parse command error: {0}")]
     InvalidCommand(serde_error::Error) = -6,
@@ -65,7 +57,7 @@ impl Error {
     }
 }
 
-impl ResponseError for Error {
+impl actix_web::ResponseError for Error {
     fn error_response(&self) -> HttpResponse {
         HttpResponse::build(self.status_code())
             .json(Response::error(self.clone()).unwrap_or_default())
@@ -104,38 +96,38 @@ impl From<actix_web::Error> for Error {
     }
 }
 
-impl From<ParseError> for Error {
-    fn from(e: ParseError) -> Self {
+impl From<shell_words::ParseError> for Error {
+    fn from(e: shell_words::ParseError) -> Self {
         Self::InvalidCommand(serde_error::Error::new(&e))
     }
 }
 
-impl From<io::Error> for Error {
-    fn from(e: io::Error) -> Self {
+impl From<tokio::io::Error> for Error {
+    fn from(e: tokio::io::Error) -> Self {
         Self::TokioIoFailed(serde_error::Error::new(&e))
     }
 }
 
-impl From<AddrParseError> for Error {
-    fn from(e: AddrParseError) -> Self {
+impl From<std::net::AddrParseError> for Error {
+    fn from(e: std::net::AddrParseError) -> Self {
         Self::InvalidIpAddress(serde_error::Error::new(&e))
     }
 }
 
-impl From<ParseIntError> for Error {
-    fn from(e: ParseIntError) -> Self {
+impl From<std::num::ParseIntError> for Error {
+    fn from(e: std::num::ParseIntError) -> Self {
         Self::InvalidInt(serde_error::Error::new(&e))
     }
 }
 
-impl From<PathError> for Error {
-    fn from(e: PathError) -> Self {
+impl From<actix_web::error::PathError> for Error {
+    fn from(e: actix_web::error::PathError) -> Self {
         Self::InvalidParameter(serde_error::Error::new(&e))
     }
 }
 
-impl From<QueryPayloadError> for Error {
-    fn from(e: QueryPayloadError) -> Self {
+impl From<actix_web::error::QueryPayloadError> for Error {
+    fn from(e: actix_web::error::QueryPayloadError) -> Self {
         Self::InvalidParameter(serde_error::Error::new(&e))
     }
 }
