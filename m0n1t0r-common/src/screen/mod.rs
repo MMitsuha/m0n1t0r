@@ -1,5 +1,5 @@
 use crate::Result as AppResult;
-use anyhow::Result;
+use anyhow::{bail, Result};
 use capscreen::{
     capturer::{Capturer, Config, Engine},
     frame::Frame,
@@ -39,6 +39,33 @@ fn process_frames(
     loop {
         let frame = capturer.get_frame()?;
         let stream = match frame {
+            Frame::Rgba8(rgba8) => {
+                let mut planar = YuvPlanarImageMut::<u8>::alloc(
+                    rgba8.width,
+                    rgba8.height,
+                    YuvChromaSubsampling::Yuv420,
+                );
+                yuvutils_rs::rgba_to_yuv420(
+                    &mut planar,
+                    &rgba8.data,
+                    rgba8.row_stride,
+                    YuvRange::Limited,
+                    YuvStandardMatrix::Bt601,
+                )?;
+                encoder.encode(&YUVSlices::new(
+                    (
+                        planar.y_plane.borrow(),
+                        planar.u_plane.borrow(),
+                        planar.v_plane.borrow(),
+                    ),
+                    (planar.width as usize, planar.height as usize),
+                    (
+                        planar.y_stride as usize,
+                        planar.u_stride as usize,
+                        planar.v_stride as usize,
+                    ),
+                ))?
+            }
             Frame::Bgra8(bgra8) => {
                 let mut planar = YuvPlanarImageMut::<u8>::alloc(
                     bgra8.width,
@@ -88,6 +115,7 @@ fn process_frames(
                 ))?
             }
             Frame::Empty => continue,
+            _ => bail!("Unsupported frame format"),
         };
 
         runtime.block_on(tx.send(stream.to_vec()))?;
