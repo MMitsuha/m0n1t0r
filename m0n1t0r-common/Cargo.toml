@@ -34,7 +34,7 @@ futures = "0.3"
 async-channel = "2.3"
 async_channel_io = "0.3"
 async-compat = "0.2"
-openh264 = { version = "0.6", git = "https://github.com/MMitsuha/openh264-rs.git" }
+openh264 = { version = "0.6.6" }
 async-stream = "0.3"
 rustls = { version = "0.23", features = ["ring", "log", "logging", "std", "tls12"], default-features = false }
 ring-channel = "0.12"

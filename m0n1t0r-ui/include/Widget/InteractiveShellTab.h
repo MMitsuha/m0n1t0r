@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <m0n1t0r-sdk.h>
+#include <msd/channel.hpp>
 
 namespace Ui {
 class InteractiveShellTab;

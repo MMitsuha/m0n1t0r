@@ -5,7 +5,11 @@ use capscreen::{
     frame::Frame,
     util::{self, Permission},
 };
-use openh264::{encoder::Encoder, formats::YUVSlices};
+use openh264::{
+    encoder::{Encoder, EncoderConfig, UsageType},
+    formats::YUVSlices,
+    OpenH264API,
+};
 use rayon::prelude::{
     IndexedParallelIterator as _, IntoParallelRefIterator as _, ParallelIterator as _,
 };
@@ -130,7 +134,9 @@ pub trait Agent: Sync {
 
         thread::spawn(move || {
             let mut capturer = Capturer::new(&options)?;
-            let mut encoder = Encoder::new()?;
+            let api = OpenH264API::from_source();
+            let config = EncoderConfig::new().usage_type(UsageType::ScreenContentRealTime);
+            let mut encoder = Encoder::with_api_config(api, config)?;
             let runtime = Runtime::new()?;
 
             capturer.start()?;

@@ -124,7 +124,7 @@ Client::CommandOutput Client::executeCommand(const std::string &command) {
 Client::Process Client::Process::fromJson(nlohmann::json json) {
   return Process{
       json["cmd"],
-      json["exe"],
+      json["exe"].is_null() ? "[unknown]" : json["exe"],
       json["name"],
       json["pid"],
   };

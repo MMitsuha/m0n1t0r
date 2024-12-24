@@ -55,6 +55,7 @@ public:
 
   struct Process {
     std::vector<std::string> cmd;
+    // TODO: this may be null, so we should use optional?
     std::string exe;
     std::string name;
     uint64_t pid;
