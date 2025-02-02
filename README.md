@@ -8,7 +8,7 @@
 2. Socks5 proxy
 3. Command execution
 4. Restful web api control
-5. Screen monitor
+5. ~~Screen monitor~~ (removed due to unstable performance on different platforms)
 6. Shellcode execution
 
 ## Build
