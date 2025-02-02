@@ -1,4 +1,4 @@
-use crate::{fs, info, network, process, proxy, screen, util, Result as AppResult};
+use crate::{fs, info, network, process, proxy, util, Result as AppResult};
 use remoc::rtc;
 use serde::{Deserialize, Serialize};
 use tokio::fs as tfs;
@@ -39,8 +39,6 @@ pub trait Client: Sync {
     async fn get_proxy_agent(&self) -> AppResult<proxy::AgentClient>;
 
     async fn get_network_agent(&self) -> AppResult<network::AgentClient>;
-
-    async fn get_screen_agent(&self) -> AppResult<screen::AgentClient>;
 
     async fn update(&self, url: Url) -> AppResult<()> {
         util::network::download(url, UPDATE_TEMP_PATH.into()).await?;

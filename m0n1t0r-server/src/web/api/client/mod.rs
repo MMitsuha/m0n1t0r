@@ -4,7 +4,6 @@ pub mod info;
 pub mod network;
 pub mod process;
 pub mod proxy;
-pub mod screen;
 
 use crate::{
     web::{Response, Result as WebResult},

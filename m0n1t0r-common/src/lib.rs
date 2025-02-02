@@ -5,7 +5,6 @@ pub mod info;
 pub mod network;
 pub mod process;
 pub mod proxy;
-pub mod screen;
 pub mod server;
 pub mod util;
 

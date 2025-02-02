@@ -41,12 +41,6 @@ pub enum Error {
     #[error("parse int error: {0}")]
     InvalidInt(serde_error::Error) = -10,
 
-    #[error("unsupported error")]
-    Unsupported = -11,
-
-    #[error("client denied request error")]
-    ClientDeniedRequest = -12,
-
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error) = -255,
 }

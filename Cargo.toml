@@ -5,7 +5,6 @@ members = [
     "m0n1t0r-server",
     "m0n1t0r-common",
     "m0n1t0r-macro",
-    "deps/capscreen",
 ]
 
 [workspace.package]

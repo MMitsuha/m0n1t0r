@@ -62,12 +62,6 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                                     .service(client::proxy::socks5::noauth::get)
                                     .service(client::proxy::socks5::pass::get),
                             )
-                            .service(
-                                web::scope("/screen")
-                                    .service(client::screen::get)
-                                    .service(client::screen::head)
-                                    .service(client::screen::put),
-                            )
                             .service(web::scope("/info").service(client::info::system::get))
                             .service(
                                 web::scope("/network").service(client::network::download::get),
