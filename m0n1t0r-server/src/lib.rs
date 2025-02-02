@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate m0n1t0r_macro;
+
 mod conn;
 mod server;
 mod web;

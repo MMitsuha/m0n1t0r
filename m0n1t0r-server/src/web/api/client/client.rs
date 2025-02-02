@@ -82,7 +82,7 @@ pub mod update {
 }
 
 pub mod notify {
-    use crate::web;
+    use crate::web::util;
     use actix_web::{web::Payload, HttpRequest};
     use actix_ws::Message;
     use tokio::{select, task};
@@ -106,7 +106,7 @@ pub mod notify {
 
         let (response, mut session, mut stream) = actix_ws::handle(&req, body)?;
 
-        task::spawn_local(web::handle_websocket(session.clone(), async move {
+        task::spawn_local(util::handle_websocket(session.clone(), async move {
             loop {
                 select! {
                     Some(msg) = stream.recv() => match msg? {

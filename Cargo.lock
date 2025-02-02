@@ -1765,6 +1765,7 @@ dependencies = [
  "libsw",
  "log",
  "m0n1t0r-common",
+ "m0n1t0r-macro",
  "rayon",
  "remoc",
  "reqwest",

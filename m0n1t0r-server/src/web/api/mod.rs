@@ -1,7 +1,7 @@
 mod client;
 mod index;
 
-use crate::ServerMap;
+use crate::{web::util, ServerMap};
 use actix_web::{
     middleware::{self, NormalizePath},
     web::{self, Data},
@@ -26,7 +26,7 @@ impl From<&crate::Config> for Config {
 
 pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<()> {
     HttpServer::new(move || {
-        let (path_config, query_config) = super::extractor_config();
+        let (path_config, query_config) = util::extractor_config();
 
         App::new()
             .wrap(Logger::default())

@@ -1,8 +1,7 @@
 #[cfg(debug_assertions)]
 pub mod debug;
 
-use anyhow::anyhow;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use m0n1t0r_common::{
     client::{Client, ClientClient},
     server::Server,

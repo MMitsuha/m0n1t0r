@@ -6,28 +6,28 @@ use thiserror::Error;
 
 #[derive(Error, Debug, Serialize, Deserialize, Clone)]
 pub enum Error {
-    #[error("remote call error: {0}")]
-    RtcFailed(#[from] rtc::CallError),
+    #[error("remote call with exception: {0}")]
+    RtcException(#[from] rtc::CallError),
 
-    #[error("channel connect error: {0}")]
+    #[error("channel disconnected: {0}")]
     ChannelDisconnected(#[from] ConnectError),
 
-    #[error("procedure error: {0}")]
+    #[error("tokio io failed: {0}")]
     TokioIoFailed(serde_error::Error),
 
-    #[error("http error: {0}")]
+    #[error("http request failed: {0}")]
     HttpRequestFailed(serde_error::Error),
 
-    #[error("ffi error: {0}")]
+    #[error("foreign function call failed: {0}")]
     FfiException(serde_error::Error),
 
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error),
 
-    #[error("unsupported procedure")]
+    #[error("unsupported operation")]
     Unsupported,
 
-    #[error("procedure unimplemented")]
+    #[error("operation unimplemented")]
     Unimplemented,
 }
 

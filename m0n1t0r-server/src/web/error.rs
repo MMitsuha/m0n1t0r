@@ -2,53 +2,48 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 use crate::web::Response;
 use actix_web::{http::StatusCode, HttpResponse};
+use m0n1t0r_common::util::Discriminant;
 use serde::Serialize;
 use thiserror::Error;
 
-#[derive(Error, Debug, Serialize, Clone)]
+#[derive(Error, Debug, Serialize, Clone, Discriminant)]
 #[repr(i16)]
 pub enum Error {
     #[error("operation succeeded")]
     Okay = 0,
 
-    #[error("serialization error: {0}")]
+    #[error("serialization failed: {0}")]
     SerializeError(serde_error::Error) = -1,
 
-    #[error("specified object not find error")]
+    #[error("specified object not find")]
     NotFound = -2,
 
-    #[error("remote call error: {0}")]
-    RtcFailed(m0n1t0r_common::Error) = -3,
+    #[error("remote call failed with exception: {0}")]
+    RtcException(m0n1t0r_common::Error) = -3,
 
-    #[error("web framework error: {0}")]
+    #[error("web framework failed with exception: {0}")]
     WebFrameworkException(serde_error::Error) = -4,
 
-    #[error("channel connect error: {0}")]
-    RchFailed(#[from] remoc::rch::ConnectError) = -5,
+    #[error("channel connect failed with exception: {0}")]
+    RchException(#[from] remoc::rch::ConnectError) = -5,
 
-    #[error("parse command error: {0}")]
+    #[error("parse command failed: {0}")]
     InvalidCommand(serde_error::Error) = -6,
 
-    #[error("io error: {0}")]
+    #[error("tokio io failed: {0}")]
     TokioIoFailed(serde_error::Error) = -7,
 
-    #[error("parse addr error: {0}")]
+    #[error("invalid ip address: {0}")]
     InvalidIpAddress(serde_error::Error) = -8,
 
-    #[error("extractor error: {0}")]
-    InvalidParameter(serde_error::Error) = -9,
+    #[error("invalid web parameter: {0}")]
+    InvalidWebParameter(serde_error::Error) = -9,
 
-    #[error("parse int error: {0}")]
+    #[error("parse int failed: {0}")]
     InvalidInt(serde_error::Error) = -10,
 
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error) = -255,
-}
-
-impl Error {
-    pub fn discriminant(&self) -> i16 {
-        unsafe { *(self as *const Self as *const i16) }
-    }
 }
 
 impl actix_web::ResponseError for Error {
@@ -61,6 +56,10 @@ impl actix_web::ResponseError for Error {
         match *self {
             Error::Okay => StatusCode::OK,
             Error::NotFound => StatusCode::NOT_FOUND,
+            Error::InvalidWebParameter(_)
+            | Error::InvalidCommand(_)
+            | Error::InvalidInt(_)
+            | Error::InvalidIpAddress(_) => StatusCode::BAD_REQUEST,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
@@ -80,7 +79,7 @@ impl From<serde_json::Error> for Error {
 
 impl From<m0n1t0r_common::Error> for Error {
     fn from(e: m0n1t0r_common::Error) -> Self {
-        Self::RtcFailed(e)
+        Self::RtcException(e)
     }
 }
 
@@ -116,12 +115,12 @@ impl From<std::num::ParseIntError> for Error {
 
 impl From<actix_web::error::PathError> for Error {
     fn from(e: actix_web::error::PathError) -> Self {
-        Self::InvalidParameter(serde_error::Error::new(&e))
+        Self::InvalidWebParameter(serde_error::Error::new(&e))
     }
 }
 
 impl From<actix_web::error::QueryPayloadError> for Error {
     fn from(e: actix_web::error::QueryPayloadError) -> Self {
-        Self::InvalidParameter(serde_error::Error::new(&e))
+        Self::InvalidWebParameter(serde_error::Error::new(&e))
     }
 }
