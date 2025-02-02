@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! declare_agent {
     ($name:ident) => {
-        mod $name {
+        pub mod $name {
             pub struct AgentObj {}
             impl AgentObj {
                 pub fn new() -> Self {

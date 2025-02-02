@@ -36,6 +36,7 @@ rustls-pemfile = "2.2"
 rustls-pki-types = { version = "1.10", features = ["alloc"] }
 paste = "1.0"
 quote = "1.0"
+qqkey = { path = "../deps/qqkey" }
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["winbase"] }

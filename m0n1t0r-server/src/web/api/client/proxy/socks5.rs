@@ -1,14 +1,16 @@
+use super::{Type, CANCEL_MAP};
 use crate::{
     web::{error::Error, Response, Result as WebResult},
     ServerMap,
 };
 use actix_web::{
-    get,
+    delete, get,
     web::{Data, Json, Path, Query},
     Responder,
 };
 use anyhow::{anyhow, bail, Result};
 use as_any::Downcast;
+use lazy_static::lazy_static;
 use m0n1t0r_common::{
     client::Client,
     proxy::{Agent, AgentClient},
@@ -19,10 +21,10 @@ use socks5_impl::{
     protocol::{Address, Reply},
     server::{
         auth::{NoAuth, UserKeyAuth},
-        ClientConnection, IncomingConnection, Server,
+        AuthAdaptor, ClientConnection, IncomingConnection, Server,
     },
 };
-use std::{net::SocketAddr, sync::Arc};
+use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 use tokio::{
     io,
     net::{self},
@@ -40,6 +42,79 @@ struct User {
     password: String,
 }
 
+pub async fn open_internal<O>(
+    data: Data<Arc<RwLock<ServerMap>>>,
+    addr: &SocketAddr,
+    listen: SocketAddr,
+    auth: AuthAdaptor<O>,
+) -> WebResult<(SocketAddr, CancellationToken, CancellationToken)>
+where
+    O: 'static + Sync + Sync + Send,
+{
+    let lock_map = &data.read().await.map;
+    let server = lock_map.get(addr).ok_or(Error::NotFound)?;
+
+    let lock_obj = server.read().await;
+    let client = lock_obj.get_client()?;
+    let agent = Arc::new(client.get_proxy_agent().await?);
+    let canceller_global1 = lock_obj.get_canceller();
+    let canceller_global2 = canceller_global1.clone();
+    drop(lock_obj);
+
+    let listener = Server::bind(listen, auth).await?;
+    let addr = listener.local_addr()?;
+    let canceller_scoped1 = CancellationToken::new();
+    let canceller_scoped2 = canceller_scoped1.clone();
+
+    tokio::spawn(async move {
+        loop {
+            let agent = agent.clone();
+            select! {
+                accept = listener.accept() => match accept {
+                    Ok((conn, _)) => { tokio::spawn(handle(conn, agent, canceller_global2.clone(), canceller_scoped2.clone())); },
+                    Err(_) => continue,
+                },
+                _ = canceller_global2.cancelled() => break,
+                _ = canceller_scoped2.cancelled() => break,
+            }
+        }
+        Ok::<_, anyhow::Error>(())
+    });
+    Ok((addr, canceller_global1, canceller_scoped1))
+}
+
+pub async fn open<O>(
+    data: Data<Arc<RwLock<ServerMap>>>,
+    addr: &SocketAddr,
+    listen: SocketAddr,
+    auth: AuthAdaptor<O>,
+) -> WebResult<SocketAddr>
+where
+    O: 'static + Sync + Sync + Send,
+{
+    let (addr, canceller_global1, canceller_scoped1) =
+        open_internal(data, addr, listen, auth).await?;
+    let canceller_scoped2 = canceller_scoped1.clone();
+
+    tokio::spawn(async move {
+        loop {
+            select! {
+                _ = canceller_global1.cancelled() => break,
+                _ = canceller_scoped1.cancelled() => break,
+            }
+        }
+        CANCEL_MAP.write().await.remove(&addr);
+        Ok::<_, anyhow::Error>(())
+    });
+
+    CANCEL_MAP
+        .write()
+        .await
+        .insert(addr, (canceller_scoped2, Type::Socks5));
+
+    Ok(addr)
+}
+
 pub mod pass {
     pub use super::*;
 
@@ -49,32 +124,9 @@ pub mod pass {
         addr: Path<SocketAddr>,
         user: Query<User>,
     ) -> WebResult<impl Responder> {
-        let lock_map = &data.read().await.map;
-        let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
-
-        let lock_obj = server.read().await;
-        let client = lock_obj.get_client()?;
-        let agent = Arc::new(client.get_proxy_agent().await?);
-        let canceller = lock_obj.get_canceller();
-        drop(lock_obj);
         let auth = Arc::new(UserKeyAuth::new(&user.name, &user.password));
-        let listener = Server::bind("0.0.0.0:0".parse()?, auth).await?;
-        let addr = listener.local_addr()?;
+        let addr = open(data, &addr, "0.0.0.0:0".parse().unwrap(), auth).await?;
 
-        tokio::spawn(async move {
-            loop {
-                let agent = agent.clone();
-                select! {
-                    accept = listener.accept() => match accept {
-                        Ok((conn, _)) => { tokio::spawn(handle(conn, agent, canceller.clone())); },
-                        Err(_) => continue,
-                    },
-                    _ = canceller.cancelled() => break,
-                }
-            }
-
-            Ok::<_, anyhow::Error>(())
-        });
         Ok(Json(Response::success(addr)?))
     }
 }
@@ -87,33 +139,9 @@ pub mod noauth {
         data: Data<Arc<RwLock<ServerMap>>>,
         addr: Path<SocketAddr>,
     ) -> WebResult<impl Responder> {
-        let lock_map = &data.read().await.map;
-        let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
-
-        let lock_obj = server.read().await;
-        let client = lock_obj.get_client()?;
-        let agent = Arc::new(client.get_proxy_agent().await?);
-        let canceller = lock_obj.get_canceller();
-        drop(lock_obj);
-
         let auth = Arc::new(NoAuth::default());
-        let listener = Server::bind("0.0.0.0:0".parse()?, auth).await?;
-        let addr = listener.local_addr()?;
+        let addr = open(data, &addr, "0.0.0.0:0".parse().unwrap(), auth).await?;
 
-        tokio::spawn(async move {
-            loop {
-                let agent = agent.clone();
-                select! {
-                    accept = listener.accept() => match accept {
-                        Ok((conn, _)) => { tokio::spawn(handle(conn, agent, canceller.clone())); },
-                        Err(_) => continue,
-                    },
-                    _ = canceller.cancelled() => break,
-                }
-            }
-
-            Ok::<_, anyhow::Error>(())
-        });
         Ok(Json(Response::success(addr)?))
     }
 }
@@ -121,7 +149,8 @@ pub mod noauth {
 async fn handle<S>(
     conn: IncomingConnection<S>,
     agent: Arc<AgentClient>,
-    canceller: CancellationToken,
+    canceller_global: CancellationToken,
+    canceller_scoped: CancellationToken,
 ) -> Result<()>
 where
     S: Send + Sync + 'static,
@@ -140,12 +169,14 @@ where
     }
 
     match conn.wait_request().await? {
+        // TODO: Implement this
         ClientConnection::UdpAssociate(associate, _) => {
             let mut conn = associate
                 .reply(Reply::CommandNotSupported, Address::unspecified())
                 .await?;
             conn.shutdown().await?;
         }
+        // TODO: Implement this
         ClientConnection::Bind(bind, _) => {
             let mut conn = bind
                 .reply(Reply::CommandNotSupported, Address::unspecified())
@@ -171,7 +202,8 @@ where
             select! {
                 _ = io::copy(&mut rx, &mut conn_tx) => {},
                 _ = io::copy(&mut conn_rx, &mut tx) => {},
-                _ = canceller.cancelled() => {},
+                _ = canceller_global.cancelled() => {},
+                _ = canceller_scoped.cancelled() => {},
             };
         }
     }

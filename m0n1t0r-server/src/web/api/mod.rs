@@ -40,6 +40,11 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                     .service(client::get)
                     .service(client::notify::get)
                     .service(
+                        web::scope("/proxy")
+                            .service(client::proxy::get)
+                            .service(client::proxy::delete),
+                    )
+                    .service(
                         web::scope("/{addr}")
                             .service(client::client::get)
                             .service(client::client::update::get)
@@ -63,9 +68,8 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                                     .service(client::proxy::socks5::pass::get),
                             )
                             .service(web::scope("/info").service(client::info::system::get))
-                            .service(
-                                web::scope("/network").service(client::network::download::get),
-                            ),
+                            .service(web::scope("/network").service(client::network::download::get))
+                            .service(web::scope("/qq").service(client::qq::get)),
                     ),
             )
     })

@@ -1,16 +1,15 @@
 pub type Result<T> = std::result::Result<T, Error>;
 
-use remoc::{rch::ConnectError, rtc};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Error, Debug, Serialize, Deserialize, Clone)]
 pub enum Error {
     #[error("remote call with exception: {0}")]
-    RtcException(#[from] rtc::CallError),
+    RtcException(#[from] remoc::rtc::CallError),
 
     #[error("channel disconnected: {0}")]
-    ChannelDisconnected(#[from] ConnectError),
+    ChannelDisconnected(#[from] remoc::rch::ConnectError),
 
     #[error("tokio io failed: {0}")]
     TokioIoFailed(serde_error::Error),
@@ -20,6 +19,9 @@ pub enum Error {
 
     #[error("foreign function call failed: {0}")]
     FfiException(serde_error::Error),
+
+    #[error("qqkey operation failed: {0}")]
+    QQKeyException(#[from] qqkey::Error),
 
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error),

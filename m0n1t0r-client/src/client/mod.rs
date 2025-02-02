@@ -1,5 +1,5 @@
 #[macro_use]
-mod agent;
+mod agent_macro;
 
 #[cfg(feature = "windows")]
 mod windows;
@@ -53,6 +53,7 @@ impl Client for ClientObj {
         Ok(())
     }
 
+    // TODO: Improve this implementation
     #[cfg(feature = "windows")]
     async fn target_platform(&self) -> AppResult<TargetPlatform> {
         Ok(TargetPlatform::Windows)

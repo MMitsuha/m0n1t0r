@@ -42,6 +42,9 @@ pub enum Error {
     #[error("parse int failed: {0}")]
     InvalidInt(serde_error::Error) = -10,
 
+    #[error("qqkey operation failed: {0}")]
+    QQKeyException(#[from] qqkey::Error) = -11,
+
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error) = -255,
 }
