@@ -893,9 +893,9 @@ dependencies = [
 
 [[package]]
 name = "core-utils-rs"
-version = "0.3.3"
+version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4cd18fce9a8d0ade49a7760c8ff5e29ee5905d9eba8cb259ea81de040d2b7b8a"
+checksum = "068ec1aa07335261033bf610b2868ea9db05353468b72b0045ae469e00d26121"
 dependencies = [
  "core-foundation 0.10.0",
  "four-char-code",
@@ -903,9 +903,9 @@ dependencies = [
 
 [[package]]
 name = "core-video-rs"
-version = "0.3.3"
+version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "667e4fa39f145d8067c39aba4b9314b82097659f6b6a864d0d8fb1318b961a09"
+checksum = "7559e93f816c05607068cb0b741d997a47709f4ba70b36a02d335f7136b30c46"
 dependencies = [
  "core-foundation 0.10.0",
  "core-graphics",
