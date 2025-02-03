@@ -45,3 +45,6 @@ winapi = { version = "0.3", features = ["winbase"] }
 xmake = { version = "0.2", git = "https://github.com/MMitsuha/xmake-rs.git" }
 cxx-build = "1.0"
 cargo-emit = "0.2"
+
+[target.'cfg(windows)'.build-dependencies]
+winres = "0.1"

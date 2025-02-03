@@ -34,6 +34,24 @@ fn xmake_build() -> Vec<PathBuf> {
     paths
 }
 
+fn add_administrator_manifest() {
+    let mut res = winres::WindowsResource::new();
+    res.set_manifest(
+        r#"
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="requireAdministrator" uiAccess="false" />
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+</assembly>
+"#,
+    );
+    res.compile().unwrap();
+}
+
 fn main() {
     BRIDGE_LIST_WINDOWS.iter().for_each(|x| {
         let _ = cxx_build::bridge(x);
@@ -47,4 +65,7 @@ fn main() {
     PROJECT_LIST_WINDOWS.iter().for_each(|x| {
         cargo_emit::rustc_link_lib!(x);
     });
+
+    #[cfg(windows)]
+    add_administrator_manifest();
 }
