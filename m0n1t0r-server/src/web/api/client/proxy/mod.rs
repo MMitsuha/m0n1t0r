@@ -6,36 +6,14 @@ use crate::{
 };
 use actix_web::{
     delete, get,
-    web::{Data, Json, Path, Query},
+    web::{Data, Json, Path},
     Responder,
 };
-use anyhow::{anyhow, bail, Result};
-use as_any::Downcast;
 use lazy_static::lazy_static;
-use m0n1t0r_common::{
-    client::Client,
-    proxy::{Agent, AgentClient},
-};
-use remoc::chmux::ReceiverStream;
 use serde::{Deserialize, Serialize};
-use socks5_impl::{
-    protocol::{Address, Reply},
-    server::{
-        auth::{NoAuth, UserKeyAuth},
-        AuthAdaptor, ClientConnection, IncomingConnection, Server,
-    },
-};
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
-use tokio::{
-    io,
-    net::{self},
-    select,
-    sync::RwLock,
-};
-use tokio_util::{
-    io::{CopyToBytes, SinkWriter, StreamReader},
-    sync::CancellationToken,
-};
+use tokio::sync::RwLock;
+use tokio_util::sync::CancellationToken;
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
 enum Type {
@@ -49,12 +27,12 @@ struct Detail {
 }
 
 lazy_static! {
-    static ref CANCEL_MAP: Arc<RwLock<HashMap<SocketAddr, (CancellationToken, Type)>>> =
+    static ref PROXY_MAP: Arc<RwLock<HashMap<SocketAddr, (CancellationToken, Type)>>> =
         Arc::new(RwLock::new(HashMap::new()));
 }
 
 pub async fn close(addr: &SocketAddr) -> WebResult<()> {
-    CANCEL_MAP
+    PROXY_MAP
         .read()
         .await
         .get(addr)
@@ -79,7 +57,7 @@ pub async fn delete(
 
 impl Detail {
     pub async fn new() -> Vec<Self> {
-        CANCEL_MAP
+        PROXY_MAP
             .read()
             .await
             .iter()

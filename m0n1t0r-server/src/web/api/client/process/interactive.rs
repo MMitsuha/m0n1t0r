@@ -9,7 +9,7 @@ use actix_web::{
 };
 use actix_ws::Message;
 use anyhow::anyhow;
-use m0n1t0r_common::{client::Client, process::Agent as _};
+use m0n1t0r_common::{client::Client as _, process::Agent as _};
 use std::{net::SocketAddr, sync::Arc};
 use tokio::{select, sync::RwLock, task};
 

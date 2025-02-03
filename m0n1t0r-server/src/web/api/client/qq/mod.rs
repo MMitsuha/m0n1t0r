@@ -1,33 +1,49 @@
 use crate::{
-    web::{api::client::proxy::socks5, Error, Response, Result as WebResult},
+    web::{Error, Response, Result as WebResult},
     ServerMap,
 };
 use actix_web::{
-    delete, get, put,
-    web::{Bytes, Data, Json, Path},
-    HttpResponse, Responder,
+    get,
+    web::{Data, Json, Path},
+    Responder,
 };
-use m0n1t0r_common::{client::Client, fs::Agent as _};
-use qqkey::QQ;
-use reqwest::Proxy;
-use scopeguard::defer;
-use serde::{Deserialize, Serialize};
-use socks5_impl::server::auth::NoAuth;
-use std::{net::SocketAddr, path::PathBuf, sync::Arc};
+use m0n1t0r_common::{client::Client as _, qq::Agent as _};
+use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
-use tokio_util::sync::DropGuard;
 
 #[get("")]
 pub async fn get(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: Path<SocketAddr>,
 ) -> WebResult<impl Responder> {
-    let auth = Arc::new(NoAuth::default());
-    let (addr, _, canceller) =
-        socks5::open_internal(data, &addr, "127.0.0.1:0".parse().unwrap(), auth).await?;
-    let _guard = canceller.drop_guard();
-    let qq = QQ::new_with_proxy(Proxy::all(format!("socks5://{}", addr)).unwrap()).await?;
-    let response = Response::success(qq.get_logged_qq_info().await?)?;
+    let lock_map = &data.read().await.map;
+    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
 
-    Ok(Json(response))
+    let lock_obj = server.read().await;
+    let client = lock_obj.get_client()?;
+    let agent = client.get_qq_agent().await?;
+    drop(lock_obj);
+
+    Ok(Json(Response::success(agent.list().await?)?))
+}
+
+pub mod urls {
+    pub use super::*;
+
+    #[get("/{id}/urls")]
+    pub async fn get(
+        data: Data<Arc<RwLock<ServerMap>>>,
+        path: Path<(SocketAddr, i64)>,
+    ) -> WebResult<impl Responder> {
+        let (addr, id) = path.into_inner();
+        let lock_map = &data.read().await.map;
+        let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
+
+        let lock_obj = server.read().await;
+        let client = lock_obj.get_client()?;
+        let agent = client.get_qq_agent().await?;
+        drop(lock_obj);
+
+        Ok(Json(Response::success(agent.urls(id).await?)?))
+    }
 }

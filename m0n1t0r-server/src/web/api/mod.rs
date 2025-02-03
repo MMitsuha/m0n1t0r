@@ -69,7 +69,11 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                             )
                             .service(web::scope("/info").service(client::info::system::get))
                             .service(web::scope("/network").service(client::network::download::get))
-                            .service(web::scope("/qq").service(client::qq::get)),
+                            .service(
+                                web::scope("/qq")
+                                    .service(client::qq::get)
+                                    .service(client::qq::urls::get),
+                            ),
                     ),
             )
     })

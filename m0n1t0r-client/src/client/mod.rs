@@ -13,7 +13,7 @@ use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
 use tokio_util::sync::CancellationToken;
 
-declare_agents!(proxy, network, fs);
+declare_agents!(proxy, network, fs, qq);
 declare_agents_with_platform!("windows", process);
 
 pub struct ClientObj {
@@ -73,5 +73,9 @@ impl Client for ClientObj {
 
     async fn get_network_agent(&self) -> AppResult<m0n1t0r_common::network::AgentClient> {
         impl_agent!(network)
+    }
+
+    async fn get_qq_agent(&self) -> AppResult<m0n1t0r_common::qq::AgentClient> {
+        impl_agent!(qq)
     }
 }

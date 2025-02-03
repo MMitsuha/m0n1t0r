@@ -10,7 +10,7 @@ use actix_web::{
     web::{Data, Json, Path},
     Responder,
 };
-use m0n1t0r_common::{client::Client, process::Agent as _};
+use m0n1t0r_common::{client::Client as _, process::Agent as _};
 use serde::{Deserialize, Serialize};
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;

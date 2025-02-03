@@ -23,6 +23,9 @@ pub enum Error {
     #[error("qqkey operation failed: {0}")]
     QQKeyException(#[from] qqkey::Error),
 
+    #[error("specified object not found")]
+    NotFound,
+
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error),
 

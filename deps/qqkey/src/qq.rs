@@ -1,4 +1,4 @@
-use crate::{Account, AccountList, Error, InfoList, Result as QQResult, LOGIN_REFERER};
+use crate::{Account, AccountInfoList, AccountList, Error, Result as QQResult, LOGIN_REFERER};
 use rand::Rng;
 use regex::Regex;
 use reqwest::{header::REFERER, Client, Proxy};
@@ -7,9 +7,9 @@ use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct QQ {
-    client: Client,
-    cookie_store: Arc<CookieStoreRwLock>,
-    local_token: String,
+    pub(crate) client: Client,
+    pub(crate) cookie_store: Arc<CookieStoreRwLock>,
+    pub(crate) local_token: String,
 }
 
 impl QQ {
@@ -60,7 +60,7 @@ impl QQ {
             .to_string())
     }
 
-    pub async fn get_logged_qq_info(&self) -> QQResult<InfoList> {
+    pub async fn get_logged_qq_info(&self) -> QQResult<AccountInfoList> {
         let url = format!("https://localhost.ptlogin2.qq.com:4301/pt_get_uins?callback=ptui_getuins_CB&r={}&pt_local_tk={}", rand::rng().random_range(0.0..1.0), self.local_token);
         let response = self
             .client
@@ -82,15 +82,7 @@ impl QQ {
         let mut ret = AccountList::new();
 
         for i in info {
-            ret.push(
-                Account::new(
-                    self.client.clone(),
-                    self.cookie_store.clone(),
-                    i,
-                    &self.local_token,
-                )
-                .await?,
-            );
+            ret.push(Account::from(self, i).await?);
         }
 
         Ok(ret)

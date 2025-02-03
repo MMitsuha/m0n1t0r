@@ -1,18 +1,17 @@
-use super::{Type, CANCEL_MAP};
+use super::{Type, PROXY_MAP};
 use crate::{
     web::{error::Error, Response, Result as WebResult},
     ServerMap,
 };
 use actix_web::{
-    delete, get,
+    get,
     web::{Data, Json, Path, Query},
     Responder,
 };
-use anyhow::{anyhow, bail, Result};
+use anyhow::anyhow;
 use as_any::Downcast;
-use lazy_static::lazy_static;
 use m0n1t0r_common::{
-    client::Client,
+    client::Client as _,
     proxy::{Agent, AgentClient},
 };
 use remoc::chmux::ReceiverStream;
@@ -24,7 +23,7 @@ use socks5_impl::{
         AuthAdaptor, ClientConnection, IncomingConnection, Server,
     },
 };
-use std::{collections::HashMap, net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, sync::Arc};
 use tokio::{
     io,
     net::{self},
@@ -103,11 +102,11 @@ where
                 _ = canceller_scoped1.cancelled() => break,
             }
         }
-        CANCEL_MAP.write().await.remove(&addr);
+        PROXY_MAP.write().await.remove(&addr);
         Ok::<_, anyhow::Error>(())
     });
 
-    CANCEL_MAP
+    PROXY_MAP
         .write()
         .await
         .insert(addr, (canceller_scoped2, Type::Socks5));
@@ -151,7 +150,7 @@ async fn handle<S>(
     agent: Arc<AgentClient>,
     canceller_global: CancellationToken,
     canceller_scoped: CancellationToken,
-) -> Result<()>
+) -> WebResult<()>
 where
     S: Send + Sync + 'static,
 {
@@ -161,10 +160,13 @@ where
         match auth {
             Ok(b) => {
                 if *b == false {
-                    bail!("auth failed");
+                    return Err(Error::Socks5AuthFailed(serde_error::Error::new(&*anyhow!(
+                        "password or username mismatch"
+                    )))
+                    .into());
                 }
             }
-            Err(e) => return Err(serde_error::Error::new(e).into()),
+            Err(e) => return Err(Error::Socks5AuthFailed(serde_error::Error::new(e))),
         }
     }
 

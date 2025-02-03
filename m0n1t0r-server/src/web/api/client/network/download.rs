@@ -7,7 +7,7 @@ use actix_web::{
     web::{Data, Json, Path},
     Responder,
 };
-use m0n1t0r_common::{client::Client, network::Agent as _};
+use m0n1t0r_common::{client::Client as _, network::Agent as _};
 use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 use url::Url;
@@ -25,7 +25,6 @@ pub async fn get(
     let client = lock_obj.get_client()?;
     let agent = client.get_network_agent().await?;
     drop(lock_obj);
-    
 
     Ok(Json(Response::success(agent.download(url, path).await?)?))
 }

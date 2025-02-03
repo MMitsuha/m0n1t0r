@@ -1,10 +1,10 @@
-use anyhow::Result as AppResult;
+use anyhow::Result;
 use flexi_logger::Logger;
 use log::info;
 use qqkey::{GroupRole, QQ};
 
 #[tokio::main]
-async fn main() -> AppResult<()> {
+async fn main() -> Result<()> {
     Logger::try_with_str("info")?.start()?;
 
     let qq = QQ::new().await?;
@@ -12,7 +12,10 @@ async fn main() -> AppResult<()> {
 
     for account in accounts {
         info!("当前登录的QQ号: {}", account.get_uin());
-        info!("当前登录的QQ昵称: {}", account.get_nickname());
+        info!(
+            "当前登录的QQ昵称: {}",
+            account.get_nickname().unwrap_or("unknown".into())
+        );
         info!("QQ邮箱: {}", account.get_mail_url());
         info!("QQ空间: {}", account.get_qzone_url());
         info!("微云: {}", account.get_weiyun_url());

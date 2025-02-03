@@ -4,7 +4,9 @@ mod group;
 mod qq;
 mod qzone;
 
-pub use account::{Account, AccountList, InfoList};
+pub use account::{
+    Account, AccountList, Info as AccountInfo, InfoList as AccountInfoList, UrlList,
+};
 pub use error::*;
 pub use group::{Group, GroupList, Role as GroupRole};
 pub use qq::QQ;

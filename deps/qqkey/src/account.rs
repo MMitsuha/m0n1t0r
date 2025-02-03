@@ -1,7 +1,7 @@
 use crate::{
     group::{Group, GroupList, ListResponse, Role},
     qzone::QZone,
-    Error, Result as QQResult, LOGIN_REFERER, QQ_REFERER,
+    Error, Result as QQResult, LOGIN_REFERER, QQ, QQ_REFERER,
 };
 use rand::Rng;
 use regex::Regex;
@@ -9,6 +9,7 @@ use reqwest::{header::REFERER, Client, Url};
 use reqwest_cookie_store::CookieStoreRwLock;
 use serde::{Deserialize, Serialize};
 use std::{cell::RefCell, collections::HashMap, sync::Arc};
+use tokio::sync::{Mutex, RwLock};
 
 pub type InfoList = Vec<Info>;
 pub type AccountList = Vec<Account>;
@@ -18,7 +19,7 @@ pub struct Info {
     pub uin: i64,
     pub face_index: i64,
     pub gender: i64,
-    pub nickname: String,
+    pub nickname: Option<String>,
     pub client_type: i64,
     pub uin_flag: i64,
     pub account: i64,
@@ -30,7 +31,26 @@ pub struct Account {
     info: Info,
     index: i32,
     key: String,
-    skey_map: RefCell<HashMap<String, (String, String)>>,
+    skey_map: Arc<RwLock<HashMap<String, (String, String)>>>,
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct UrlList {
+    pub mail_url: String,
+    pub qzone_url: String,
+    pub weiyun_url: String,
+    pub qun_url: String,
+}
+
+impl UrlList {
+    pub async fn new(account: &Account) -> QQResult<Self> {
+        Ok(Self {
+            mail_url: account.get_mail_url(),
+            qzone_url: account.get_qzone_url(),
+            weiyun_url: account.get_weiyun_url(),
+            qun_url: account.get_qun_url().await?,
+        })
+    }
 }
 
 impl Account {
@@ -49,8 +69,18 @@ impl Account {
             info,
             index,
             key,
-            skey_map: RefCell::new(HashMap::new()),
+            skey_map: Arc::new(RwLock::new(HashMap::new())),
         })
+    }
+
+    pub async fn from(qq: &QQ, info: Info) -> QQResult<Self> {
+        Self::new(
+            qq.client.clone(),
+            qq.cookie_store.clone(),
+            info,
+            &qq.local_token,
+        )
+        .await
     }
 
     async fn get_client_key(
@@ -59,7 +89,7 @@ impl Account {
         info: &Info,
         local_token: &String,
     ) -> QQResult<(i32, String)> {
-        let url = format!("https://localhost.ptlogin2.qq.com:4301/pt_get_st?clientuin={}&r={}&pt_local_tk={}&callback=ptui_getst_CB",info.uin, rand::thread_rng().gen_range(0.0..1.0),local_token);
+        let url = format!("https://localhost.ptlogin2.qq.com:4301/pt_get_st?clientuin={}&r={}&pt_local_tk={}&callback=ptui_getst_CB",info.uin, rand::rng().random_range(0.0..1.0),local_token);
         let response = client
             .get(url)
             .header(REFERER, LOGIN_REFERER)
@@ -149,7 +179,7 @@ impl Account {
         let target = target.parse::<Url>()?;
         let domain = target.domain().ok_or(Error::UrlNoDomain)?;
 
-        if let Some(v) = self.skey_map.borrow_mut().get(domain) {
+        if let Some(v) = self.skey_map.read().await.get(domain) {
             return Ok(v.clone());
         }
 
@@ -175,14 +205,15 @@ impl Account {
             .to_string();
 
         self.skey_map
-            .borrow_mut()
+            .write()
+            .await
             .insert(domain.to_string(), (skey.clone(), p_skey.clone()));
 
         Ok((skey, p_skey))
     }
 
-    pub fn get_nickname(&self) -> &String {
-        &self.info.nickname
+    pub fn get_nickname(&self) -> Option<String> {
+        self.info.nickname.clone()
     }
 
     pub fn get_uin(&self) -> i64 {

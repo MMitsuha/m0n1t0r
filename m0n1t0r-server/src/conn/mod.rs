@@ -105,8 +105,6 @@ async fn make_channel<'transport>(
         rch::base::Receiver<ClientClient>,
     ) = Connect::io(
         Cfg {
-            max_data_size: 0x8000000,
-            chunk_size: 0x4000000,
             ..Default::default()
         },
         stream_rx,

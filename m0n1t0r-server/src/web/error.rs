@@ -15,7 +15,7 @@ pub enum Error {
     #[error("serialization failed: {0}")]
     SerializeError(serde_error::Error) = -1,
 
-    #[error("specified object not find")]
+    #[error("specified object not found")]
     NotFound = -2,
 
     #[error("remote call failed with exception: {0}")]
@@ -45,6 +45,12 @@ pub enum Error {
     #[error("qqkey operation failed: {0}")]
     QQKeyException(#[from] qqkey::Error) = -11,
 
+    #[error("socks5 auth failed")]
+    Socks5AuthFailed(serde_error::Error) = -12,
+
+    #[error("socks5 operation failed: {0}")]
+    Socks5Exception(serde_error::Error) = -13,
+
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error) = -255,
 }
@@ -63,6 +69,7 @@ impl actix_web::ResponseError for Error {
             | Error::InvalidCommand(_)
             | Error::InvalidInt(_)
             | Error::InvalidIpAddress(_) => StatusCode::BAD_REQUEST,
+            Error::Socks5AuthFailed(_) => StatusCode::UNAUTHORIZED,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
@@ -125,5 +132,11 @@ impl From<actix_web::error::PathError> for Error {
 impl From<actix_web::error::QueryPayloadError> for Error {
     fn from(e: actix_web::error::QueryPayloadError) -> Self {
         Self::InvalidWebParameter(serde_error::Error::new(&e))
+    }
+}
+
+impl From<socks5_impl::Error> for Error {
+    fn from(e: socks5_impl::Error) -> Self {
+        Self::Socks5Exception(serde_error::Error::new(&e))
     }
 }
