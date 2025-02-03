@@ -34,6 +34,7 @@ fn xmake_build() -> Vec<PathBuf> {
     paths
 }
 
+#[cfg(windows)]
 fn add_administrator_manifest() {
     let mut res = winres::WindowsResource::new();
     res.set_manifest(

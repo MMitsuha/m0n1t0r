@@ -103,14 +103,7 @@ async fn make_channel<'transport>(
         _,
         rch::base::Sender<ServerClient>,
         rch::base::Receiver<ClientClient>,
-    ) = Connect::io(
-        Cfg {
-            ..Default::default()
-        },
-        stream_rx,
-        stream_tx,
-    )
-    .await?;
+    ) = Connect::io(Cfg::default(), stream_rx, stream_tx).await?;
 
     tokio::spawn(async move {
         select! {
