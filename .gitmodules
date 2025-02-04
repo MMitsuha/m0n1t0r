@@ -1,0 +1,3 @@
+[submodule "deps/upx"]
+	path = deps/upx
+	url = https://github.com/MMitsuha/upx.git
