@@ -63,13 +63,6 @@ public:
     static Process fromJson(nlohmann::json json);
   };
 
-  struct Availability {
-    bool has_permission;
-    bool support;
-
-    static Availability fromJson(nlohmann::json json);
-  };
-
   Client(const std::string &base_url, const std::string &addr);
   ~Client() = default;
 
@@ -93,11 +86,6 @@ public:
       const std::string &proc,
       std::function<bool(const std::string & /*output*/)> callback,
       std::function<void()> close, msd::channel<std::string> &input);
-  std::thread
-  captureScreen(std::function<bool(const std::string & /*frame*/)> callback,
-                std::function<void()> close, const std::string &format);
-  Availability canCaptureScreen();
-  bool requestCapturePermission();
   std::thread notifyClose(std::function<void()> callback);
 
 private:

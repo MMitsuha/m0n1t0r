@@ -4,7 +4,6 @@
 #include "Widget/ClientTab.h"
 #include "Widget/FileTree.h"
 #include "Widget/ProcessTable.h"
-#include "Widget/RemoteDesktopWidget.h"
 #include <QDialog>
 #include <m0n1t0r-sdk.h>
 
@@ -30,7 +29,6 @@ private:
   ProcessTable *process_table;
   FileTree *file_tree;
   InteractiveShellTab *interactive_shell_tab;
-  RemoteDesktopWidget *remote_desktop_widget;
   ClientTab *client_tab;
 };
 

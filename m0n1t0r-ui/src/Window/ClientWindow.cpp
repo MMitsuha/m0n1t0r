@@ -7,10 +7,8 @@ ClientWindow::ClientWindow(std::shared_ptr<m0n1t0r::Client> _client,
       process_table(new ProcessTable(client, this)),
       file_tree(new FileTree(client, this)),
       interactive_shell_tab(new InteractiveShellTab(client, this)),
-      remote_desktop_widget(new RemoteDesktopWidget(client, this)),
       client_tab(new ClientTab(client, process_table, file_tree,
-                               interactive_shell_tab, remote_desktop_widget,
-                               this)) {
+                               interactive_shell_tab, this)) {
   ui->setupUi(this);
   ui->gridLayout->addWidget(client_tab);
 
@@ -24,5 +22,4 @@ ClientWindow::~ClientWindow() {
   process_table->deleteLater();
   file_tree->deleteLater();
   interactive_shell_tab->deleteLater();
-  remote_desktop_widget->deleteLater();
 }

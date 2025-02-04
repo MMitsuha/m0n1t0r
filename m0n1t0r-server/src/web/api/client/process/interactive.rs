@@ -6,8 +6,8 @@ use crate::{
     ServerMap,
 };
 use actix_web::{
-    post,
-    web::{Buf, Data, Form, Path, Payload},
+    get,
+    web::{Buf, Data, Path, Payload, Query},
     HttpRequest, Responder,
 };
 use actix_ws::Message;
@@ -16,18 +16,18 @@ use m0n1t0r_common::process::Agent as _;
 use std::{net::SocketAddr, sync::Arc};
 use tokio::{select, sync::RwLock, task};
 
-#[post("/interactive")]
+#[get("/interactive")]
 pub async fn post(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: Path<SocketAddr>,
-    form: Form<CommandForm>,
+    query: Query<CommandForm>,
     req: HttpRequest,
     body: Payload,
 ) -> WebResult<impl Responder> {
-    let form = form.into_inner();
+    let query = query.into_inner();
     let (agent, canceller) = process::get_agent(data, &addr).await?;
 
-    let (stdin_tx, stdout_rx, stderr_rx) = agent.interactive(form.command).await?;
+    let (stdin_tx, stdout_rx, stderr_rx) = agent.interactive(query.command).await?;
     let mut stdin_tx = stdin_tx.into_inner().await?;
     let mut stdout_rx = stdout_rx.into_inner().await?;
     let mut stderr_rx = stderr_rx.into_inner().await?;

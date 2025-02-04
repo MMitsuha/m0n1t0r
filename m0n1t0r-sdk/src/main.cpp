@@ -1,6 +1,5 @@
 #include "common.h"
 #include <cpr/cpr.h>
-#include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
 using json = nlohmann::json;
