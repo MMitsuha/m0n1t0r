@@ -1,3 +1,6 @@
 [submodule "deps/upx"]
 	path = deps/upx
 	url = https://github.com/MMitsuha/upx.git
+[submodule "deps/qqkey"]
+	path = deps/qqkey
+	url = mitsuha@Ubuntu:qqkey
