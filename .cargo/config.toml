@@ -1,4 +1,5 @@
 [alias]
+rxtask = "run -r --package xtask --bin xtask --"
 xtask = "run --package xtask --bin xtask --"
 
 [env]
