@@ -5,7 +5,7 @@ use std::{
     process::Command,
 };
 
-const PROJECT_LIST_WINDOWS: [&str; 1] = ["m0n1t0r-cpp-windows-lib"];
+const XMAKE_PROJECT_LIST_WINDOWS: [&str; 1] = ["m0n1t0r-cpp-windows-lib"];
 const BRIDGE_LIST_WINDOWS: [&str; 1] = ["src/client/windows/process.rs"];
 
 fn bridge_build() {
@@ -30,12 +30,12 @@ fn check_xmake_dependencies() {
 #[cfg(feature = "windows")]
 fn xmake_build_windows(paths: &mut Vec<PathBuf>, workspace: &Path) {
     paths.append(
-        &mut PROJECT_LIST_WINDOWS
+        &mut XMAKE_PROJECT_LIST_WINDOWS
             .iter()
             .map(|x| xmake::build(workspace.join("m0n1t0r-client").join(x).as_path()))
             .collect::<Vec<PathBuf>>(),
     );
-    PROJECT_LIST_WINDOWS.iter().for_each(|x| {
+    XMAKE_PROJECT_LIST_WINDOWS.iter().for_each(|x| {
         cargo_emit::rustc_link_lib!(x);
     });
 }
