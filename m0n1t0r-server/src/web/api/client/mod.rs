@@ -16,7 +16,6 @@ use actix_web::{
     HttpRequest, Responder,
 };
 use actix_ws::Message;
-use m0n1t0r_common::client::Client;
 use std::sync::Arc;
 use tokio::{select, sync::RwLock, task};
 
@@ -29,15 +28,7 @@ pub async fn get(data: Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder
         let lock_obj = server.read().await;
         let client = lock_obj.get_client()?;
 
-        details.push(
-            client::Detail::new(
-                addr,
-                client.version().await?,
-                client.target_platform().await?,
-                client.system_info().await?,
-            )
-            .await?,
-        );
+        details.push(client::Detail::new(addr, client).await?);
     }
     Ok(Json(Response::success(details)?))
 }

@@ -10,6 +10,8 @@ const UPDATE_TEMP_PATH: &str = "tmp.bin";
 pub enum TargetPlatform {
     General,
     Windows,
+    Linux,
+    MacOS,
 }
 
 #[rtc::remote]
@@ -24,6 +26,14 @@ pub trait Client: Sync {
 
     async fn system_info(&self) -> AppResult<info::System> {
         Ok(info::System::new())
+    }
+
+    async fn build_time(&self) -> AppResult<String> {
+        Ok(env!("VERGEN_BUILD_TIMESTAMP").into())
+    }
+
+    async fn commit_hash(&self) -> AppResult<String> {
+        Ok(env!("VERGEN_RUSTC_COMMIT_HASH").into())
     }
 
     async fn terminate(&self) -> AppResult<()>;

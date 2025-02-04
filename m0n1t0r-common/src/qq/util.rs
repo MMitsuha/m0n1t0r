@@ -1,6 +1,5 @@
 use crate::Result as AppResult;
-use qqkey::{Account, AccountInfo, AccountInfoList, UrlList, QQ};
-use remoc::rtc;
+use qqkey::{Account, QQ};
 
 pub async fn get_account(id: i64) -> AppResult<Option<Account>> {
     let qq = QQ::new().await?;

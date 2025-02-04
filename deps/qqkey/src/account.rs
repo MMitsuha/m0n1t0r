@@ -8,8 +8,8 @@ use regex::Regex;
 use reqwest::{header::REFERER, Client, Url};
 use reqwest_cookie_store::CookieStoreRwLock;
 use serde::{Deserialize, Serialize};
-use std::{cell::RefCell, collections::HashMap, sync::Arc};
-use tokio::sync::{Mutex, RwLock};
+use std::{collections::HashMap, sync::Arc};
+use tokio::sync::RwLock;
 
 pub type InfoList = Vec<Info>;
 pub type AccountList = Vec<Account>;

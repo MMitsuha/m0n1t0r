@@ -58,6 +58,14 @@ impl Client for ClientObj {
     async fn target_platform(&self) -> AppResult<TargetPlatform> {
         Ok(TargetPlatform::Windows)
     }
+    #[cfg(feature = "linux")]
+    async fn target_platform(&self) -> AppResult<TargetPlatform> {
+        Ok(TargetPlatform::Linux)
+    }
+    #[cfg(feature = "macos")]
+    async fn target_platform(&self) -> AppResult<TargetPlatform> {
+        Ok(TargetPlatform::MacOS)
+    }
 
     async fn get_fs_agent(&self) -> AppResult<m0n1t0r_common::fs::AgentClient> {
         impl_agent!(fs)

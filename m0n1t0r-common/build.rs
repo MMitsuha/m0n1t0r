@@ -1,6 +1,9 @@
 use std::{fs::File, io::Write, path::Path, process::Command};
+use vergen::{BuildBuilder, CargoBuilder, Emitter, RustcBuilder, SysinfoBuilder};
 
 fn check_certs(certs: &Path) -> bool {
+    cargo_emit::rerun_if_changed!(certs.display());
+
     [
         certs.join("ca.crt"),
         certs.join("end.key"),
@@ -102,9 +105,29 @@ fn generate_certs(certs: &Path) {
     });
 }
 
+fn generate_version() {
+    let build = BuildBuilder::all_build().unwrap();
+    let cargo = CargoBuilder::all_cargo().unwrap();
+    let rustc = RustcBuilder::all_rustc().unwrap();
+    let si = SysinfoBuilder::all_sysinfo().unwrap();
+
+    Emitter::default()
+        .add_instructions(&build)
+        .unwrap()
+        .add_instructions(&cargo)
+        .unwrap()
+        .add_instructions(&rustc)
+        .unwrap()
+        .add_instructions(&si)
+        .unwrap()
+        .emit()
+        .unwrap();
+}
+
 fn main() {
     let certs = Path::new(env!("CARGO_WORKSPACE_DIR")).join("certs");
-    cargo_emit::rerun_if_changed!(certs.display());
+
+    generate_version();
 
     if check_certs(&certs) == false {
         generate_certs(&certs);

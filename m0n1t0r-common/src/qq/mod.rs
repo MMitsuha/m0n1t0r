@@ -1,7 +1,7 @@
 mod util;
 
 use crate::{Error, Result as AppResult};
-use qqkey::{Account, AccountInfo, AccountInfoList, UrlList, QQ};
+use qqkey::{AccountInfoList, UrlList, QQ};
 use remoc::rtc;
 
 #[rtc::remote]

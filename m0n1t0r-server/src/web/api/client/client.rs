@@ -8,7 +8,7 @@ use actix_web::{
     Responder,
 };
 use m0n1t0r_common::{
-    client::{Client as _, TargetPlatform},
+    client::{Client as _, ClientClient, TargetPlatform},
     info,
 };
 use serde::Serialize;
@@ -22,20 +22,19 @@ pub struct Detail {
     version: String,
     target_platform: TargetPlatform,
     system_info: info::System,
+    build_time: String,
+    commit_hash: String,
 }
 
 impl Detail {
-    pub async fn new(
-        addr: &SocketAddr,
-        version: String,
-        target_platform: TargetPlatform,
-        system_info: info::System,
-    ) -> WebResult<Self> {
+    pub async fn new(addr: &SocketAddr, client: &ClientClient) -> WebResult<Self> {
         Ok(Self {
             addr: addr.clone(),
-            version,
-            target_platform,
-            system_info,
+            version: client.version().await?,
+            target_platform: client.target_platform().await?,
+            system_info: client.system_info().await?,
+            build_time: client.build_time().await?,
+            commit_hash: client.commit_hash().await?,
         })
     }
 }
@@ -52,13 +51,7 @@ pub async fn get(
     let client = lock_obj.get_client()?;
 
     Ok(Json(Response::success(
-        Detail::new(
-            lock_obj.get_addr(),
-            client.version().await?,
-            client.target_platform().await?,
-            client.system_info().await?,
-        )
-        .await?,
+        Detail::new(lock_obj.get_addr(), client).await?,
     )?))
 }
 
