@@ -49,3 +49,6 @@ vergen = { version = "9.0.0", features = ["build", "cargo", "rustc", "si"] }
 
 [target.'cfg(windows)'.build-dependencies]
 winres = "0.1"
+
+[profile.release]
+strip = "symbols"
