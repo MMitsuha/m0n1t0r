@@ -24,7 +24,11 @@ fn main() -> Result<()> {
         let pwd = current
             .parent()
             .ok_or(anyhow!("Failed to get current executable path"))?;
-        let client = pwd.join("m0n1t0r-client");
+        #[warn(unused_mut)]
+        let mut client = pwd.join("m0n1t0r-client");
+
+        #[cfg(windows)]
+        client.set_extension("exe");
 
         info!("Compressing binary({}) with UPX", client.display());
 
