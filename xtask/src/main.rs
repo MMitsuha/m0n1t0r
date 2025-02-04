@@ -24,7 +24,7 @@ fn main() -> Result<()> {
         let pwd = current
             .parent()
             .ok_or(anyhow!("Failed to get current executable path"))?;
-        #[warn(unused_mut)]
+        #[allow(unused_mut)]
         let mut client = pwd.join("m0n1t0r-client");
 
         #[cfg(windows)]
