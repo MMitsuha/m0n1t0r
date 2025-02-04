@@ -1,30 +1,34 @@
 use crate::{
-    web::{Error, Response, Result as WebResult},
+    web::{api::client::network, Response, Result as WebResult},
     ServerMap,
 };
 use actix_web::{
-    get,
-    web::{Data, Json, Path},
+    post,
+    web::{Data, Form, Json, Path},
     Responder,
 };
-use m0n1t0r_common::{client::Client as _, network::Agent as _};
+use m0n1t0r_common::network::Agent as _;
+use serde::Deserialize;
 use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 use url::Url;
 
-#[get("/download/{url}/{path}")]
-pub async fn get(
+#[derive(Deserialize)]
+struct DownloadForm {
+    url: Url,
+    path: PathBuf,
+}
+
+#[post("/download")]
+pub async fn post(
     data: Data<Arc<RwLock<ServerMap>>>,
-    path: Path<(SocketAddr, Url, PathBuf)>,
+    addr: Path<SocketAddr>,
+    form: Form<DownloadForm>,
 ) -> WebResult<impl Responder> {
-    let (addr, url, path) = path.into_inner();
-    let lock_map = &data.read().await.map;
-    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
+    let form = form.into_inner();
+    let (agent, _) = network::get_agent(data, &addr).await?;
 
-    let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
-    let agent = client.get_network_agent().await?;
-    drop(lock_obj);
-
-    Ok(Json(Response::success(agent.download(url, path).await?)?))
+    Ok(Json(Response::success(
+        agent.download(form.url, form.path).await?,
+    )?))
 }

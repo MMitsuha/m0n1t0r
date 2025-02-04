@@ -23,3 +23,8 @@ impl From<process::Output> for Output {
 pub async fn execute(command: String, args: Vec<String>) -> AppResult<Output> {
     Ok(Command::new(command).args(args).output().await?.into())
 }
+
+pub fn execute_detached(command: String, args: Vec<String>) -> AppResult<()> {
+    Command::new(command).args(args).spawn()?;
+    Ok(())
+}

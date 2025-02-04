@@ -57,18 +57,21 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                             )
                             .service(
                                 web::scope("/process")
-                                    .service(client::process::interactive::get)
-                                    .service(client::process::execute::get)
+                                    .service(client::process::interactive::post)
+                                    .service(client::process::execute::detached::post)
+                                    .service(client::process::execute::post)
                                     .service(client::process::get)
                                     .service(client::process::delete),
                             )
                             .service(
                                 web::scope("/proxy")
-                                    .service(client::proxy::socks5::noauth::get)
-                                    .service(client::proxy::socks5::pass::get),
+                                    .service(client::proxy::socks5::noauth::post)
+                                    .service(client::proxy::socks5::pass::post),
                             )
                             .service(web::scope("/info").service(client::info::system::get))
-                            .service(web::scope("/network").service(client::network::download::get))
+                            .service(
+                                web::scope("/network").service(client::network::download::post),
+                            )
                             .service(
                                 web::scope("/qq")
                                     .service(client::qq::get)

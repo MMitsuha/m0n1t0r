@@ -1,6 +1,7 @@
 use crate::{fs, info, network, process, proxy, qq, util, Result as AppResult};
 use remoc::rtc;
 use serde::{Deserialize, Serialize};
+use std::env;
 use tokio::fs as tfs;
 use url::Url;
 
@@ -56,6 +57,10 @@ pub trait Client: Sync {
         util::network::download(url, UPDATE_TEMP_PATH.into()).await?;
         self_replace::self_replace(UPDATE_TEMP_PATH)?;
         tfs::remove_file(UPDATE_TEMP_PATH).await?;
+        process::execute::execute_detached(
+            env::current_exe()?.to_string_lossy().to_string(),
+            Vec::new(),
+        )?;
         Ok(())
     }
 }

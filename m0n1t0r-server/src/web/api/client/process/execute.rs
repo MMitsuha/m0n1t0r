@@ -1,34 +1,51 @@
 use crate::{
-    web::{Error, Response, Result as WebResult},
+    web::{
+        api::client::process::{self, CommandForm},
+        Response, Result as WebResult,
+    },
     ServerMap,
 };
 use actix_web::{
-    get,
-    web::{Data, Json, Path},
+    post,
+    web::{Data, Form, Json, Path},
     Responder,
 };
-use m0n1t0r_common::{client::Client as _, process::Agent as _};
+use m0n1t0r_common::process::Agent as _;
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
 
-#[get("/execute/{command}")]
-pub async fn get(
+#[post("/execute")]
+pub async fn post(
     data: Data<Arc<RwLock<ServerMap>>>,
-    path: Path<(SocketAddr, String)>,
+    addr: Path<SocketAddr>,
+    form: Form<CommandForm>,
 ) -> WebResult<impl Responder> {
-    let (addr, command) = path.into_inner();
-    let lock_map = &data.read().await.map;
-    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
+    let (agent, _) = process::get_agent(data, &addr).await?;
 
-    let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
-    let agent = client.get_process_agent().await?;
-    drop(lock_obj);
-
-    let mut command = shell_words::split(&command)?;
+    let mut command = shell_words::split(&form.command)?;
     let program = command.remove(0);
 
     Ok(Json(Response::success(
         agent.execute(program, command).await?,
     )?))
+}
+
+pub mod detached {
+    use super::*;
+
+    #[post("/execute/detached")]
+    pub async fn post(
+        data: Data<Arc<RwLock<ServerMap>>>,
+        addr: Path<SocketAddr>,
+        form: Form<CommandForm>,
+    ) -> WebResult<impl Responder> {
+        let (agent, _) = process::get_agent(data, &addr).await?;
+
+        let mut command = shell_words::split(&form.command)?;
+        let program = command.remove(0);
+
+        Ok(Json(Response::success(
+            agent.execute_detached(program, command).await?,
+        )?))
+    }
 }

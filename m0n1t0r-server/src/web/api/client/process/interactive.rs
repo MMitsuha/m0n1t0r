@@ -1,36 +1,33 @@
 use crate::{
-    web::{util, Error, Result as WebResult},
+    web::{
+        api::client::process::{self, CommandForm},
+        util, Result as WebResult,
+    },
     ServerMap,
 };
 use actix_web::{
-    get,
-    web::{Buf, Data, Path, Payload},
+    post,
+    web::{Buf, Data, Form, Path, Payload},
     HttpRequest, Responder,
 };
 use actix_ws::Message;
 use anyhow::anyhow;
-use m0n1t0r_common::{client::Client as _, process::Agent as _};
+use m0n1t0r_common::process::Agent as _;
 use std::{net::SocketAddr, sync::Arc};
 use tokio::{select, sync::RwLock, task};
 
-#[get("/interactive/{command}")]
-pub async fn get(
+#[post("/interactive")]
+pub async fn post(
     data: Data<Arc<RwLock<ServerMap>>>,
-    path: Path<(SocketAddr, String)>,
+    addr: Path<SocketAddr>,
+    form: Form<CommandForm>,
     req: HttpRequest,
     body: Payload,
 ) -> WebResult<impl Responder> {
-    let (addr, command) = path.into_inner();
-    let lock_map = &data.read().await.map;
-    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
+    let form = form.into_inner();
+    let (agent, canceller) = process::get_agent(data, &addr).await?;
 
-    let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
-    let agent = client.get_process_agent().await?;
-    let canceller = lock_obj.get_canceller();
-    drop(lock_obj);
-
-    let (stdin_tx, stdout_rx, stderr_rx) = agent.interactive(command).await?;
+    let (stdin_tx, stdout_rx, stderr_rx) = agent.interactive(form.command).await?;
     let mut stdin_tx = stdin_tx.into_inner().await?;
     let mut stdout_rx = stdout_rx.into_inner().await?;
     let mut stderr_rx = stderr_rx.into_inner().await?;

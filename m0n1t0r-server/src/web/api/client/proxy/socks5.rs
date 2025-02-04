@@ -1,19 +1,16 @@
 use super::{Type, PROXY_MAP};
 use crate::{
-    web::{error::Error, Response, Result as WebResult},
+    web::{api::client::proxy, error::Error, Response, Result as WebResult},
     ServerMap,
 };
 use actix_web::{
-    get,
+    post,
     web::{Data, Json, Path, Query},
     Responder,
 };
 use anyhow::anyhow;
 use as_any::Downcast;
-use m0n1t0r_common::{
-    client::Client as _,
-    proxy::{Agent, AgentClient},
-};
+use m0n1t0r_common::proxy::{Agent, AgentClient};
 use remoc::chmux::ReceiverStream;
 use serde::{Deserialize, Serialize};
 use socks5_impl::{
@@ -50,15 +47,9 @@ pub async fn open_internal<O>(
 where
     O: 'static + Sync + Sync + Send,
 {
-    let lock_map = &data.read().await.map;
-    let server = lock_map.get(addr).ok_or(Error::NotFound)?;
-
-    let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
-    let agent = Arc::new(client.get_proxy_agent().await?);
-    let canceller_global1 = lock_obj.get_canceller();
+    let (agent, canceller_global1) = proxy::get_agent(data, addr).await?;
     let canceller_global2 = canceller_global1.clone();
-    drop(lock_obj);
+    let agent = Arc::new(agent);
 
     let listener = Server::bind(listen, auth).await?;
     let addr = listener.local_addr()?;
@@ -117,8 +108,8 @@ where
 pub mod pass {
     pub use super::*;
 
-    #[get("/socks5/pass")]
-    pub async fn get(
+    #[post("/socks5/pass")]
+    pub async fn post(
         data: Data<Arc<RwLock<ServerMap>>>,
         addr: Path<SocketAddr>,
         user: Query<User>,
@@ -133,8 +124,8 @@ pub mod pass {
 pub mod noauth {
     pub use super::*;
 
-    #[get("/socks5/noauth")]
-    pub async fn get(
+    #[post("/socks5/noauth")]
+    pub async fn post(
         data: Data<Arc<RwLock<ServerMap>>>,
         addr: Path<SocketAddr>,
     ) -> WebResult<impl Responder> {

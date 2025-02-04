@@ -10,6 +10,7 @@ use actix_web::{
     Responder,
 };
 use lazy_static::lazy_static;
+use m0n1t0r_common::{client::Client as _, proxy::AgentClient};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
@@ -67,4 +68,20 @@ impl Detail {
             })
             .collect()
     }
+}
+
+pub async fn get_agent(
+    data: Data<Arc<RwLock<ServerMap>>>,
+    addr: &SocketAddr,
+) -> WebResult<(AgentClient, CancellationToken)> {
+    let lock_map = &data.read().await.map;
+    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
+
+    let lock_obj = server.read().await;
+    let client = lock_obj.get_client()?;
+    let canceller = lock_obj.get_canceller();
+    let agent = client.get_proxy_agent().await?;
+    drop(lock_obj);
+
+    Ok((agent, canceller))
 }

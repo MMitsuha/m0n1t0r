@@ -41,6 +41,10 @@ pub trait Agent: Sync {
         execute::execute(command, args).await
     }
 
+    async fn execute_detached(&self, command: String, args: Vec<String>) -> AppResult<()> {
+        execute::execute_detached(command, args)
+    }
+
     async fn interactive(&self, command: String) -> AppResult<(Sender, Receiver, Receiver)> {
         interactive::interactive(command).await
     }

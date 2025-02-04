@@ -7,10 +7,14 @@ use actix_web::{
     web::{Bytes, Data, Json, Path},
     HttpResponse, Responder,
 };
-use m0n1t0r_common::{client::Client as _, fs::Agent as _};
+use m0n1t0r_common::{
+    client::Client as _,
+    fs::{Agent as _, AgentClient},
+};
 use serde::{Deserialize, Serialize};
 use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
+use tokio_util::sync::CancellationToken;
 
 #[derive(Serialize, Deserialize, PartialEq)]
 enum Type {
@@ -26,13 +30,7 @@ pub async fn get(
     path: Path<(SocketAddr, Type, PathBuf)>,
 ) -> WebResult<impl Responder> {
     let (addr, r#type, path) = path.into_inner();
-    let lock_map = &data.read().await.map;
-    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
-
-    let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
-    let agent = client.get_fs_agent().await?;
-    drop(lock_obj);
+    let (agent, _) = get_agent(data, &addr).await?;
 
     if r#type == Type::Directory {
         Ok(HttpResponse::Ok().json(Response::success(agent.list(path).await?)?))
@@ -47,13 +45,7 @@ pub async fn delete(
     path: Path<(SocketAddr, Type, PathBuf)>,
 ) -> WebResult<impl Responder> {
     let (addr, r#type, path) = path.into_inner();
-    let lock_map = &data.read().await.map;
-    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
-
-    let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
-    let agent = client.get_fs_agent().await?;
-    drop(lock_obj);
+    let (agent, _) = get_agent(data, &addr).await?;
 
     if r#type == Type::Directory {
         Ok(Json(Response::success(
@@ -71,13 +63,7 @@ pub async fn put(
     payload: Bytes,
 ) -> WebResult<impl Responder> {
     let (addr, r#type, path) = path.into_inner();
-    let lock_map = &data.read().await.map;
-    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
-
-    let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
-    let agent = client.get_fs_agent().await?;
-    drop(lock_obj);
+    let (agent, _) = get_agent(data, &addr).await?;
 
     if r#type == Type::Directory {
         Ok(Json(Response::success(
@@ -99,14 +85,24 @@ pub mod metadata {
         path: Path<(SocketAddr, PathBuf)>,
     ) -> WebResult<impl Responder> {
         let (addr, path) = path.into_inner();
-        let lock_map = &data.read().await.map;
-        let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
-
-        let lock_obj = server.read().await;
-        let client = lock_obj.get_client()?;
-        let agent = client.get_fs_agent().await?;
-        drop(lock_obj);
+        let (agent, _) = get_agent(data, &addr).await?;
 
         Ok(Json(Response::success(agent.file(path).await?)?))
     }
+}
+
+pub async fn get_agent(
+    data: Data<Arc<RwLock<ServerMap>>>,
+    addr: &SocketAddr,
+) -> WebResult<(AgentClient, CancellationToken)> {
+    let lock_map = &data.read().await.map;
+    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
+
+    let lock_obj = server.read().await;
+    let client = lock_obj.get_client()?;
+    let canceller = lock_obj.get_canceller();
+    let agent = client.get_fs_agent().await?;
+    drop(lock_obj);
+
+    Ok((agent, canceller))
 }
