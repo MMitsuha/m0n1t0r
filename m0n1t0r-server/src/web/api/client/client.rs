@@ -88,13 +88,8 @@ pub mod terminate {
         let client = lock_obj.get_client()?;
 
         let _ = client.terminate().await;
-        let response = if lock_map.get(&addr).is_none() {
-            Response::success(())?
-        } else {
-            Response::default()
-        };
 
-        Ok(Json(response))
+        Ok(Json(Response::success(())?))
     }
 }
 
