@@ -47,3 +47,4 @@ itertools = "0.13"
 qqkey = { path = "../deps/qqkey" }
 lazy_static = "1.5.0"
 scopeguard = "1.2.0"
+actix-multipart = "0.7.2"

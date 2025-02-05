@@ -1,19 +1,20 @@
 use crate::{
-    web::{Error, Response, Result as WebResult},
+    web::{util, Error, Response, Result as WebResult},
     ServerMap,
 };
 use actix_web::{
     get, post,
-    web::{Data, Form, Json, Path},
-    Responder,
+    web::{Data, Form, Json, Path, Payload},
+    HttpRequest, Responder,
 };
+use actix_ws::Message;
 use m0n1t0r_common::{
     client::{Client as _, ClientClient, TargetPlatform},
     info,
 };
 use serde::{Deserialize, Serialize};
 use std::{net::SocketAddr, path::PathBuf, sync::Arc};
-use tokio::sync::RwLock;
+use tokio::{select, sync::RwLock, task};
 use url::Url;
 
 #[derive(Serialize)]
@@ -55,38 +56,6 @@ pub async fn get(
     )?))
 }
 
-pub mod update {
-    use super::*;
-
-    const TEMP_FILE: &str = "temp.bin";
-
-    #[derive(Deserialize)]
-    struct UpdateForm {
-        url: Url,
-        temp: Option<PathBuf>,
-    }
-
-    #[post("/update")]
-    pub async fn post(
-        data: Data<Arc<RwLock<ServerMap>>>,
-        addr: Path<SocketAddr>,
-        form: Form<UpdateForm>,
-    ) -> WebResult<impl Responder> {
-        let form = form.into_inner();
-        let lock_map = &data.read().await.map;
-        let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
-
-        let lock_obj = server.read().await;
-        let client = lock_obj.get_client()?;
-
-        Ok(Json(Response::success(
-            client
-                .update(form.url, form.temp.unwrap_or(TEMP_FILE.into()))
-                .await?,
-        )?))
-    }
-}
-
 pub mod environment {
     use super::*;
 
@@ -124,11 +93,6 @@ pub mod terminate {
 }
 
 pub mod notify {
-    use crate::web::util;
-    use actix_web::{web::Payload, HttpRequest};
-    use actix_ws::Message;
-    use tokio::{select, task};
-
     use super::*;
 
     #[get("/notify")]

@@ -5,6 +5,7 @@ pub mod network;
 pub mod process;
 pub mod proxy;
 pub mod qq;
+pub mod update;
 
 use crate::{
     web::{Response, Result as WebResult},

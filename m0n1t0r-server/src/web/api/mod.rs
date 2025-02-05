@@ -47,8 +47,13 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                     .service(
                         web::scope("/{addr}")
                             .service(client::client::get)
-                            .service(client::client::update::post)
                             .service(client::client::environment::get)
+                            .service(client::client::terminate::post)
+                            .service(
+                                web::scope("/update")
+                                    .service(client::update::by_url::post)
+                                    .service(client::update::by_file::post),
+                            )
                             .service(
                                 web::scope("/fs")
                                     .service(client::fs::metadata::get)

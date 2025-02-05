@@ -32,12 +32,6 @@ use tokio_util::{
     sync::CancellationToken,
 };
 
-#[derive(Serialize, Deserialize, PartialEq)]
-struct PassForm {
-    name: String,
-    password: String,
-}
-
 pub async fn open_internal<O>(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: &SocketAddr,
@@ -107,6 +101,12 @@ where
 
 pub mod pass {
     pub use super::*;
+
+    #[derive(Serialize, Deserialize, PartialEq)]
+    struct PassForm {
+        name: String,
+        password: String,
+    }
 
     #[post("/socks5/pass")]
     pub async fn post(
