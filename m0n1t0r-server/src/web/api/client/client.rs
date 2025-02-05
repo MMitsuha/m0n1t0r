@@ -4,7 +4,7 @@ use crate::{
 };
 use actix_web::{
     get, post,
-    web::{Data, Form, Json, Path, Payload},
+    web::{Data, Json, Path, Payload},
     HttpRequest, Responder,
 };
 use actix_ws::Message;
@@ -12,10 +12,9 @@ use m0n1t0r_common::{
     client::{Client as _, ClientClient, TargetPlatform},
     info,
 };
-use serde::{Deserialize, Serialize};
-use std::{net::SocketAddr, path::PathBuf, sync::Arc};
+use serde::Serialize;
+use std::{net::SocketAddr, sync::Arc};
 use tokio::{select, sync::RwLock, task};
-use url::Url;
 
 #[derive(Serialize)]
 pub struct Detail {

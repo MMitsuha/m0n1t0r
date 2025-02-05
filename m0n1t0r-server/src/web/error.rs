@@ -135,6 +135,12 @@ impl From<actix_web::error::QueryPayloadError> for Error {
     }
 }
 
+impl From<actix_web::error::UrlencodedError> for Error {
+    fn from(e: actix_web::error::UrlencodedError) -> Self {
+        Self::InvalidWebParameter(serde_error::Error::new(&e))
+    }
+}
+
 impl From<socks5_impl::Error> for Error {
     fn from(e: socks5_impl::Error) -> Self {
         Self::Socks5Exception(serde_error::Error::new(&e))

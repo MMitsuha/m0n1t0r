@@ -1,29 +1,17 @@
 use crate::{
-    web::{util, Error, Response, Result as WebResult},
+    web::{Error, Response, Result as WebResult},
     ServerMap,
 };
-use actix_multipart::{
-    form::{
-        bytes::Bytes,
-        tempfile::{TempFile, TempFileConfig},
-        text::Text,
-        MultipartForm,
-    },
-    Multipart,
-};
+use actix_multipart::form::{bytes::Bytes, text::Text, MultipartForm};
 use actix_web::{
-    get, post,
-    web::{Data, Form, Json, Path, Payload},
-    HttpRequest, Responder,
+    post,
+    web::{Data, Form, Json, Path},
+    Responder,
 };
-use actix_ws::Message;
-use m0n1t0r_common::{
-    client::{Client as _, ClientClient, TargetPlatform},
-    info,
-};
-use serde::{Deserialize, Serialize};
+use m0n1t0r_common::client::Client as _;
+use serde::Deserialize;
 use std::{net::SocketAddr, path::PathBuf, sync::Arc};
-use tokio::{select, sync::RwLock, task};
+use tokio::sync::RwLock;
 use url::Url;
 
 const TEMP_FILE: &str = "temp.bin";
@@ -62,6 +50,7 @@ pub mod by_file {
 
     #[derive(MultipartForm)]
     struct ByFileForm {
+        #[multipart(limit = "100MB")]
         file: Bytes,
         temp: Option<Text<String>>,
     }

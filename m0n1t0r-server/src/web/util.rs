@@ -1,13 +1,14 @@
 use crate::web::Error;
-use actix_web::web::{PathConfig, QueryConfig};
+use actix_web::web::{FormConfig, PathConfig, QueryConfig};
 use actix_ws::{CloseCode, Session};
 use log::warn;
 use std::future::Future;
 
-pub fn extractor_config() -> (PathConfig, QueryConfig) {
+pub fn extractor_config() -> (PathConfig, QueryConfig, FormConfig) {
     (
         PathConfig::default().error_handler(|error, _| Error::from(error).into()),
         QueryConfig::default().error_handler(|error, _| Error::from(error).into()),
+        FormConfig::default().error_handler(|error, _| Error::from(error).into()),
     )
 }
 
