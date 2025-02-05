@@ -99,6 +99,12 @@ impl From<actix_web::Error> for Error {
     }
 }
 
+impl From<actix_multipart::MultipartError> for Error {
+    fn from(e: actix_multipart::MultipartError) -> Self {
+        Self::WebFrameworkException(serde_error::Error::new(&e))
+    }
+}
+
 impl From<shell_words::ParseError> for Error {
     fn from(e: shell_words::ParseError) -> Self {
         Self::InvalidCommand(serde_error::Error::new(&e))

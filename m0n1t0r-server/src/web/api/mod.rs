@@ -26,7 +26,7 @@ impl From<&crate::Config> for Config {
 
 pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<()> {
     HttpServer::new(move || {
-        let (path_config, query_config, form_config) = util::extractor_config();
+        let (path_config, query_config, form_config, multipart_config) = util::extractor_config();
 
         App::new()
             .wrap(Logger::default())
@@ -35,6 +35,7 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
             .app_data(path_config)
             .app_data(query_config)
             .app_data(form_config)
+            .app_data(multipart_config)
             .service(index::get)
             .service(
                 web::scope("/client")
