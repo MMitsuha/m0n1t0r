@@ -10,7 +10,7 @@ build = "build.rs"
 
 [dependencies]
 anyhow = "1.0"
-remoc = { version = "0.15", features = ["full", "codec-message-pack", "default-codec-message-pack", "rmp-serde"], default-features = false }
+remoc = { git = "https://github.com/MMitsuha/remoc.git", branch = "stable",  features = ["full", "codec-message-pack", "default-codec-message-pack", "rmp-serde"], default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 strum = { version = "0.26", features = ["derive"] }
 thiserror = "2.0"
