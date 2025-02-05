@@ -1,3 +1,6 @@
+pub mod friend;
+pub mod url;
+
 use crate::{
     web::{Error, Response, Result as WebResult},
     ServerMap,
@@ -22,21 +25,6 @@ pub async fn get(
 ) -> WebResult<impl Responder> {
     let (agent, _) = get_agent(data, &addr).await?;
     Ok(Json(Response::success(agent.list().await?)?))
-}
-
-pub mod urls {
-    pub use super::*;
-
-    #[get("/{id}/urls")]
-    pub async fn get(
-        data: Data<Arc<RwLock<ServerMap>>>,
-        path: Path<(SocketAddr, i64)>,
-    ) -> WebResult<impl Responder> {
-        let (addr, id) = path.into_inner();
-        let (agent, _) = get_agent(data, &addr).await?;
-
-        Ok(Json(Response::success(agent.urls(id).await?)?))
-    }
 }
 
 pub async fn get_agent(

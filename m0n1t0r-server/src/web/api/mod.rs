@@ -75,7 +75,8 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                             .service(
                                 web::scope("/qq")
                                     .service(client::qq::get)
-                                    .service(client::qq::urls::get),
+                                    .service(client::qq::url::get)
+                                    .service(client::qq::friend::get),
                             ),
                     ),
             )

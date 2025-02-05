@@ -5,7 +5,7 @@ use crate::{
 };
 use actix_web::{
     post,
-    web::{Data, Json, Path},
+    web::{Data, Form, Json, Path},
     Responder,
 };
 use anyhow::anyhow;
@@ -106,8 +106,6 @@ where
 }
 
 pub mod pass {
-    use actix_web::web::Form;
-
     pub use super::*;
 
     #[post("/socks5/pass")]
