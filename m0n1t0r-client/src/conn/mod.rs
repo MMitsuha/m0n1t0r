@@ -9,10 +9,7 @@ use m0n1t0r_common::{
 };
 use remoc::{
     prelude::ServerSharedMut,
-    rch::{
-        self,
-        base::{Receiver, Sender},
-    },
+    rch::base::{Receiver as RemoteReceiver, Sender as RemoteSender},
     Cfg, Connect,
 };
 use rustls::RootCertStore;
@@ -42,14 +39,11 @@ async fn make_channel<'transport>(
     canceller: CancellationToken,
     addr: &SocketAddr,
     stream: TlsStream<TcpStream>,
-) -> Result<(Sender<ClientClient>, Receiver<ServerClient>)> {
+) -> Result<(RemoteSender<ClientClient>, RemoteReceiver<ServerClient>)> {
     let addr = addr.clone();
     let (socket_rx, socket_tx) = io::split(stream);
-    let (conn, tx, rx): (
-        _,
-        rch::base::Sender<ClientClient>,
-        rch::base::Receiver<ServerClient>,
-    ) = Connect::io(Cfg::default(), socket_rx, socket_tx).await?;
+    let (conn, tx, rx): (_, RemoteSender<ClientClient>, RemoteReceiver<ServerClient>) =
+        Connect::io(Cfg::default(), socket_rx, socket_tx).await?;
 
     tokio::spawn(async move {
         select! {

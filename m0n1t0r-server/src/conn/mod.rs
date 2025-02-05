@@ -10,10 +10,7 @@ use m0n1t0r_common::{
 };
 use remoc::{
     prelude::ServerSharedMut,
-    rch::{
-        self,
-        base::{Receiver, Sender},
-    },
+    rch::base::{Receiver as RemoteReceiver, Sender as RemoteSender},
     Cfg, Connect,
 };
 use rustls_pki_types::{pem::PemObject as _, CertificateDer, PrivateKeyDer};
@@ -24,7 +21,10 @@ use tokio::{
     io,
     net::{TcpListener, TcpStream},
     select,
-    sync::{watch, RwLock},
+    sync::{
+        watch::{self, Receiver as WatchReceiver, Sender as WatchSender},
+        RwLock,
+    },
 };
 use tokio_rustls::{server::TlsStream, TlsAcceptor};
 use tokio_util::sync::CancellationToken;
@@ -60,8 +60,8 @@ impl Default for ConnectEvent {
 
 pub struct ServerMap {
     pub map: HashMap<SocketAddr, Arc<RwLock<ServerObj>>>,
-    notify_tx: watch::Sender<ConnectEvent>,
-    pub notify_rx: watch::Receiver<ConnectEvent>,
+    notify_tx: WatchSender<ConnectEvent>,
+    pub notify_rx: WatchReceiver<ConnectEvent>,
 }
 
 impl ServerMap {
@@ -96,14 +96,11 @@ async fn make_channel<'transport>(
     canceller: CancellationToken,
     addr: &SocketAddr,
     stream: TlsStream<TcpStream>,
-) -> Result<(Sender<ServerClient>, Receiver<ClientClient>)> {
+) -> Result<(RemoteSender<ServerClient>, RemoteReceiver<ClientClient>)> {
     let addr = addr.clone();
     let (stream_rx, stream_tx) = io::split(stream);
-    let (conn, tx, rx): (
-        _,
-        rch::base::Sender<ServerClient>,
-        rch::base::Receiver<ClientClient>,
-    ) = Connect::io(Cfg::default(), stream_rx, stream_tx).await?;
+    let (conn, tx, rx): (_, RemoteSender<ServerClient>, RemoteReceiver<ClientClient>) =
+        Connect::io(Cfg::default(), stream_rx, stream_tx).await?;
 
     tokio::spawn(async move {
         select! {
