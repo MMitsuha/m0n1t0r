@@ -43,7 +43,20 @@ async fn make_channel<'transport>(
     let addr = addr.clone();
     let (socket_rx, socket_tx) = io::split(stream);
     let (conn, tx, rx): (_, RemoteSender<ClientClient>, RemoteReceiver<ServerClient>) =
-        Connect::io(Cfg::default(), socket_rx, socket_tx).await?;
+        Connect::io(
+            Cfg {
+                shared_send_queue: 64,
+                transport_receive_queue: 64,
+                transport_send_queue: 64,
+                receive_buffer: 0x3200000,
+                chunk_size: 0x8000,
+                max_data_size: 0x3200000,
+                ..Default::default()
+            },
+            socket_rx,
+            socket_tx,
+        )
+        .await?;
 
     tokio::spawn(async move {
         select! {

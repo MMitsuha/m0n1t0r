@@ -51,25 +51,14 @@ pub trait Client: Sync {
 
     async fn get_qq_agent(&self) -> AppResult<qq::AgentClient>;
 
-    async fn update_internal(&self, temp: PathBuf) -> AppResult<()> {
-        self_replace::self_replace(&temp)?;
-        tfs::remove_file(&temp).await?;
-        process::execute::execute_detached(
-            env::current_exe()?.to_string_lossy().to_string(),
-            Vec::new(),
-        )?;
-
-        Ok(())
-    }
-
     async fn update_by_url(&self, url: Url, temp: PathBuf) -> AppResult<()> {
         util::network::download(url, &temp).await?;
-        self.update_internal(temp).await
+        util::update::update_internal(temp).await
     }
 
     async fn update_by_file(&self, file: Vec<u8>, temp: PathBuf) -> AppResult<()> {
         tfs::write(&temp, file).await?;
-        self.update_internal(temp).await
+        util::update::update_internal(temp).await
     }
 
     async fn environment(&self) -> AppResult<HashMap<String, String>> {

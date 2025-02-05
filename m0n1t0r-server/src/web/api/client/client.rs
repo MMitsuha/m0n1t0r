@@ -87,7 +87,14 @@ pub mod terminate {
         let lock_obj = server.read().await;
         let client = lock_obj.get_client()?;
 
-        Ok(Json(Response::success(client.terminate().await?)?))
+        let _ = client.terminate().await;
+        let response = if lock_map.get(&addr).is_none() {
+            Response::success(())?
+        } else {
+            Response::default()
+        };
+
+        Ok(Json(response))
     }
 }
 
