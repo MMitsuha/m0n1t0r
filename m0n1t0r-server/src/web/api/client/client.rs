@@ -105,6 +105,24 @@ pub mod environment {
     }
 }
 
+pub mod terminate {
+    use super::*;
+
+    #[post("/terminate")]
+    pub async fn post(
+        data: Data<Arc<RwLock<ServerMap>>>,
+        addr: Path<SocketAddr>,
+    ) -> WebResult<impl Responder> {
+        let lock_map = &data.read().await.map;
+        let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
+
+        let lock_obj = server.read().await;
+        let client = lock_obj.get_client()?;
+
+        Ok(Json(Response::success(client.terminate().await?)?))
+    }
+}
+
 pub mod notify {
     use crate::web::util;
     use actix_web::{web::Payload, HttpRequest};
