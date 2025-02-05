@@ -10,7 +10,10 @@ pub fn extractor_config() -> (PathConfig, QueryConfig, FormConfig, MultipartForm
         PathConfig::default().error_handler(|error, _| Error::from(error).into()),
         QueryConfig::default().error_handler(|error, _| Error::from(error).into()),
         FormConfig::default().error_handler(|error, _| Error::from(error).into()),
-        MultipartFormConfig::default().error_handler(|error, _| Error::from(error).into()),
+        MultipartFormConfig::default()
+            .total_limit(0x6400000)
+            .memory_limit(0x3200000)
+            .error_handler(|error, _| Error::from(error).into()),
     )
 }
 
