@@ -81,7 +81,8 @@ public:
   std::string proxySocks5(const std::string &name, const std::string &password);
   CommandOutput executeCommand(const std::string &command);
   std::vector<Process> listProcesses();
-  void download(const std::string &path, const std::string &url);
+  void download(const std::string &url, const std::string &path);
+  void update(const std::string &url, const std::string &temp = "temp.bin");
   std::thread executeCommandInteractive(
       const std::string &proc,
       std::function<bool(const std::string & /*output*/)> callback,

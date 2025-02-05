@@ -1,11 +1,9 @@
 use crate::{fs, info, network, process, proxy, qq, util, Result as AppResult};
 use remoc::rtc;
 use serde::{Deserialize, Serialize};
-use std::env;
+use std::{collections::HashMap, env, path::PathBuf};
 use tokio::fs as tfs;
 use url::Url;
-
-const UPDATE_TEMP_PATH: &str = "tmp.bin";
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum TargetPlatform {
@@ -53,14 +51,19 @@ pub trait Client: Sync {
 
     async fn get_qq_agent(&self) -> AppResult<qq::AgentClient>;
 
-    async fn update(&self, url: Url) -> AppResult<()> {
-        util::network::download(url, UPDATE_TEMP_PATH.into()).await?;
-        self_replace::self_replace(UPDATE_TEMP_PATH)?;
-        tfs::remove_file(UPDATE_TEMP_PATH).await?;
+    async fn update(&self, url: Url, temp: PathBuf) -> AppResult<()> {
+        util::network::download(url, &temp).await?;
+        self_replace::self_replace(&temp)?;
+        tfs::remove_file(&temp).await?;
         process::execute::execute_detached(
             env::current_exe()?.to_string_lossy().to_string(),
             Vec::new(),
         )?;
+
         Ok(())
+    }
+
+    async fn environment(&self) -> AppResult<HashMap<String, String>> {
+        Ok(env::vars().collect())
     }
 }

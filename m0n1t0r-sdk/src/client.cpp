@@ -140,9 +140,15 @@ std::vector<Client::Process> Client::listProcesses() {
   return ret;
 }
 
-void Client::download(const std::string &path, const std::string &url) {
+void Client::download(const std::string &url, const std::string &path) {
   auto res = cpr::Post(cpr::Url(fmt::format("{}/network/download", base_url)),
                        cpr::Payload{{"url", url}, {"path", path}});
+  auto json = getBodyJson(res);
+}
+
+void Client::update(const std::string &url, const std::string &temp) {
+  auto res = cpr::Post(cpr::Url(fmt::format("{}/update", base_url)),
+                       cpr::Payload{{"url", url}, {"temp", temp}});
   auto json = getBodyJson(res);
 }
 
