@@ -76,7 +76,12 @@ async fn server_task(
     client_map: Arc<RwLock<ClientMap>>,
 ) {
     select! {
-        _ = client_server.serve(true) => canceller.cancel(),
+        ret = client_server.serve(true) => {
+            if let Err(e) = ret {
+                warn!("{}: serve error: {}", addr, e);
+            }
+            canceller.cancel();
+        },
         _ = canceller.cancelled() => {},
     }
 

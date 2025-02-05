@@ -133,7 +133,12 @@ async fn server_task(
     server_map: Arc<RwLock<ServerMap>>,
 ) -> Result<()> {
     select! {
-        _ = server_server.serve(true) => canceller.cancel(),
+        ret = server_server.serve(true) => {
+            if let Err(e) = ret {
+                warn!("{}: serve error: {}", addr, e);
+            }
+            canceller.cancel();
+        },
         _ = canceller.cancelled() => {},
     };
 
@@ -150,6 +155,7 @@ async fn server_task(
         event: ConnectEventEnum::Disconnect,
         addr,
     })?;
+
     drop(lock_map);
     Ok(())
 }

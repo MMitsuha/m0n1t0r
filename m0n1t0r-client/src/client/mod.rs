@@ -7,6 +7,7 @@ mod windows;
 #[cfg(any(feature = "windows", feature = "linux", feature = "macos"))]
 use m0n1t0r_common::client::TargetPlatform;
 
+use log::warn;
 use m0n1t0r_common::{client::Client, server::ServerClient, Result as AppResult};
 use remoc::{prelude::ServerSharedMut, rtc};
 use std::{net::SocketAddr, sync::Arc};
@@ -17,7 +18,7 @@ declare_agents!(proxy, network, fs, qq);
 declare_agents_with_platform!("windows", process);
 
 pub struct ClientObj {
-    _addr: SocketAddr,
+    addr: SocketAddr,
     canceller: CancellationToken,
     server_client: Option<ServerClient>,
     terminator: CancellationToken,
@@ -26,7 +27,7 @@ pub struct ClientObj {
 impl ClientObj {
     pub fn new(addr: &SocketAddr) -> Self {
         Self {
-            _addr: addr.clone(),
+            addr: addr.clone(),
             canceller: CancellationToken::new(),
             server_client: None,
             terminator: CancellationToken::new(),
@@ -68,22 +69,22 @@ impl Client for ClientObj {
     }
 
     async fn get_fs_agent(&self) -> AppResult<m0n1t0r_common::fs::AgentClient> {
-        impl_agent!(fs)
+        impl_agent!(fs, self)
     }
 
     async fn get_process_agent(&self) -> AppResult<m0n1t0r_common::process::AgentClient> {
-        impl_agent!(process)
+        impl_agent!(process, self)
     }
 
     async fn get_proxy_agent(&self) -> AppResult<m0n1t0r_common::proxy::AgentClient> {
-        impl_agent!(proxy)
+        impl_agent!(proxy, self)
     }
 
     async fn get_network_agent(&self) -> AppResult<m0n1t0r_common::network::AgentClient> {
-        impl_agent!(network)
+        impl_agent!(network, self)
     }
 
     async fn get_qq_agent(&self) -> AppResult<m0n1t0r_common::qq::AgentClient> {
-        impl_agent!(qq)
+        impl_agent!(qq, self)
     }
 }

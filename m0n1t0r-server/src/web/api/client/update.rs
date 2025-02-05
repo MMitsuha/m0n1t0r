@@ -50,7 +50,7 @@ pub mod by_file {
 
     #[derive(MultipartForm)]
     struct ByFileForm {
-        #[multipart(limit = "100MB")]
+        #[multipart(limit = "50MB")]
         file: Bytes,
         temp: Option<Text<String>>,
     }
