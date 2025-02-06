@@ -81,5 +81,5 @@ fn main() {
     xmake_build(workspace);
 
     #[cfg(feature = "windows")]
-    add_administrator_manifest();
+    add_administrator_manifest_windows();
 }
