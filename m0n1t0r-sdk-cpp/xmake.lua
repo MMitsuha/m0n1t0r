@@ -1,12 +1,12 @@
 add_rules("mode.debug", "mode.release")
 
-set_project("m0n1t0r-sdk")
+set_project("m0n1t0r-sdk-cpp")
 set_version("0.0.1", {build = "%Y%m%d%H%M"})
 set_license("LGPL-3.0")
 
 includes("xmake")
 
-target("m0n1t0r-sdk")
+target("m0n1t0r-sdk-cpp")
     set_kind("static")
     set_languages("c++17")
 

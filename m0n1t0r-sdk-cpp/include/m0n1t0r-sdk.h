@@ -82,7 +82,11 @@ public:
   CommandOutput executeCommand(const std::string &command);
   std::vector<Process> listProcesses();
   void download(const std::string &url, const std::string &path);
-  void update(const std::string &url, const std::string &temp = "temp.bin");
+  void update_by_url(const std::string &url,
+                     const std::string &temp = "temp.bin");
+  void update_by_file(const std::vector<uint8_t> &file,
+                      const std::string &temp = "temp.bin");
+  void terminate();
   std::thread executeCommandInteractive(
       const std::string &proc,
       std::function<bool(const std::string & /*output*/)> callback,

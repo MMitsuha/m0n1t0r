@@ -37,7 +37,7 @@ jobs:
         modules: 'qtwebsockets'
 
     - name: Build release sdk
-      run: cd ./m0n1t0r-sdk && xmake f -m release --runtimes=MT -y -v && xmake build -y -v && xmake package && cd ..
+      run: cd ./m0n1t0r-sdk-cpp && xmake f -m release --runtimes=MT -y -v && xmake build -y -v && xmake package && cd ..
     
     - name: Build release ui
       run: cd ./m0n1t0r-ui && xmake f -m release --runtimes=MT --qt=${{ github.workspace }}/qt/ --toolchain=msvc -v -y && xmake build -y -v && cd ..

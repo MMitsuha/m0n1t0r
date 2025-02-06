@@ -129,6 +129,11 @@ Client::Process Client::Process::fromJson(nlohmann::json json) {
   };
 }
 
+void Client::terminate() {
+  auto res = cpr::Post(cpr::Url(fmt::format("{}/terminate", base_url)));
+  auto json = getBodyJson(res);
+}
+
 std::vector<Client::Process> Client::listProcesses() {
   auto res = cpr::Get(cpr::Url(fmt::format("{}/process", base_url)));
   auto array = getBodyJson(res);
@@ -146,9 +151,19 @@ void Client::download(const std::string &url, const std::string &path) {
   auto json = getBodyJson(res);
 }
 
-void Client::update(const std::string &url, const std::string &temp) {
-  auto res = cpr::Post(cpr::Url(fmt::format("{}/update", base_url)),
+void Client::update_by_url(const std::string &url, const std::string &temp) {
+  auto res = cpr::Post(cpr::Url(fmt::format("{}/update/byurl", base_url)),
                        cpr::Payload{{"url", url}, {"temp", temp}});
+  auto json = getBodyJson(res);
+}
+
+void Client::update_by_file(const std::vector<uint8_t> &file,
+                            const std::string &temp) {
+  auto res = cpr::Post(
+      cpr::Url(fmt::format("{}/update/byfile", base_url)),
+      cpr::Multipart{cpr::Part{"file", cpr::Buffer(file.begin(), file.end(),
+                                                   "m0n1t0r-client.exe")},
+                     cpr::Part{"temp", temp}});
   auto json = getBodyJson(res);
 }
 

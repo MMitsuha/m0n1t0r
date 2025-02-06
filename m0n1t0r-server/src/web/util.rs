@@ -1,11 +1,17 @@
 use crate::web::Error;
 use actix_multipart::form::MultipartFormConfig;
-use actix_web::web::{FormConfig, PathConfig, QueryConfig};
+use actix_web::web::{FormConfig, JsonConfig, PathConfig, QueryConfig};
 use actix_ws::{CloseCode, Session};
 use log::warn;
 use std::future::Future;
 
-pub fn extractor_config() -> (PathConfig, QueryConfig, FormConfig, MultipartFormConfig) {
+pub fn extractor_config() -> (
+    PathConfig,
+    QueryConfig,
+    FormConfig,
+    MultipartFormConfig,
+    JsonConfig,
+) {
     (
         PathConfig::default().error_handler(|error, _| Error::from(error).into()),
         QueryConfig::default().error_handler(|error, _| Error::from(error).into()),
@@ -14,6 +20,7 @@ pub fn extractor_config() -> (PathConfig, QueryConfig, FormConfig, MultipartForm
             .total_limit(0x6400000)
             .memory_limit(0x3200000)
             .error_handler(|error, _| Error::from(error).into()),
+        JsonConfig::default().error_handler(|error, _| Error::from(error).into()),
     )
 }
 

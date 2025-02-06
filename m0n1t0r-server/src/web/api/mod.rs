@@ -1,5 +1,6 @@
 mod client;
 mod index;
+mod server;
 
 use crate::{web::util, ServerMap};
 use actix_web::{
@@ -26,7 +27,8 @@ impl From<&crate::Config> for Config {
 
 pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<()> {
     HttpServer::new(move || {
-        let (path_config, query_config, form_config, multipart_config) = util::extractor_config();
+        let (path_config, query_config, form_config, multipart_config, json_config) =
+            util::extractor_config();
 
         App::new()
             .wrap(Logger::default())
@@ -36,11 +38,12 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
             .app_data(query_config)
             .app_data(form_config)
             .app_data(multipart_config)
+            .app_data(json_config)
             .service(index::get)
             .service(
                 web::scope("/client")
                     .service(client::get)
-                    .service(client::notify::get)
+                    .service(client::all::notify::get)
                     .service(
                         web::scope("/proxy")
                             .service(client::proxy::get)
@@ -48,9 +51,10 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                     )
                     .service(
                         web::scope("/{addr}")
-                            .service(client::client::get)
-                            .service(client::client::environment::get)
-                            .service(client::client::terminate::post)
+                            .service(client::detail::get)
+                            .service(client::environment::get)
+                            .service(client::terminate::post)
+                            .service(client::notify::get)
                             .service(
                                 web::scope("/update")
                                     .service(client::update::by_url::post)
@@ -88,6 +92,7 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                             ),
                     ),
             )
+            .service(web::scope("/server").service(server::get))
     })
     .bind(config.addr)?
     .run()

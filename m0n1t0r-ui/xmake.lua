@@ -4,7 +4,7 @@ set_project("m0n1t0r-ui")
 set_version("0.0.1", {build = "%Y%m%d%H%M"})
 set_license("LGPL-3.0")
 
-add_repositories("local-repo ../m0n1t0r-sdk/build")
+add_repositories("local-repo ../m0n1t0r-sdk-cpp/build")
 includes("xmake")
 
 target("m0n1t0r-ui")
@@ -29,7 +29,7 @@ target("m0n1t0r-ui")
     add_packages("fmt~Dynamic")
     add_packages("cpr~Dynamic")
     add_packages("openh264~Dynamic")
-    add_packages("m0n1t0r-sdk~Static")
+    add_packages("m0n1t0r-sdk-cpp~Static")
     add_packages("cpp-channel~Static")
     add_packages("libyuv~Dynamic")
 

@@ -1917,7 +1917,7 @@ dependencies = [
 
 [[package]]
 name = "m0n1t0r-client"
-version = "1.0.1"
+version = "1.1.0"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -1950,7 +1950,7 @@ dependencies = [
 
 [[package]]
 name = "m0n1t0r-common"
-version = "1.0.1"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "async-channel",
@@ -1987,7 +1987,7 @@ dependencies = [
 
 [[package]]
 name = "m0n1t0r-macro"
-version = "1.0.1"
+version = "1.1.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1996,7 +1996,7 @@ dependencies = [
 
 [[package]]
 name = "m0n1t0r-server"
-version = "1.0.1"
+version = "1.1.0"
 dependencies = [
  "actix-multipart",
  "actix-web",
@@ -3916,7 +3916,7 @@ dependencies = [
 
 [[package]]
 name = "xtask"
-version = "1.0.1"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "cargo-emit",

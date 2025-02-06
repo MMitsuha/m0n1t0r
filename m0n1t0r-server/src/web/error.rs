@@ -105,6 +105,12 @@ impl From<actix_multipart::MultipartError> for Error {
     }
 }
 
+impl From<actix_web::error::JsonPayloadError> for Error {
+    fn from(e: actix_web::error::JsonPayloadError) -> Self {
+        Self::WebFrameworkException(serde_error::Error::new(&e))
+    }
+}
+
 impl From<shell_words::ParseError> for Error {
     fn from(e: shell_words::ParseError) -> Self {
         Self::InvalidCommand(serde_error::Error::new(&e))

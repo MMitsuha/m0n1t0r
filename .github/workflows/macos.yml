@@ -56,10 +56,10 @@ jobs:
       run: cargo build -r --verbose
 
     - name: Build debug sdk
-      run: cd ./m0n1t0r-sdk && xmake f -m debug -y -v && xmake build -y -v && xmake package && cd ..
+      run: cd ./m0n1t0r-sdk-cpp && xmake f -m debug -y -v && xmake build -y -v && xmake package && cd ..
 
     - name: Build release sdk
-      run: cd ./m0n1t0r-sdk && xmake f -m release -y -v && xmake build -y -v && xmake package && cd ..
+      run: cd ./m0n1t0r-sdk-cpp && xmake f -m release -y -v && xmake build -y -v && xmake package && cd ..
     
     - name: Build debug ui
       run: cd ./m0n1t0r-ui && xmake f -m debug --qt=${{ github.workspace }}/qt/ -v -y && xmake build -y -v && cd ..

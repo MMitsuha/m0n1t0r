@@ -16,7 +16,7 @@ pub enum TargetPlatform {
 #[rtc::remote]
 pub trait Client: Sync {
     async fn version(&self) -> AppResult<String> {
-        Ok(util::version::get())
+        Ok(util::version::version().into())
     }
 
     async fn target_platform(&self) -> AppResult<TargetPlatform> {
@@ -28,11 +28,11 @@ pub trait Client: Sync {
     }
 
     async fn build_time(&self) -> AppResult<String> {
-        Ok(env!("VERGEN_BUILD_TIMESTAMP").into())
+        Ok(util::version::build_time().into())
     }
 
     async fn commit_hash(&self) -> AppResult<String> {
-        Ok(env!("VERGEN_RUSTC_COMMIT_HASH").into())
+        Ok(util::version::commit_hash().into())
     }
 
     async fn terminate(&self) -> AppResult<()>;

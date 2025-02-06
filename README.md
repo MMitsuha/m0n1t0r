@@ -21,7 +21,7 @@
 4. Install `Qt` using `aqt`
 5. Run `./certs/generate.sh` if needed
 6. Run `cargo build` to build a general client and server or use `cargo build --features windows` to build a Windows specific client and server
-7. Build sdk using `cd ./m0n1t0r-sdk && xmake f -m release -y -v && xmake build -y -v && xmake package && cd ..`
+7. Build sdk using `cd ./m0n1t0r-sdk-cpp && xmake f -m release -y -v && xmake build -y -v && xmake package && cd ..`
 8. Build UI using `cd ./m0n1t0r-ui && xmake f -m release --qt=<PATH_TO_QT>/qt/ -v -y && xmake build -y -v && cd ..`
 
 - Windows
