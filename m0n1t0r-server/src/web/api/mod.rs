@@ -1,8 +1,8 @@
 mod client;
-mod index;
 mod server;
 
 use crate::{web::util, ServerMap};
+use actix_files::Files as ActixFiles;
 use actix_web::{
     middleware::{self, NormalizePath},
     web::{self, Data},
@@ -39,7 +39,6 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
             .app_data(form_config)
             .app_data(multipart_config)
             .app_data(json_config)
-            .service(index::get)
             .service(
                 web::scope("/client")
                     .service(client::get)
@@ -93,6 +92,7 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                     ),
             )
             .service(web::scope("/server").service(server::get))
+            .service(ActixFiles::new("/", "public").index_file("index.html"))
     })
     .bind(config.addr)?
     .run()
