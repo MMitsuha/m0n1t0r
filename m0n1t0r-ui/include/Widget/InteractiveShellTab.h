@@ -2,7 +2,7 @@
 #define __M0N1T0R_M0N1T0R_UI_INCLUDE_WIDGET_INTERACTIVESHELLTAB_H_
 
 #include <QWidget>
-#include <m0n1t0r-sdk.h>
+#include <m0n1t0r-sdk-cpp/m0n1t0r-sdk.h>
 #include <msd/channel.hpp>
 
 namespace Ui {

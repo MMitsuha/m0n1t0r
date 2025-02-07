@@ -5,7 +5,7 @@
 #include "Widget/FileTree.h"
 #include "Widget/ProcessTable.h"
 #include <QDialog>
-#include <m0n1t0r-sdk.h>
+#include <m0n1t0r-sdk-cpp/m0n1t0r-sdk.h>
 
 namespace Ui {
 class ClientWindow;

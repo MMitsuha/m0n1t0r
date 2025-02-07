@@ -3,7 +3,7 @@
 
 #include <QTreeWidget>
 #include <QWidget>
-#include <m0n1t0r-sdk.h>
+#include <m0n1t0r-sdk-cpp/m0n1t0r-sdk.h>
 
 namespace Ui {
 class FileTree;

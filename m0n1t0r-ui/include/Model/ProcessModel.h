@@ -5,7 +5,7 @@
 
 #include <QAbstractTableModel>
 #include <QArrayData>
-#include <m0n1t0r-sdk.h>
+#include <m0n1t0r-sdk-cpp/m0n1t0r-sdk.h>
 
 class ProcessModel : public QAbstractTableModel {
   Q_OBJECT

@@ -12,20 +12,19 @@ void ConnectionSubscriber::onServerConnected(
 
   emit serverConnected(server);
   try {
-    for (auto &client : server->allClient()) {
+    for (auto &client : m0n1t0r::Client::all(server)) {
       emit clientConnected(client);
     }
 
-    server
-        ->notify([this](const m0n1t0r::Server::Notification &notification) {
-          if (notification.event == 0) {
-            emit clientConnected(server->client(notification.addr));
-          } else if (notification.event == 1) {
-            emit clientDisconnected(notification.addr);
-          }
-          return true;
-        })
-        .detach();
+    m0n1t0r::Client::notify(server, [this](const m0n1t0r::Client::Notification
+                                               &notification) {
+      if (notification.event == 0) {
+        emit clientConnected(server->client(notification.addr));
+      } else if (notification.event == 1) {
+        emit clientDisconnected(notification.addr);
+      }
+      return true;
+    }).detach();
 
     server->notifyClose([this]() { emit serverDisconnected(); }).detach();
   } catch (std::runtime_error &e) {

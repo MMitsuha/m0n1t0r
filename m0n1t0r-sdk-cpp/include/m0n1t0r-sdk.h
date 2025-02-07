@@ -11,6 +11,8 @@
 namespace m0n1t0r {
 using ws_client = websocketpp::client<websocketpp::config::asio_client>;
 
+class Server;
+
 class Client {
 public:
   struct SystemInfo {
@@ -86,9 +88,13 @@ public:
   };
 
   // Base
-  std::thread notify(const std::string &base_url,
-                     std::function<bool(const Notification &)> callback);
+  static std::thread notify(const std::string &base_url,
+                            std::function<bool(const Notification &)> callback);
+  static std::thread notify(const std::shared_ptr<Server> server,
+                            std::function<bool(const Notification &)> callback);
   static std::vector<std::shared_ptr<Client>> all(const std::string &base_url);
+  static std::vector<std::shared_ptr<Client>>
+  all(const std::shared_ptr<Server> server);
   Client(const std::string &base_url, const std::string &addr);
   ~Client() = default;
   inline std::string getBaseUrl() const { return base_url; }

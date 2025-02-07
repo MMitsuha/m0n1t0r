@@ -69,6 +69,16 @@ std::vector<std::shared_ptr<Client>> Client::all(const std::string &base_url) {
   return ret;
 }
 
+std::vector<std::shared_ptr<Client>>
+Client::all(const std::shared_ptr<Server> server) {
+  return all(server->getBaseUrl());
+}
+
+std::thread Client::notify(const std::shared_ptr<Server> server,
+                           std::function<bool(const Notification &)> callback) {
+  return notify(server->getBaseUrl(), callback);
+}
+
 std::thread Client::notify(const std::string &base_url,
                            std::function<bool(const Notification &)> callback) {
   return std::thread([=]() {
