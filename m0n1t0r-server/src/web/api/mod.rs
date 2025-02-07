@@ -16,12 +16,14 @@ use tokio::sync::RwLock;
 
 pub struct Config {
     addr: SocketAddr,
+    tls_config: rustls::ServerConfig,
 }
 
 impl From<&crate::Config> for Config {
     fn from(config: &crate::Config) -> Self {
         Self {
             addr: config.api_addr,
+            tls_config: config.tls_config.clone(),
         }
     }
 }
@@ -97,7 +99,7 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
             )
             .service(ActixFiles::new("/", "public").index_file("index.html"))
     })
-    .bind(config.addr)?
+    .bind_rustls_0_23(config.addr, config.tls_config.clone())?
     .run()
     .await?;
     Ok(())

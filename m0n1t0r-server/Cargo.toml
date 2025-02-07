@@ -8,7 +8,7 @@ edition = "2021"
 repository.workspace = true
 
 [dependencies]
-actix-web = { version = "4.9", features = ["secure-cookies"] }
+actix-web = { version = "4.9", features = ["secure-cookies", "http2", "rustls-0_23"] }
 anyhow = "1.0"
 remoc = { git = "https://github.com/MMitsuha/remoc.git", branch = "stable",  features = ["full", "codec-message-pack", "default-codec-message-pack", "rmp-serde"], default-features = false }
 reqwest = { version = "0.12", features = ["cookies", "json", "socks"] }

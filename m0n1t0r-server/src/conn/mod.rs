@@ -13,10 +13,9 @@ use remoc::{
     rch::base::{Receiver as RemoteReceiver, Sender as RemoteSender},
     Cfg, Connect,
 };
-use rustls_pki_types::{pem::PemObject as _, CertificateDer, PrivateKeyDer};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::{collections::HashMap, net::SocketAddr, path::PathBuf, sync::Arc};
+use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 use tokio::{
     io,
     net::{TcpListener, TcpStream},
@@ -77,16 +76,14 @@ impl ServerMap {
 
 pub struct Config {
     addr: SocketAddr,
-    key: PathBuf,
-    cert: PathBuf,
+    tls_config: rustls::ServerConfig,
 }
 
 impl From<&crate::Config> for Config {
     fn from(config: &crate::Config) -> Self {
         Self {
             addr: config.conn_addr,
-            key: config.key.clone(),
-            cert: config.cert.clone(),
+            tls_config: config.tls_config.clone(),
         }
     }
 }
@@ -185,19 +182,9 @@ pub async fn accept(
     Ok(())
 }
 
-fn tls_acceptor(config: &Config) -> Result<TlsAcceptor> {
-    let certs = CertificateDer::pem_file_iter(&config.cert)?.collect::<Result<Vec<_>, _>>()?;
-    let key = PrivateKeyDer::from_pem_file(&config.key)?;
-    let tls_config = rustls::ServerConfig::builder()
-        .with_no_client_auth()
-        .with_single_cert(certs, key)?;
-
-    Ok(TlsAcceptor::from(Arc::new(tls_config)))
-}
-
 pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<()> {
     let listener = TcpListener::bind(config.addr).await?;
-    let acceptor = tls_acceptor(config)?;
+    let acceptor = TlsAcceptor::from(Arc::new(config.tls_config.clone()));
 
     loop {
         if let Err(e) = accept(&listener, acceptor.clone(), server_map.clone()).await {
