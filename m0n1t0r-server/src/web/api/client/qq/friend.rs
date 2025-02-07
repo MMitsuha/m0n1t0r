@@ -11,7 +11,7 @@ use m0n1t0r_common::qq::Agent as _;
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
 
-#[get("/{id}/friends")]
+#[get("/{id}/friend")]
 pub async fn get(
     data: Data<Arc<RwLock<ServerMap>>>,
     path: Path<(SocketAddr, i64)>,
