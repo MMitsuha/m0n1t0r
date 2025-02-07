@@ -1,4 +1,3 @@
-pub mod all;
 pub mod detail;
 pub mod environment;
 pub mod fs;
@@ -29,6 +28,7 @@ pub async fn get(data: Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder
     let lock_map = &data.read().await.map;
     let mut details = Vec::new();
 
+    // TODO: Parallelize this
     for (addr, server) in lock_map.iter() {
         let lock_obj = server.read().await;
         let client = lock_obj.get_client()?;

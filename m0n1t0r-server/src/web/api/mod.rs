@@ -1,4 +1,5 @@
 mod client;
+mod global;
 mod server;
 
 use crate::{web::util, ServerMap};
@@ -42,18 +43,12 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
             .service(
                 web::scope("/client")
                     .service(client::get)
-                    .service(client::all::notify::get)
-                    .service(
-                        web::scope("/proxy")
-                            .service(client::proxy::get)
-                            .service(client::proxy::delete),
-                    )
+                    .service(client::notify::get)
                     .service(
                         web::scope("/{addr}")
                             .service(client::detail::get)
                             .service(client::environment::get)
                             .service(client::terminate::post)
-                            .service(client::notify::get)
                             .service(
                                 web::scope("/update")
                                     .service(client::update::by_url::post)
@@ -68,8 +63,7 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                             )
                             .service(
                                 web::scope("/process")
-                                    .service(client::process::interactive::post)
-                                    .service(client::process::execute::detached::post)
+                                    .service(client::process::interactive::get)
                                     .service(client::process::execute::post)
                                     .service(client::process::get)
                                     .service(client::process::delete),
@@ -91,7 +85,16 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                             ),
                     ),
             )
-            .service(web::scope("/server").service(server::get))
+            .service(
+                web::scope("/server")
+                    .service(server::get)
+                    .service(server::notify::get)
+                    .service(
+                        web::scope("/proxy")
+                            .service(server::proxy::get)
+                            .service(server::proxy::delete),
+                    ),
+            )
             .service(ActixFiles::new("/", "public").index_file("index.html"))
     })
     .bind(config.addr)?

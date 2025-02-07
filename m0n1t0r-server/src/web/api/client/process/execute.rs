@@ -1,6 +1,6 @@
 use crate::{
     web::{
-        api::client::process::{self, CommandForm},
+        api::client::process::{self, CommandForm, Execute},
         Response, Result as WebResult,
     },
     ServerMap,
@@ -18,34 +18,19 @@ use tokio::sync::RwLock;
 pub async fn post(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: Path<SocketAddr>,
-    form: Form<CommandForm>,
+    Form(form): Form<CommandForm>,
 ) -> WebResult<impl Responder> {
     let (agent, _) = process::get_agent(data, &addr).await?;
 
     let mut command = shell_words::split(&form.command)?;
     let program = command.remove(0);
 
-    Ok(Json(Response::success(
-        agent.execute(program, command).await?,
-    )?))
-}
-
-pub mod detached {
-    use super::*;
-
-    #[post("/execute/detached")]
-    pub async fn post(
-        data: Data<Arc<RwLock<ServerMap>>>,
-        addr: Path<SocketAddr>,
-        form: Form<CommandForm>,
-    ) -> WebResult<impl Responder> {
-        let (agent, _) = process::get_agent(data, &addr).await?;
-
-        let mut command = shell_words::split(&form.command)?;
-        let program = command.remove(0);
-
-        Ok(Json(Response::success(
+    match form.option {
+        Execute::Blocked => Ok(Json(Response::success(
+            agent.execute(program, command).await?,
+        )?)),
+        Execute::Detached => Ok(Json(Response::success(
             agent.execute_detached(program, command).await?,
-        )?))
+        )?)),
     }
 }

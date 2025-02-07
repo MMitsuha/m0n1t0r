@@ -90,8 +90,9 @@ where
         .into_par_iter()
         .filter(|(pid, process)| function(pid, process))
         .map(|(pid, process)| {
+            let ret = Process::from_process(pid, process);
             process.kill();
-            Process::from_process(pid, process)
+            ret
         })
         .collect();
 

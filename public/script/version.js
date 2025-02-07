@@ -4,14 +4,14 @@ async function onload() {
 }
 
 async function version() {
-    const body = await get('http://127.0.0.1:10801/server');
+    const body = await get('./server');
 
     document.getElementById('version').innerText = body.version;
     document.getElementById('build_time').innerText = body.build_time;
 }
 
 async function clients() {
-    const body = await get('http://127.0.0.1:10801/client');
+    const body = await get('./client');
     
     // TODO: Implement this
     console.log(body);

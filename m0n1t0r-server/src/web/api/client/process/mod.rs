@@ -28,8 +28,24 @@ enum Type {
 }
 
 #[derive(Deserialize)]
+enum Execute {
+    #[serde(rename = "blocked")]
+    Blocked,
+    #[serde(rename = "detached")]
+    Detached,
+}
+
+impl Default for Execute {
+    fn default() -> Self {
+        Self::Blocked
+    }
+}
+
+#[derive(Deserialize)]
 struct CommandForm {
     command: String,
+    #[serde(default)]
+    option: Execute,
 }
 
 #[get("")]

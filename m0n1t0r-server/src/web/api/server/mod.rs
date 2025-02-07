@@ -1,3 +1,6 @@
+pub mod notify;
+pub mod proxy;
+
 use crate::web::{Response, Result as WebResult};
 use actix_web::{get, web::Json, Responder};
 use m0n1t0r_common::util;

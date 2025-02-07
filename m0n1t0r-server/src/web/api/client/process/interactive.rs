@@ -17,7 +17,7 @@ use std::{net::SocketAddr, sync::Arc};
 use tokio::{select, sync::RwLock, task};
 
 #[get("/interactive")]
-pub async fn post(
+pub async fn get(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: Path<SocketAddr>,
     query: Query<CommandForm>,
@@ -50,5 +50,6 @@ pub async fn post(
         }
         Ok::<_, anyhow::Error>(())
     }));
+
     Ok(response)
 }

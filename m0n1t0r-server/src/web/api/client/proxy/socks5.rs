@@ -1,6 +1,9 @@
-use super::{Type, PROXY_MAP};
 use crate::{
-    web::{api::client::proxy, error::Error, Response, Result as WebResult},
+    web::{
+        api::{client::proxy, global::proxy::*},
+        error::Error,
+        Response, Result as WebResult,
+    },
     ServerMap,
 };
 use actix_web::{

@@ -17,15 +17,14 @@ void ConnectionSubscriber::onServerConnected(
     }
 
     server
-        ->notifyConnect(
-            [this](const m0n1t0r::Server::Notification &notification) {
-              if (notification.event == 0) {
-                emit clientConnected(server->client(notification.addr));
-              } else if (notification.event == 1) {
-                emit clientDisconnected(notification.addr);
-              }
-              return true;
-            })
+        ->notify([this](const m0n1t0r::Server::Notification &notification) {
+          if (notification.event == 0) {
+            emit clientConnected(server->client(notification.addr));
+          } else if (notification.event == 1) {
+            emit clientDisconnected(notification.addr);
+          }
+          return true;
+        })
         .detach();
 
     server->notifyClose([this]() { emit serverDisconnected(); }).detach();
