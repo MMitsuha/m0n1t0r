@@ -42,3 +42,4 @@ rayon = "1.10.0"
 [build-dependencies]
 cargo-emit = "0.2"
 vergen = { version = "9.0.0", features = ["build", "cargo", "rustc", "si"] }
+m0n1t0r-build = { path = "../m0n1t0r-build" }

@@ -5,7 +5,7 @@ members = [
     "m0n1t0r-server",
     "m0n1t0r-common",
     "m0n1t0r-macro",
-    "xtask",
+    "xtask", "m0n1t0r-build",
 ]
 
 [workspace.package]

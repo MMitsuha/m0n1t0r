@@ -1,0 +1,12 @@
+[package]
+name = "m0n1t0r-build"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+readme.workspace = true
+repository.workspace = true
+edition.workspace = true
+
+[dependencies]
+cargo-emit = "0.2"
+vergen = { version = "9.0.0", features = ["build", "cargo", "rustc", "si"] }

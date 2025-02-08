@@ -46,6 +46,7 @@ xmake = { version = "0.2", git = "https://github.com/MMitsuha/xmake-rs.git" }
 cxx-build = "1.0"
 cargo-emit = "0.2"
 vergen = { version = "9.0.0", features = ["build", "cargo", "rustc", "si"] }
+m0n1t0r-build = { path = "../m0n1t0r-build" }
 
 [target.'cfg(windows)'.build-dependencies]
 winres = "0.1"

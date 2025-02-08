@@ -1,5 +1,6 @@
 #![allow(unused)]
 
+use m0n1t0r_build::{cert, dep};
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -13,18 +14,6 @@ fn bridge_build() {
     BRIDGE_LIST_WINDOWS.iter().for_each(|x| {
         cxx_build::bridge(x);
     });
-}
-
-fn check_certs(workspace: &Path) {
-    let certs = workspace.join("certs");
-    cargo_emit::rerun_if_changed!(certs.display());
-}
-
-fn check_xmake_dependencies() {
-    Command::new("xmake")
-        .arg("--help")
-        .output()
-        .expect("No xmake found. Please install xmake.");
 }
 
 #[cfg(feature = "windows")]
@@ -41,7 +30,7 @@ fn xmake_build_windows(paths: &mut Vec<PathBuf>, workspace: &Path) {
 }
 
 fn xmake_build(workspace: &Path) {
-    check_xmake_dependencies();
+    dep::check_xmake();
 
     let mut paths: Vec<PathBuf> = Vec::new();
 
@@ -74,8 +63,14 @@ fn add_administrator_manifest_windows() {
 
 fn main() {
     let workspace = Path::new(env!("CARGO_WORKSPACE_DIR"));
+    let certs = workspace.join("certs");
 
-    check_certs(workspace);
+    if cert::check(&certs) == false {
+        panic!(
+            "No certificates under {} found. Please run `cargo build` in m0n1t0r-common.",
+            certs.display()
+        );
+    }
 
     bridge_build();
     xmake_build(workspace);

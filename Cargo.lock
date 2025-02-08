@@ -1966,6 +1966,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "m0n1t0r-build"
+version = "1.1.0"
+dependencies = [
+ "cargo-emit",
+ "vergen",
+]
+
+[[package]]
 name = "m0n1t0r-client"
 version = "1.1.0"
 dependencies = [
@@ -1977,6 +1985,7 @@ dependencies = [
  "cxx-build",
  "flexi_logger",
  "log",
+ "m0n1t0r-build",
  "m0n1t0r-common",
  "paste",
  "qqkey",
@@ -2013,6 +2022,7 @@ dependencies = [
  "cxx",
  "futures",
  "log",
+ "m0n1t0r-build",
  "m0n1t0r-macro",
  "qqkey",
  "rayon",
