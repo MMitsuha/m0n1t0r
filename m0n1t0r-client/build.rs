@@ -63,11 +63,11 @@ fn add_administrator_manifest_windows() {
 
 fn main() {
     let workspace = Path::new(env!("CARGO_WORKSPACE_DIR"));
-    let certs = workspace.join("certs");
+    let certs = cert::path();
 
     if cert::check(&certs) == false {
         panic!(
-            "No certificates under {} found. Please run `cargo build` in m0n1t0r-common.",
+            "No certificates under {} found. Please run `cargo xtask -c` to generate one.",
             certs.display()
         );
     }

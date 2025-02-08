@@ -1,8 +1,9 @@
 use anyhow::{anyhow, Result};
 use clap::Parser;
 use flexi_logger::Logger;
-use log::{error, info};
-use std::{env, process::Command};
+use log::{error, info, warn};
+use m0n1t0r_build::cert;
+use std::{env, io, process::Command};
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -11,6 +12,8 @@ struct Arguments {
     verbose: bool,
     #[arg(short, long)]
     upx: bool,
+    #[arg(short, long)]
+    cert: bool,
 }
 
 fn main() -> Result<()> {
@@ -41,6 +44,24 @@ fn main() -> Result<()> {
             true => info!("Successfully compressed"),
             false => error!("Failed to compress"),
         }
+    }
+
+    if args.cert == true {
+        let certs = cert::path();
+
+        if cert::check_no_rerun(&certs) == true {
+            let mut input = String::new();
+            warn!(
+                "Certificates found under {}. Should continue(y/N)?",
+                certs.display()
+            );
+            io::stdin().read_line(&mut input)?;
+            if input.trim().to_lowercase() != "y" {
+                return Ok(());
+            }
+        }
+
+        cert::generate(&certs);
     }
 
     Ok(())

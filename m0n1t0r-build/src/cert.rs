@@ -1,12 +1,25 @@
-use std::{fs::File, io::Write, path::Path, process::Command};
+use std::{
+    fs::{self, File},
+    io::Write,
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 const CA_CERT: &str = "ca.crt";
 const END_KEY: &str = "end.key";
 const END_CERT: &str = "end.crt";
+const CERT_EXT: &str = "cert.ext";
+
+pub fn path() -> PathBuf {
+    Path::new(env!("CARGO_WORKSPACE_DIR")).join("certs")
+}
 
 pub fn check(certs: &Path) -> bool {
     cargo_emit::rerun_if_changed!(certs.display());
+    check_no_rerun(certs)
+}
 
+pub fn check_no_rerun(certs: &Path) -> bool {
     [
         certs.join(CA_CERT),
         certs.join(END_KEY),
@@ -18,12 +31,20 @@ pub fn check(certs: &Path) -> bool {
 }
 
 pub fn generate(certs: &Path) {
+    // TODO: Fix this hack
     let ca_key = certs.join("ca.key");
     let end_csr = certs.join("end.csr");
-    let cert_ext = certs.join("cert.ext");
+    let cert_ext = certs.join(CERT_EXT);
     let ca_crt = certs.join(CA_CERT);
     let end_key = certs.join(END_KEY);
     let end_crt = certs.join(END_CERT);
+    let ca_key = ca_key.to_str().unwrap();
+    let end_csr = end_csr.to_str().unwrap();
+    let cert_ext = cert_ext.to_str().unwrap();
+    let ca_crt = ca_crt.to_str().unwrap();
+    let end_key = end_key.to_str().unwrap();
+    let end_crt = end_crt.to_str().unwrap();
+
     let commands = vec![
         vec![
             "openssl",
@@ -35,9 +56,9 @@ pub fn generate(certs: &Path) {
             "-newkey",
             "rsa:4096",
             "-keyout",
-            ca_key.to_str().unwrap(),
+            ca_key,
             "-out",
-            ca_crt.to_str().unwrap(),
+            ca_crt,
             "-nodes",
             "-subj",
             concat!(
@@ -52,7 +73,7 @@ pub fn generate(certs: &Path) {
             "-algorithm",
             "RSA",
             "-out",
-            end_key.to_str().unwrap(),
+            end_key,
             "-pkeyopt",
             "rsa_keygen_bits:4096",
         ],
@@ -61,9 +82,9 @@ pub fn generate(certs: &Path) {
             "req",
             "-new",
             "-key",
-            end_key.to_str().unwrap(),
+            end_key,
             "-out",
-            end_csr.to_str().unwrap(),
+            end_csr,
             "-subj",
             concat!(
                 "/C=CN/ST=ShangHai/L=ShangHai/O=K and A Ltd/OU=./CN=",
@@ -76,23 +97,24 @@ pub fn generate(certs: &Path) {
             "x509",
             "-req",
             "-in",
-            end_csr.to_str().unwrap(),
+            end_csr,
             "-CA",
-            ca_crt.to_str().unwrap(),
+            ca_crt,
             "-CAkey",
-            ca_key.to_str().unwrap(),
+            ca_key,
             "-CAcreateserial",
             "-extfile",
-            cert_ext.to_str().unwrap(),
+            cert_ext,
             "-out",
-            end_crt.to_str().unwrap(),
+            end_crt,
             "-days",
             "3650",
             "-sha256",
         ],
     ];
 
-    File::create(certs.join("cert.ext"))
+    fs::create_dir_all(certs).unwrap();
+    File::create(certs.join(CERT_EXT))
         .unwrap()
         .write(
             concat!(
@@ -104,7 +126,12 @@ pub fn generate(certs: &Path) {
         )
         .unwrap();
 
-    commands.into_iter().for_each(|c| {
-        Command::new(c[0]).args(&c[1..]);
-    });
+    if commands
+        .into_iter()
+        .map(|c| Command::new(c[0]).args(&c[1..]).spawn().unwrap().wait())
+        .any(|r| r.unwrap().success() == false)
+        == true
+    {
+        panic!("Failed to generate certificates");
+    }
 }

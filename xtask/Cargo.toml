@@ -13,7 +13,7 @@ clap = { version = "4.5.28", features = ["derive"] }
 log = "0.4.25"
 flexi_logger = { version = "0.29.8" }
 anyhow = "1.0.95"
-m0n1t0r-client = { path = "../m0n1t0r-client" }
+m0n1t0r-build = { path = "../m0n1t0r-build" }
 
 [build-dependencies]
 cargo-emit = "0.2.1"

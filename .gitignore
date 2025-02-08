@@ -11,11 +11,7 @@ target/
 cspell.config.yaml
 
 # Certificates
-certs/*.crt
-certs/*.key
-certs/*.srl
-certs/*.csr
-certs/*.der
+certs/
 
 # Code counter
 .VSCodeCounter/

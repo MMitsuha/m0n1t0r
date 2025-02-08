@@ -1,4 +1,0 @@
-basicConstraints=CA:FALSE
-subjectAltName = @alt_names
-[alt_names]
-DNS.1 = mmitsuha.xyz

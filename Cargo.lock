@@ -4007,7 +4007,7 @@ dependencies = [
  "cmake",
  "flexi_logger",
  "log",
- "m0n1t0r-client",
+ "m0n1t0r-build",
 ]
 
 [[package]]

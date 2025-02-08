@@ -1,17 +1,14 @@
-use cargo_emit::warning;
 use m0n1t0r_build::{cert, version};
-use std::path::Path;
 
 fn main() {
-    let certs = Path::new(env!("CARGO_WORKSPACE_DIR")).join("certs");
+    let certs = cert::path();
 
     version::generate();
 
     if cert::check(&certs) == false {
-        warning!(
-            "No certificates under {} found. Regenerating.",
+        panic!(
+            "No certificates under {} found. Please run `cargo xtask -c` to generate one.",
             certs.display()
         );
-        cert::generate(&certs);
     }
 }
