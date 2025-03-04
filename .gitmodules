@@ -3,4 +3,4 @@
 	url = https://github.com/MMitsuha/upx.git
 [submodule "deps/qqkey"]
 	path = deps/qqkey
-	url = mitsuha@Ubuntu:qqkey
+	url = debian-git:qqkey
