@@ -8,5 +8,5 @@ repository.workspace = true
 edition.workspace = true
 
 [dependencies]
-cargo-emit = "0.2"
-vergen = { version = "9.0.0", features = ["build", "cargo", "rustc", "si"] }
+cargo-emit = "0.2.1"
+vergen = { version = "9.0.4", features = ["build", "cargo", "rustc", "si"] }
