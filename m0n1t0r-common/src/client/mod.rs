@@ -1,4 +1,4 @@
-use crate::{fs, info, network, process, proxy, qq, util, Result as AppResult};
+use crate::{Result as AppResult, autorun, fs, info, network, process, proxy, qq, util};
 use remoc::rtc;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, env, path::PathBuf};
@@ -50,6 +50,8 @@ pub trait Client: Sync {
     async fn get_network_agent(&self) -> AppResult<network::AgentClient>;
 
     async fn get_qq_agent(&self) -> AppResult<qq::AgentClient>;
+
+    async fn get_autorun_agent(&self) -> AppResult<autorun::AgentClient>;
 
     async fn update_by_url(&self, url: Url, temp: PathBuf) -> AppResult<()> {
         util::network::download(url, &temp).await?;

@@ -1,13 +1,12 @@
-use crate::web::{api::global::proxy::*, error::Error, Response, Result as WebResult};
+use crate::web::{Response, Result as WebResult, api::global::proxy::*, error::Error};
 use actix_web::{
-    delete, get,
+    Responder, delete, get,
     web::{Json, Path},
-    Responder,
 };
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::net::SocketAddr;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize)]
 struct Detail {
     addr: SocketAddr,
     r#type: Type,

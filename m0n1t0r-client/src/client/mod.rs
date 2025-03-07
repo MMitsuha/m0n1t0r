@@ -1,5 +1,10 @@
 #[macro_use]
-mod agent_macro;
+mod r#macro;
+
+mod general;
+
+#[cfg(any(feature = "linux", feature = "macos"))]
+mod unix;
 
 #[cfg(feature = "windows")]
 mod windows;
@@ -8,14 +13,21 @@ mod windows;
 use m0n1t0r_common::client::TargetPlatform;
 
 use log::warn;
-use m0n1t0r_common::{client::Client, server::ServerClient, Result as AppResult};
+use m0n1t0r_common::{Result as AppResult, client::Client, server::ServerClient};
 use remoc::{prelude::ServerSharedMut, rtc};
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
 use tokio_util::sync::CancellationToken;
 
-declare_agents!(proxy, network, fs, qq);
-declare_agents_with_platform!("windows", process);
+declare_agents!(
+    general,
+    [proxy, network, fs, qq],
+    ["general", "macos", "linux", "windows"]
+);
+declare_agents!(windows, [process], ["windows"]);
+declare_agents!(general, [process], ["general", "macos", "linux"]);
+declare_agents!(unix, [autorun], ["linux", "macos"]);
+declare_agents!(general, [autorun], ["general", "windows"]);
 
 pub struct ClientObj {
     addr: SocketAddr,
@@ -49,23 +61,24 @@ impl ClientObj {
 
 #[rtc::async_trait]
 impl Client for ClientObj {
-    async fn terminate(&self) -> AppResult<()> {
-        self.terminator.cancel();
-        Ok(())
-    }
-
-    // TODO: Improve this implementation
     #[cfg(feature = "windows")]
     async fn target_platform(&self) -> AppResult<TargetPlatform> {
         Ok(TargetPlatform::Windows)
     }
+
     #[cfg(feature = "linux")]
     async fn target_platform(&self) -> AppResult<TargetPlatform> {
         Ok(TargetPlatform::Linux)
     }
+
     #[cfg(feature = "macos")]
     async fn target_platform(&self) -> AppResult<TargetPlatform> {
         Ok(TargetPlatform::MacOS)
+    }
+
+    async fn terminate(&self) -> AppResult<()> {
+        self.terminator.cancel();
+        Ok(())
     }
 
     async fn get_fs_agent(&self) -> AppResult<m0n1t0r_common::fs::AgentClient> {
@@ -86,5 +99,9 @@ impl Client for ClientObj {
 
     async fn get_qq_agent(&self) -> AppResult<m0n1t0r_common::qq::AgentClient> {
         impl_agent!(qq, self)
+    }
+
+    async fn get_autorun_agent(&self) -> AppResult<m0n1t0r_common::autorun::AgentClient> {
+        impl_agent!(autorun, self)
     }
 }

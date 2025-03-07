@@ -1,11 +1,10 @@
 use crate::{
-    web::{api::client::network, Response, Result as WebResult},
     ServerMap,
+    web::{Response, Result as WebResult, api::client::network},
 };
 use actix_web::{
-    post,
+    Responder, post,
     web::{Data, Form, Json, Path},
-    Responder,
 };
 use m0n1t0r_common::network::Agent as _;
 use serde::Deserialize;

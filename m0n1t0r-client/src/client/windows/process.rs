@@ -1,8 +1,5 @@
 use anyhow::anyhow;
-use m0n1t0r_common::{
-    process::{self as mcprocess, execute::Output},
-    Error, Result as AppResult,
-};
+use m0n1t0r_common::{Error, Result as AppResult, process::execute::Output};
 use remoc::{
     chmux::ReceiverStream,
     rch::bin::{self, Receiver, Sender},
@@ -22,7 +19,7 @@ impl AgentObj {
 }
 
 #[rtc::async_trait]
-impl mcprocess::Agent for AgentObj {
+impl m0n1t0r_common::process::Agent for AgentObj {
     async fn execute(&self, command: String, args: Vec<String>) -> AppResult<Output> {
         let (tx, rx) = oneshot::channel();
 

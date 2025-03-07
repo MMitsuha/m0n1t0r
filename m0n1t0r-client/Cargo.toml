@@ -4,12 +4,12 @@ version.workspace = true
 authors.workspace = true
 description.workspace = true
 readme.workspace = true
-edition = "2021"
+edition = "2024"
 repository.workspace = true
 build = "build.rs"
 
 [features]
-default = ["general"]
+default = ["macos"]
 general = []
 windows = []
 linux = []
@@ -37,6 +37,7 @@ rustls-pki-types = { version = "1.11.0", features = ["alloc"] }
 paste = "1.0.15"
 quote = "1.0.39"
 qqkey = { path = "../deps/qqkey" }
+directories = "6.0.0"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3.9", features = ["winbase"] }

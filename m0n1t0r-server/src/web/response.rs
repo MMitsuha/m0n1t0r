@@ -1,6 +1,6 @@
 use crate::web::{Error, Result as WebResult};
 use anyhow::anyhow;
-use m0n1t0r_common::util::Discriminant as _;
+use discriminant_rs::Discriminant;
 use serde::Serialize;
 use serde_json::Value;
 

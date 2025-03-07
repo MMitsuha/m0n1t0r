@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 #[macro_use]
 extern crate m0n1t0r_macro;
 
@@ -9,7 +10,7 @@ pub use conn::ServerMap;
 pub use server::ServerObj;
 
 use anyhow::Result;
-use rustls_pki_types::{pem::PemObject, CertificateDer, PrivateKeyDer};
+use rustls_pki_types::{CertificateDer, PrivateKeyDer, pem::PemObject};
 use std::{net::SocketAddr, path::Path, sync::Arc};
 use tokio::{select, sync::RwLock};
 use web::api;

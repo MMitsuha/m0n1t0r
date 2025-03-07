@@ -1,8 +1,8 @@
 pub type Result<T> = std::result::Result<T, Error>;
 
 use crate::web::Response;
-use actix_web::{http::StatusCode, HttpResponse};
-use m0n1t0r_common::util::Discriminant;
+use actix_web::{HttpResponse, http::StatusCode};
+use discriminant_rs::Discriminant;
 use serde::Serialize;
 use thiserror::Error;
 

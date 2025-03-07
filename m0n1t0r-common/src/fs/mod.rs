@@ -1,8 +1,11 @@
 use crate::Result as AppResult;
 use remoc::rtc;
 use serde::{Deserialize, Serialize};
-use std::{fs::Metadata, path::PathBuf};
-use tokio::fs::{self, DirEntry};
+use std::{env, fs::Metadata, path::PathBuf};
+use tokio::{
+    fs::{self, DirEntry},
+    io::AsyncWriteExt,
+};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct File {
@@ -52,11 +55,25 @@ pub trait Agent: Sync {
     }
 
     async fn current_directory(&self) -> AppResult<PathBuf> {
-        Ok(fs::canonicalize(".").await?)
+        Ok(env::current_dir()?)
+    }
+
+    async fn current_exe(&self) -> AppResult<PathBuf> {
+        Ok(env::current_exe()?)
     }
 
     async fn write(&self, path: PathBuf, data: Vec<u8>) -> AppResult<()> {
         Ok(fs::write(path, data).await?)
+    }
+
+    async fn append(&self, path: PathBuf, data: Vec<u8>) -> AppResult<()> {
+        fs::OpenOptions::new()
+            .append(true)
+            .open(path)
+            .await?
+            .write(&data)
+            .await?;
+        Ok(())
     }
 
     async fn create_directory(&self, path: PathBuf) -> AppResult<()> {
