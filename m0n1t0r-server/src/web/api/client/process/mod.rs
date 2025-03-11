@@ -2,13 +2,12 @@ pub mod execute;
 pub mod interactive;
 
 use crate::{
-    web::{Error, Response, Result as WebResult},
     ServerMap,
+    web::{Error, Response, Result as WebResult},
 };
 use actix_web::{
-    delete, get,
+    Responder, delete, get,
     web::{Data, Json, Path},
-    Responder,
 };
 use m0n1t0r_common::{
     client::Client as _,
@@ -53,7 +52,7 @@ pub async fn get(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: Path<SocketAddr>,
 ) -> WebResult<impl Responder> {
-    let (agent, _) = get_agent(data, &addr).await?;
+    let (agent, _) = agent(data, &addr).await?;
 
     Ok(Json(Response::success(agent.list().await?)?))
 }
@@ -64,7 +63,7 @@ pub async fn delete(
     path: Path<(SocketAddr, Type, String)>,
 ) -> WebResult<impl Responder> {
     let (addr, r#type, value) = path.into_inner();
-    let (agent, _) = get_agent(data, &addr).await?;
+    let (agent, _) = agent(data, &addr).await?;
 
     let processes = match r#type {
         Type::Pid => agent.kill_by_id(value.parse()?).await,
@@ -74,7 +73,7 @@ pub async fn delete(
     Ok(Json(Response::success(processes)?))
 }
 
-pub async fn get_agent(
+pub async fn agent(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: &SocketAddr,
 ) -> WebResult<(AgentClient, CancellationToken)> {
@@ -82,9 +81,9 @@ pub async fn get_agent(
     let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
 
     let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
-    let canceller = lock_obj.get_canceller();
-    let agent = client.get_process_agent().await?;
+    let client = lock_obj.client()?;
+    let canceller = lock_obj.canceller();
+    let agent = client.process_agent().await?;
     drop(lock_obj);
 
     Ok((agent, canceller))

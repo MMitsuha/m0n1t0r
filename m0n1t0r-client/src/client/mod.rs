@@ -50,30 +50,31 @@ impl ClientObj {
         self.server_client = Some(server_client);
     }
 
-    pub fn get_canceller(&self) -> CancellationToken {
+    pub fn canceller(&self) -> CancellationToken {
         self.canceller.clone()
     }
 
-    pub fn get_terminator(&self) -> CancellationToken {
+    pub fn terminator(&self) -> CancellationToken {
         self.terminator.clone()
+    }
+
+    fn target_platform_internal() -> TargetPlatform {
+        if cfg!(feature = "windows") {
+            TargetPlatform::Windows
+        } else if cfg!(feature = "linux") {
+            TargetPlatform::Linux
+        } else if cfg!(feature = "macos") {
+            TargetPlatform::MacOS
+        } else {
+            TargetPlatform::General
+        }
     }
 }
 
 #[rtc::async_trait]
 impl Client for ClientObj {
-    #[cfg(feature = "windows")]
     async fn target_platform(&self) -> AppResult<TargetPlatform> {
-        Ok(TargetPlatform::Windows)
-    }
-
-    #[cfg(feature = "linux")]
-    async fn target_platform(&self) -> AppResult<TargetPlatform> {
-        Ok(TargetPlatform::Linux)
-    }
-
-    #[cfg(feature = "macos")]
-    async fn target_platform(&self) -> AppResult<TargetPlatform> {
-        Ok(TargetPlatform::MacOS)
+        Ok(Self::target_platform_internal())
     }
 
     async fn terminate(&self) -> AppResult<()> {
@@ -81,27 +82,27 @@ impl Client for ClientObj {
         Ok(())
     }
 
-    async fn get_fs_agent(&self) -> AppResult<m0n1t0r_common::fs::AgentClient> {
+    async fn fs_agent(&self) -> AppResult<m0n1t0r_common::fs::AgentClient> {
         create_agent_instance!(fs)
     }
 
-    async fn get_process_agent(&self) -> AppResult<m0n1t0r_common::process::AgentClient> {
+    async fn process_agent(&self) -> AppResult<m0n1t0r_common::process::AgentClient> {
         create_agent_instance!(process)
     }
 
-    async fn get_proxy_agent(&self) -> AppResult<m0n1t0r_common::proxy::AgentClient> {
+    async fn proxy_agent(&self) -> AppResult<m0n1t0r_common::proxy::AgentClient> {
         create_agent_instance!(proxy)
     }
 
-    async fn get_network_agent(&self) -> AppResult<m0n1t0r_common::network::AgentClient> {
+    async fn network_agent(&self) -> AppResult<m0n1t0r_common::network::AgentClient> {
         create_agent_instance!(network)
     }
 
-    async fn get_qq_agent(&self) -> AppResult<m0n1t0r_common::qq::AgentClient> {
+    async fn qq_agent(&self) -> AppResult<m0n1t0r_common::qq::AgentClient> {
         create_agent_instance!(qq)
     }
 
-    async fn get_autorun_agent(&self) -> AppResult<m0n1t0r_common::autorun::AgentClient> {
+    async fn autorun_agent(&self) -> AppResult<m0n1t0r_common::autorun::AgentClient> {
         create_agent_instance!(autorun)
     }
 }

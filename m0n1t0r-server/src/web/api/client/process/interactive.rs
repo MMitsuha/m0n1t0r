@@ -1,14 +1,14 @@
 use crate::{
-    web::{
-        api::client::process::{self, CommandForm},
-        util, Result as WebResult,
-    },
     ServerMap,
+    web::{
+        Result as WebResult,
+        api::client::process::{self, CommandForm},
+        util,
+    },
 };
 use actix_web::{
-    get,
+    HttpRequest, Responder, get,
     web::{Buf, Data, Path, Payload, Query},
-    HttpRequest, Responder,
 };
 use actix_ws::Message;
 use anyhow::anyhow;
@@ -25,7 +25,7 @@ pub async fn get(
     body: Payload,
 ) -> WebResult<impl Responder> {
     let query = query.into_inner();
-    let (agent, canceller) = process::get_agent(data, &addr).await?;
+    let (agent, canceller) = process::agent(data, &addr).await?;
 
     let (stdin_tx, stdout_rx, stderr_rx) = agent.interactive(query.command).await?;
     let mut stdin_tx = stdin_tx.into_inner().await?;

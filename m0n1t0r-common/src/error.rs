@@ -35,6 +35,12 @@ pub enum Error {
     #[error("bad os string")]
     BadOsString,
 
+    #[error("bad user directory")]
+    BadUserDirectory,
+
+    #[error("bad environment value")]
+    BadEnvironmentValue(serde_error::Error),
+
     #[error("unsupported operation")]
     Unsupported,
 
@@ -69,5 +75,11 @@ impl From<cxx::Exception> for Error {
 impl From<tokio::sync::oneshot::error::RecvError> for Error {
     fn from(e: tokio::sync::oneshot::error::RecvError) -> Self {
         Self::FfiException(serde_error::Error::new(&e))
+    }
+}
+
+impl From<std::env::VarError> for Error {
+    fn from(e: std::env::VarError) -> Self {
+        Self::BadEnvironmentValue(serde_error::Error::new(&e))
     }
 }

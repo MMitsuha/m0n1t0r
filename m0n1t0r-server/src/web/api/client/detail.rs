@@ -1,11 +1,10 @@
 use crate::{
-    web::{Error, Response, Result as WebResult},
     ServerMap,
+    web::{Error, Response, Result as WebResult},
 };
 use actix_web::{
-    get,
+    Responder, get,
     web::{Data, Json, Path},
-    Responder,
 };
 use m0n1t0r_common::{
     client::{Client as _, ClientClient, TargetPlatform},
@@ -47,9 +46,9 @@ pub async fn get(
     let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
 
     let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
+    let client = lock_obj.client()?;
 
     Ok(Json(Response::success(
-        Detail::new(lock_obj.get_addr(), client).await?,
+        Detail::new(lock_obj.addr(), client).await?,
     )?))
 }

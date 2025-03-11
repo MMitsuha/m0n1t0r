@@ -20,7 +20,7 @@ pub async fn post(
     addr: Path<SocketAddr>,
     Form(form): Form<CommandForm>,
 ) -> WebResult<impl Responder> {
-    let (agent, _) = process::get_agent(data, &addr).await?;
+    let (agent, _) = process::agent(data, &addr).await?;
 
     let mut command = shell_words::split(&form.command)?;
     let program = command.remove(0);

@@ -62,7 +62,10 @@ pub fn generate(certs: &Path) {
             "-nodes",
             "-subj",
             concat!(
-                "/C=CN/ST=ShangHai/L=ShangHai/O=K and A Ltd/OU=./CN=",
+                // TODO: Customize this
+                "/C=CN/ST=ShangHai/L=ShangHai/O=",
+                env!("M0N1T0R_ORG"),
+                "/OU=./CN=",
                 env!("M0N1T0R_DOMAIN"),
                 "."
             ),
@@ -87,7 +90,10 @@ pub fn generate(certs: &Path) {
             end_csr,
             "-subj",
             concat!(
-                "/C=CN/ST=ShangHai/L=ShangHai/O=K and A Ltd/OU=./CN=",
+                // TODO: Customize this
+                "/C=CN/ST=ShangHai/L=ShangHai/O=",
+                env!("M0N1T0R_ORG"),
+                "/OU=./CN=",
                 env!("M0N1T0R_DOMAIN"),
                 "."
             ),

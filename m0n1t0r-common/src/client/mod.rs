@@ -1,4 +1,7 @@
-use crate::{Result as AppResult, autorun, fs, info, network, process, proxy, qq, util};
+use crate::{
+    Result as AppResult, autorun, fs, info, network, process, proxy, qq,
+    util::{self, shell::Shell},
+};
 use remoc::rtc;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, env, path::PathBuf};
@@ -15,6 +18,10 @@ pub enum TargetPlatform {
 
 #[rtc::remote]
 pub trait Client: Sync {
+    async fn shell(&self) -> AppResult<Shell> {
+        Shell::new()
+    }
+
     async fn version(&self) -> AppResult<String> {
         Ok(util::version::version().into())
     }
@@ -41,17 +48,17 @@ pub trait Client: Sync {
         Ok(())
     }
 
-    async fn get_fs_agent(&self) -> AppResult<fs::AgentClient>;
+    async fn fs_agent(&self) -> AppResult<fs::AgentClient>;
 
-    async fn get_process_agent(&self) -> AppResult<process::AgentClient>;
+    async fn process_agent(&self) -> AppResult<process::AgentClient>;
 
-    async fn get_proxy_agent(&self) -> AppResult<proxy::AgentClient>;
+    async fn proxy_agent(&self) -> AppResult<proxy::AgentClient>;
 
-    async fn get_network_agent(&self) -> AppResult<network::AgentClient>;
+    async fn network_agent(&self) -> AppResult<network::AgentClient>;
 
-    async fn get_qq_agent(&self) -> AppResult<qq::AgentClient>;
+    async fn qq_agent(&self) -> AppResult<qq::AgentClient>;
 
-    async fn get_autorun_agent(&self) -> AppResult<autorun::AgentClient>;
+    async fn autorun_agent(&self) -> AppResult<autorun::AgentClient>;
 
     async fn update_by_url(&self, url: Url, temp: PathBuf) -> AppResult<()> {
         util::network::download(url, &temp).await?;

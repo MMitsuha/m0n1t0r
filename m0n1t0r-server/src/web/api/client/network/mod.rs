@@ -1,8 +1,8 @@
 pub mod download;
 
 use crate::{
-    web::{Error, Result as WebResult},
     ServerMap,
+    web::{Error, Result as WebResult},
 };
 use actix_web::web::Data;
 use m0n1t0r_common::{client::Client as _, network::AgentClient};
@@ -10,7 +10,7 @@ use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
 use tokio_util::sync::CancellationToken;
 
-pub async fn get_agent(
+pub async fn agent(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: &SocketAddr,
 ) -> WebResult<(AgentClient, CancellationToken)> {
@@ -18,9 +18,9 @@ pub async fn get_agent(
     let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
 
     let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
-    let canceller = lock_obj.get_canceller();
-    let agent = client.get_network_agent().await?;
+    let client = lock_obj.client()?;
+    let canceller = lock_obj.canceller();
+    let agent = client.network_agent().await?;
     drop(lock_obj);
 
     Ok((agent, canceller))

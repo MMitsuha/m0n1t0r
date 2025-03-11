@@ -23,7 +23,7 @@ pub mod system {
         let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
 
         let lock_obj = server.read().await;
-        let client = lock_obj.get_client()?;
+        let client = lock_obj.client()?;
 
         Ok(Json(Response::success(client.system_info().await?)?))
     }

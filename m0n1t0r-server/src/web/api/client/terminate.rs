@@ -1,11 +1,10 @@
 use crate::{
-    web::{Error, Response, Result as WebResult},
     ServerMap,
+    web::{Error, Response, Result as WebResult},
 };
 use actix_web::{
-    post,
+    Responder, post,
     web::{Data, Json, Path},
-    Responder,
 };
 use m0n1t0r_common::client::Client as _;
 use std::{net::SocketAddr, sync::Arc};
@@ -20,7 +19,7 @@ pub async fn post(
     let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
 
     let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
+    let client = lock_obj.client()?;
 
     let _ = client.terminate().await;
 

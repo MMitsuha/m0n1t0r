@@ -165,7 +165,7 @@ bool inject_shellcode_by_id(rust::u32 pid, rust::Vec<rust::u8> shellcode,
   return true;
 }
 
-rust::u32 get_id_by_name(rust::String name) {
+rust::u32 id_by_name(rust::String name) {
   auto snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
   if (snapshot == INVALID_HANDLE_VALUE) {
     return 0;

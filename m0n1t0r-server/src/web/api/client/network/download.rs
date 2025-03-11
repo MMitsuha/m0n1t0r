@@ -22,10 +22,9 @@ struct DownloadForm {
 pub async fn post(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: Path<SocketAddr>,
-    form: Form<DownloadForm>,
+    Form(form): Form<DownloadForm>,
 ) -> WebResult<impl Responder> {
-    let form = form.into_inner();
-    let (agent, _) = network::get_agent(data, &addr).await?;
+    let (agent, _) = network::agent(data, &addr).await?;
 
     Ok(Json(Response::success(
         agent.download(form.url, form.path).await?,

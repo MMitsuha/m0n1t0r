@@ -17,10 +17,10 @@ pub struct UrlList {
 impl UrlList {
     async fn new(account: &Account) -> AppResult<Self> {
         Ok(Self {
-            qzone: account.get_qzone_url(),
-            weiyun: account.get_weiyun_url(),
-            mail: account.get_mail_url(),
-            qun: account.get_qun_url().await?,
+            qzone: account.qzone_url(),
+            weiyun: account.weiyun_url(),
+            mail: account.mail_url(),
+            qun: account.qun_url().await?,
         })
     }
 }
@@ -28,18 +28,18 @@ impl UrlList {
 #[rtc::remote]
 pub trait Agent: Sync {
     async fn list(&self) -> AppResult<Vec<AccountInfo>> {
-        Ok(QQ::new().await?.get_logged_qq().await?)
+        Ok(QQ::new().await?.logged_qq().await?)
     }
 
     async fn urls(&self, id: i64) -> AppResult<UrlList> {
-        let account = util::get_account(id).await?.ok_or(Error::NotFound)?;
+        let account = util::account_by_id(id).await?.ok_or(Error::NotFound)?;
         Ok(UrlList::new(&account).await?)
     }
 
     async fn friends(&self, id: i64) -> AppResult<HashMap<i64, FriendGroup>> {
-        let account = util::get_account(id).await?.ok_or(Error::NotFound)?;
-        let qzone = account.get_qzone().await?;
+        let account = util::account_by_id(id).await?.ok_or(Error::NotFound)?;
+        let qzone = account.qzone().await?;
 
-        Ok(qzone.get_friends().await?)
+        Ok(qzone.friends().await?)
     }
 }

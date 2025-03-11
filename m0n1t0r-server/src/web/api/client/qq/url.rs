@@ -17,7 +17,7 @@ pub async fn get(
     path: Path<(SocketAddr, i64)>,
 ) -> WebResult<impl Responder> {
     let (addr, id) = path.into_inner();
-    let (agent, _) = qq::get_agent(data, &addr).await?;
+    let (agent, _) = qq::agent(data, &addr).await?;
 
     Ok(Json(Response::success(agent.urls(id).await?)?))
 }

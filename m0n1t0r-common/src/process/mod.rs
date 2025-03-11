@@ -73,7 +73,7 @@ pub trait Agent: Sync {
         Err(Error::Unsupported)
     }
 
-    async fn get_id_by_name(&self, _name: String) -> AppResult<u32> {
+    async fn id_by_name(&self, _name: String) -> AppResult<u32> {
         Err(Error::Unsupported)
     }
 }

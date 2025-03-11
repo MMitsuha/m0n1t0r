@@ -23,7 +23,7 @@ pub async fn get(
     let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
 
     let lock_obj = server.read().await;
-    let canceller = lock_obj.get_canceller();
+    let canceller = lock_obj.canceller();
     drop(lock_obj);
 
     let (response, mut session, mut stream) = actix_ws::handle(&req, body)?;

@@ -1,11 +1,10 @@
 use crate::{
-    web::{Error, Response, Result as WebResult},
     ServerMap,
+    web::{Error, Response, Result as WebResult},
 };
 use actix_web::{
-    delete, get, put,
+    HttpResponse, Responder, delete, get, put,
     web::{Bytes, Data, Json, Path},
-    HttpResponse, Responder,
 };
 use m0n1t0r_common::{
     client::Client as _,
@@ -30,7 +29,7 @@ pub async fn get(
     path: Path<(SocketAddr, Type, PathBuf)>,
 ) -> WebResult<impl Responder> {
     let (addr, r#type, path) = path.into_inner();
-    let (agent, _) = get_agent(data, &addr).await?;
+    let (agent, _) = agent(data, &addr).await?;
 
     if r#type == Type::Directory {
         Ok(HttpResponse::Ok().json(Response::success(agent.list(path).await?)?))
@@ -45,7 +44,7 @@ pub async fn delete(
     path: Path<(SocketAddr, Type, PathBuf)>,
 ) -> WebResult<impl Responder> {
     let (addr, r#type, path) = path.into_inner();
-    let (agent, _) = get_agent(data, &addr).await?;
+    let (agent, _) = agent(data, &addr).await?;
 
     if r#type == Type::Directory {
         Ok(Json(Response::success(
@@ -63,7 +62,7 @@ pub async fn put(
     payload: Bytes,
 ) -> WebResult<impl Responder> {
     let (addr, r#type, path) = path.into_inner();
-    let (agent, _) = get_agent(data, &addr).await?;
+    let (agent, _) = agent(data, &addr).await?;
 
     if r#type == Type::Directory {
         Ok(Json(Response::success(
@@ -85,13 +84,13 @@ pub mod metadata {
         path: Path<(SocketAddr, PathBuf)>,
     ) -> WebResult<impl Responder> {
         let (addr, path) = path.into_inner();
-        let (agent, _) = get_agent(data, &addr).await?;
+        let (agent, _) = agent(data, &addr).await?;
 
         Ok(Json(Response::success(agent.file(path).await?)?))
     }
 }
 
-pub async fn get_agent(
+pub async fn agent(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: &SocketAddr,
 ) -> WebResult<(AgentClient, CancellationToken)> {
@@ -99,9 +98,9 @@ pub async fn get_agent(
     let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
 
     let lock_obj = server.read().await;
-    let client = lock_obj.get_client()?;
-    let canceller = lock_obj.get_canceller();
-    let agent = client.get_fs_agent().await?;
+    let client = lock_obj.client()?;
+    let canceller = lock_obj.canceller();
+    let agent = client.fs_agent().await?;
     drop(lock_obj);
 
     Ok((agent, canceller))

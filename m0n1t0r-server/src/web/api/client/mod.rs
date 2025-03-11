@@ -31,7 +31,7 @@ pub async fn get(data: Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder
     // TODO: Parallelize this
     for (addr, server) in lock_map.iter() {
         let lock_obj = server.read().await;
-        let client = lock_obj.get_client()?;
+        let client = lock_obj.client()?;
 
         details.push(Detail::new(addr, client).await?);
     }

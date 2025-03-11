@@ -44,7 +44,7 @@ pub async fn open_internal<O>(
 where
     O: 'static + Sync + Sync + Send,
 {
-    let (agent, canceller_global1) = proxy::get_agent(data, addr).await?;
+    let (agent, canceller_global1) = proxy::agent(data, addr).await?;
     let canceller_global2 = canceller_global1.clone();
     let agent = Arc::new(agent);
 

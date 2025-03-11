@@ -1,36 +1,42 @@
 pub type ClientMap = HashMap<SocketAddr, Arc<RwLock<ClientObj>>>;
 
 use crate::ClientObj;
-use anyhow::{anyhow, bail, Result};
+use anyhow::{Result, anyhow, bail};
 use log::{debug, info, warn};
 use m0n1t0r_common::{
     client::{ClientClient, ClientServerSharedMut},
     server::ServerClient,
 };
 use remoc::{
+    Cfg, Connect,
     prelude::ServerSharedMut,
     rch::base::{Receiver as RemoteReceiver, Sender as RemoteSender},
-    Cfg, Connect,
 };
 use rustls::RootCertStore;
 #[allow(unused_imports)]
-use rustls_pki_types::{pem::PemObject as _, CertificateDer, DnsName, ServerName};
-use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
-use tokio::{io, net::TcpStream, select, sync::RwLock, time};
-use tokio_rustls::{client::TlsStream, TlsConnector};
+use rustls_pki_types::{CertificateDer, DnsName, ServerName, pem::PemObject as _};
+use std::{collections::HashMap, net::SocketAddr, sync::Arc};
+use tokio::{
+    io,
+    net::{self, TcpStream},
+    select,
+    sync::RwLock,
+};
+use tokio_rustls::{TlsConnector, client::TlsStream};
 use tokio_util::sync::CancellationToken;
 
 pub struct Config {
     host: String,
-    addr: SocketAddr,
+    addrs: Vec<SocketAddr>,
 }
 
-impl From<&crate::Config> for Config {
-    fn from(config: &crate::Config) -> Self {
-        Self {
-            host: config.host.clone(),
-            addr: config.addr.clone(),
-        }
+impl Config {
+    pub async fn from_crate_config(config: &crate::Config) -> Result<Self> {
+        let host = config.host.to_string();
+        let addrs = net::lookup_host((host.clone(), config.port))
+            .await?
+            .collect();
+        Ok(Self { host, addrs })
     }
 }
 
@@ -156,25 +162,19 @@ fn tls_connector() -> Result<TlsConnector> {
 
 pub async fn accept(
     addr: &SocketAddr,
-    #[allow(unused_variables)] host: &str,
+    host: &str,
     connector: TlsConnector,
     client_map: Arc<RwLock<ClientMap>>,
 ) -> Result<()> {
     let stream = TcpStream::connect(addr).await?;
     let stream = connector
-        .connect(
-            #[cfg(not(debug_assertions))]
-            ServerName::DnsName(DnsName::try_from(host.to_string())?),
-            #[cfg(debug_assertions)]
-            ServerName::IpAddress(addr.ip().into()),
-            stream,
-        )
+        .connect(ServerName::try_from(host.to_string())?, stream)
         .await?;
     debug!("{}: connection opened", addr);
     let client = Arc::new(RwLock::new(ClientObj::new(&addr)));
-    let canceller = client.read().await.get_canceller();
+    let canceller = client.read().await.canceller();
     let guard = canceller.clone().drop_guard();
-    let terminator = client.read().await.get_terminator();
+    let terminator = client.read().await.terminator();
     let (mut tx, mut rx) = make_channel(canceller.clone(), &addr, stream).await?;
     let (client_server, client_client) = ClientServerSharedMut::<_>::new(client.clone(), 1);
 
@@ -206,16 +206,12 @@ pub async fn accept(
 pub async fn run(config: &Config, client_map: Arc<RwLock<ClientMap>>) -> Result<()> {
     let connector = tls_connector()?;
 
-    while let Err(e) = accept(
-        &config.addr,
-        &config.host,
-        connector.clone(),
-        client_map.clone(),
-    )
-    .await
-    {
-        warn!("failed to connect server: {}", e);
-        time::sleep(Duration::from_secs(10)).await;
+    for addr in &config.addrs {
+        match accept(addr, &config.host, connector.clone(), client_map.clone()).await {
+            Ok(_) => return Ok(()),
+            Err(e) => warn!("failed to connect server({}): {}", addr, e),
+        }
     }
-    Ok(())
+
+    bail!("all attempts to connect server failed")
 }

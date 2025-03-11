@@ -93,8 +93,8 @@ impl m0n1t0r_common::process::Agent for AgentObj {
         Ok(rx.await??.into())
     }
 
-    async fn get_id_by_name(&self, name: String) -> AppResult<u32> {
-        Ok(ffi::get_id_by_name(name)?)
+    async fn id_by_name(&self, name: String) -> AppResult<u32> {
+        Ok(ffi::id_by_name(name)?)
     }
 }
 
@@ -121,7 +121,7 @@ mod ffi {
             parameter: Vec<u8>,
         ) -> Result<bool>;
 
-        fn get_id_by_name(name: String) -> Result<u32>;
+        fn id_by_name(name: String) -> Result<u32>;
     }
 }
 

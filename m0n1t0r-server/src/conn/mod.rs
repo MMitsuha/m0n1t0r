@@ -153,7 +153,7 @@ pub async fn accept(
     let stream = acceptor.accept(stream).await?;
     debug!("{}: connection opened", addr);
     let server = Arc::new(RwLock::new(ServerObj::new(&addr)));
-    let canceller = server.read().await.get_canceller();
+    let canceller = server.read().await.canceller();
     let guard = canceller.clone().drop_guard();
     let (mut tx, mut rx) = make_channel(canceller.clone(), &addr, stream).await?;
     let (server_server, server_client) = ServerServerSharedMut::<_>::new(server.clone(), 1);
