@@ -26,8 +26,14 @@ pub enum Error {
     #[error("specified object not found")]
     NotFound,
 
+    #[error("invalid parameter")]
+    InvalidParameter,
+
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error),
+
+    #[error("bad os string")]
+    BadOsString,
 
     #[error("unsupported operation")]
     Unsupported,

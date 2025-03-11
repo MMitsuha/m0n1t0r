@@ -181,10 +181,10 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
             .await?;
     }
 
-    if platform == TargetPlatform::Linux || platform == TargetPlatform::MacOS {
+    if platform != TargetPlatform::General {
         let autorun_agent = client.get_autorun_agent().await?;
         info!("adding current exe to bashrc");
-        autorun_agent.add_current_user_bashrc().await?;
+        autorun_agent.add_current_user().await?;
     }
 
     Ok(())

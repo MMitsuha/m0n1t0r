@@ -24,10 +24,10 @@ declare_agents!(
     [proxy, network, fs, qq],
     ["general", "macos", "linux", "windows"]
 );
-declare_agents!(windows, [process], ["windows"]);
+declare_agents!(windows, [process, autorun], ["windows"]);
 declare_agents!(general, [process], ["general", "macos", "linux"]);
 declare_agents!(unix, [autorun], ["linux", "macos"]);
-declare_agents!(general, [autorun], ["general", "windows"]);
+declare_agents!(general, [autorun], ["general"]);
 
 pub struct ClientObj {
     #[allow(dead_code)]
