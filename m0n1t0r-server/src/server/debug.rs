@@ -181,15 +181,15 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
             .await?;
     }
 
-    // if platform != TargetPlatform::General {
-    //     let autorun_agent = client.autorun_agent().await?;
-    //     info!("adding current exe to bashrc");
-    //     autorun_agent.add_current_user().await?;
-    //     info!("checking result");
-    //     assert_eq!(autorun_agent.exist_current_user().await?, true);
-    //     info!("removing autorun");
-    //     autorun_agent.remove_current_user().await?;
-    // }
+    if platform != TargetPlatform::General {
+        let autorun_agent = client.autorun_agent().await?;
+        info!("adding current exe to bashrc");
+        autorun_agent.add_current_user().await?;
+        info!("checking result");
+        assert_eq!(autorun_agent.exist_current_user().await?, true);
+        info!("removing autorun");
+        autorun_agent.remove_current_user().await?;
+    }
 
     Ok(())
 }
