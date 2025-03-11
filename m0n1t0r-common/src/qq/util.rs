@@ -1,16 +1,16 @@
 use crate::Result as AppResult;
 use qqkey::{Account, QQ};
+use std::sync::Arc;
 
 pub async fn get_account(id: i64) -> AppResult<Option<Account>> {
-    let qq = QQ::new().await?;
+    let qq = Arc::new(QQ::new().await?);
 
-    for i in QQ::new().await?.get_logged_qq_info().await? {
-        // TODO: Figure which field should be used
-        if i.account != id {
+    for info in qq.get_logged_qq().await? {
+        if info.uin != id {
             continue;
         }
 
-        return Ok(Some(Account::from(&qq, i).await?));
+        return Ok(Some(Account::new(qq.clone(), id).await?));
     }
 
     return Ok(None);

@@ -26,10 +26,10 @@ jobs:
       run: cargo install cxxbridge-cmd
 
     - name: Build debug
-      run: cargo build --features windows --verbose
+      run: cargo build--verbose --features "windows" 
 
     - name: Build release
-      run: cargo build -r --features windows --verbose
+      run: cargo build -r --verbose --features "windows"
 
     - name: Run tests
-      run: cargo test --features windows --verbose
+      run: cargo test --verbose --features "windows" 

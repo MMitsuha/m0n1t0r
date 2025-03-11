@@ -50,10 +50,10 @@ jobs:
         modules: 'qtwebsockets'
 
     - name: Build
-      run: cargo build --verbose
+      run: cargo build --verbose --features "macos"
 
     - name: Build release
-      run: cargo build -r --verbose
+      run: cargo build -r --verbose --features "macos"
 
     - name: Build debug sdk
       run: cd ./m0n1t0r-sdk-cpp && xmake f -m debug -y -v && xmake build -y -v && xmake package && cd ..
@@ -68,4 +68,4 @@ jobs:
       run: cd ./m0n1t0r-ui && xmake f -m release --qt=${{ github.workspace }}/qt/ -v -y && xmake build -y -v && cd ..
    
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test --verbose --features "macos"

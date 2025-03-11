@@ -1,1 +1,1 @@
-declare_agents!([proxy, network, fs, qq, process, autorun]);
+default_agents!([network, proxy, fs, process, autorun, qq]);

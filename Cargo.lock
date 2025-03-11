@@ -2050,7 +2050,6 @@ dependencies = [
  "m0n1t0r-build",
  "m0n1t0r-common",
  "paste",
- "qqkey",
  "quote",
  "remoc",
  "reqwest",

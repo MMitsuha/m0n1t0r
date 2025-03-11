@@ -30,6 +30,7 @@ declare_agents!(unix, [autorun], ["linux", "macos"]);
 declare_agents!(general, [autorun], ["general", "windows"]);
 
 pub struct ClientObj {
+    #[allow(dead_code)]
     addr: SocketAddr,
     canceller: CancellationToken,
     server_client: Option<ServerClient>,
@@ -82,26 +83,26 @@ impl Client for ClientObj {
     }
 
     async fn get_fs_agent(&self) -> AppResult<m0n1t0r_common::fs::AgentClient> {
-        impl_agent!(fs, self)
+        create_agent_instance!(fs)
     }
 
     async fn get_process_agent(&self) -> AppResult<m0n1t0r_common::process::AgentClient> {
-        impl_agent!(process, self)
+        create_agent_instance!(process)
     }
 
     async fn get_proxy_agent(&self) -> AppResult<m0n1t0r_common::proxy::AgentClient> {
-        impl_agent!(proxy, self)
+        create_agent_instance!(proxy)
     }
 
     async fn get_network_agent(&self) -> AppResult<m0n1t0r_common::network::AgentClient> {
-        impl_agent!(network, self)
+        create_agent_instance!(network)
     }
 
     async fn get_qq_agent(&self) -> AppResult<m0n1t0r_common::qq::AgentClient> {
-        impl_agent!(qq, self)
+        create_agent_instance!(qq)
     }
 
     async fn get_autorun_agent(&self) -> AppResult<m0n1t0r_common::autorun::AgentClient> {
-        impl_agent!(autorun, self)
+        create_agent_instance!(autorun)
     }
 }

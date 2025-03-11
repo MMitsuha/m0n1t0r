@@ -9,7 +9,6 @@ repository.workspace = true
 build = "build.rs"
 
 [features]
-default = ["general"]
 general = []
 windows = []
 linux = []
@@ -36,7 +35,6 @@ rustls-pemfile = "2.2.0"
 rustls-pki-types = { version = "1.11.0", features = ["alloc"] }
 paste = "1.0.15"
 quote = "1.0.39"
-qqkey = { path = "../deps/qqkey" }
 directories = "6.0.0"
 
 [target.'cfg(windows)'.dependencies]
