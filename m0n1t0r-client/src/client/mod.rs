@@ -12,7 +12,6 @@ mod windows;
 #[cfg(any(feature = "windows", feature = "linux", feature = "macos"))]
 use m0n1t0r_common::client::TargetPlatform;
 
-use log::warn;
 use m0n1t0r_common::{Result as AppResult, client::Client, server::ServerClient};
 use remoc::{prelude::ServerSharedMut, rtc};
 use std::{net::SocketAddr, sync::Arc};

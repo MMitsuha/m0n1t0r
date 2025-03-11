@@ -1,12 +1,15 @@
 #[macro_export]
 macro_rules! declare_agents {
     ($module:ident, [$($name:ident),+], [$($platform:literal),+]) => {
-        #[cfg(any(
-            $(feature = $platform),*
-        ))]
-        $(
-            use $module::$name;
-        )*
+        cfg_block::cfg_block! {
+            #[cfg(any(
+                $(feature = $platform),*
+            ))] {
+                $(
+                    use $module::$name;
+                )*
+            }
+        }
     };
 }
 
@@ -37,7 +40,7 @@ macro_rules! create_agent_instance {
 
         tokio::spawn(async move {
             if let Err(e) = server_server.serve(true).await {
-                warn!("{}: serve error: {}", stringify!($name), e);
+                log::warn!("{}: serve error: {}", stringify!($name), e);
             }
         });
         Ok(server_client)
