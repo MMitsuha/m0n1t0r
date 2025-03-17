@@ -1,4 +1,3 @@
-use crate::Result as AppResult;
 use serde::{Deserialize, Serialize};
 use std::env;
 
@@ -10,16 +9,14 @@ pub enum Shell {
 }
 
 impl Shell {
-    pub fn new() -> AppResult<Self> {
-        let shell_env = env::var("SHELL")?.to_lowercase();
-
-        if shell_env.contains("zsh") {
-            Ok(Shell::Zsh)
-        } else if shell_env.contains("bash") {
-            Ok(Shell::Bash)
-        } else {
-            Ok(Shell::Unknown)
-        }
+    pub fn new() -> Self {
+        env::var("SHELL")
+            .map(|shell_env| match shell_env.to_lowercase().as_str() {
+                "bash" => Shell::Bash,
+                "zsh" => Shell::Zsh,
+                _ => Shell::Unknown,
+            })
+            .unwrap_or(Shell::Unknown)
     }
 
     pub fn rc_file(&self) -> &'static str {

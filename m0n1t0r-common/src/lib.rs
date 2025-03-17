@@ -1,4 +1,5 @@
 pub mod autorun;
+pub mod charset;
 pub mod client;
 mod error;
 pub mod fs;

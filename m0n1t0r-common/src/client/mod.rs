@@ -1,5 +1,5 @@
 use crate::{
-    Result as AppResult, autorun, fs, info, network, process, proxy, qq,
+    Result as AppResult, autorun, charset, fs, info, network, process, proxy, qq,
     util::{self, shell::Shell},
 };
 use remoc::rtc;
@@ -19,7 +19,7 @@ pub enum TargetPlatform {
 #[rtc::remote]
 pub trait Client: Sync {
     async fn shell(&self) -> AppResult<Shell> {
-        Shell::new()
+        Ok(Shell::new())
     }
 
     async fn version(&self) -> AppResult<String> {
@@ -59,6 +59,8 @@ pub trait Client: Sync {
     async fn qq_agent(&self) -> AppResult<qq::AgentClient>;
 
     async fn autorun_agent(&self) -> AppResult<autorun::AgentClient>;
+
+    async fn charset_agent(&self) -> AppResult<charset::AgentClient>;
 
     async fn update_by_url(&self, url: Url, temp: PathBuf) -> AppResult<()> {
         util::network::download(url, &temp).await?;

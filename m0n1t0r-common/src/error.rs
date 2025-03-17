@@ -20,6 +20,9 @@ pub enum Error {
     #[error("foreign function call failed: {0}")]
     FfiException(serde_error::Error),
 
+    #[error("api call failed: {0}")]
+    ApiCallException(serde_error::Error),
+
     #[error("qqkey operation failed: {0}")]
     QQKeyException(#[from] qqkey::Error),
 

@@ -14,6 +14,14 @@ impl AgentObj {
 
 #[rtc::async_trait]
 impl m0n1t0r_common::autorun::Agent for AgentObj {
+    async fn exist_current_user(&self) -> AppResult<bool> {
+        Err(Error::Unimplemented)
+    }
+
+    async fn remove_current_user(&self) -> AppResult<()> {
+        Err(Error::Unimplemented)
+    }
+
     async fn add_current_user_at(&self, exe: PathBuf) -> AppResult<()> {
         let mut payload = String::new();
         payload.push_str("\"`nStart-Process '");

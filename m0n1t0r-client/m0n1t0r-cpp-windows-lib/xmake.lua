@@ -6,6 +6,7 @@ target("m0n1t0r-cpp-windows-lib")
     set_languages("c++20")
     on_load(function (target)
         target:add("ffi.rust.files", "../src/client/windows/process.rs")
+        target:add("ffi.rust.files", "../src/client/windows/charset.rs")
     end)
     set_rules("ffi.rust")
 

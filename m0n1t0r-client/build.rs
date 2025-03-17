@@ -7,7 +7,10 @@ use std::{
 };
 
 const XMAKE_PROJECT_LIST_WINDOWS: [&str; 1] = ["m0n1t0r-cpp-windows-lib"];
-const BRIDGE_LIST_WINDOWS: [&str; 1] = ["src/client/windows/process.rs"];
+const BRIDGE_LIST_WINDOWS: [&str; 2] = [
+    "src/client/windows/process.rs",
+    "src/client/windows/charset.rs",
+];
 
 fn bridge_build() {
     #[cfg(feature = "windows")]
@@ -38,7 +41,9 @@ fn xmake_build(workspace: &Path) {
     xmake_build_windows(&mut paths, workspace);
 
     for path in paths {
-        cargo_emit::rustc_link_search!(path.display());
+        let path = path.display();
+        cargo_emit::rustc_link_search!(path);
+        cargo_emit::rerun_if_changed!(path);
     }
 }
 

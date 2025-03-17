@@ -23,8 +23,8 @@ declare_agents!(
     [proxy, network, fs, qq],
     ["general", "macos", "linux", "windows"]
 );
-declare_agents!(windows, [process, autorun], ["windows"]);
-declare_agents!(general, [process], ["general", "macos", "linux"]);
+declare_agents!(windows, [process, autorun, charset], ["windows"]);
+declare_agents!(general, [process, charset], ["general", "macos", "linux"]);
 declare_agents!(unix, [autorun], ["linux", "macos"]);
 declare_agents!(general, [autorun], ["general"]);
 
@@ -104,5 +104,9 @@ impl Client for ClientObj {
 
     async fn autorun_agent(&self) -> AppResult<m0n1t0r_common::autorun::AgentClient> {
         create_agent_instance!(autorun)
+    }
+
+    async fn charset_agent(&self) -> AppResult<m0n1t0r_common::charset::AgentClient> {
+        create_agent_instance!(charset)
     }
 }

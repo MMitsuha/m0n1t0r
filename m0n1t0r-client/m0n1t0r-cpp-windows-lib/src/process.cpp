@@ -1,8 +1,10 @@
 #include "process.h"
-#include "convertor.h"
+#include "charset.h"
+#include "error.h"
 #include "process.rs.h"
 #include <TlHelp32.h>
 #include <Windows.h>
+#include <optional>
 #include <psapi.h>
 
 std::optional<std::tuple<HANDLE, HANDLE, HANDLE, HANDLE>> create_pipes() {
@@ -43,6 +45,7 @@ void read_into_rust_vec(HANDLE rx, rust::Vec<std::uint8_t> *vec) {
   }
 }
 
+/// Check the encoding before using this return value
 Output execute(rust::String command, rust::Vec<rust::String> args) {
   auto pipes = create_pipes();
   Output output{};
@@ -56,10 +59,10 @@ Output execute(rust::String command, rust::Vec<rust::String> args) {
   STARTUPINFOW si{};
   PROCESS_INFORMATION pi{};
 
-  command_line.append(*to_wstring(command));
+  command_line.append(utf8_to_wstring(command));
   command_line.push_back(L' ');
   for (auto arg : args) {
-    command_line.append(*to_wstring(arg));
+    command_line.append(utf8_to_wstring(arg));
     command_line.push_back(L' ');
   }
 
@@ -90,16 +93,15 @@ Output execute(rust::String command, rust::Vec<rust::String> args) {
 
   output.success = true;
 
-  // TODO: Check the encoding
   return output;
 }
 
-bool inject_shellcode_by_id(rust::u32 pid, rust::Vec<rust::u8> shellcode,
+void inject_shellcode_by_id(rust::u32 pid, rust::Vec<rust::u8> shellcode,
                             rust::u32 ep_offset,
                             rust::Vec<rust::u8> parameter) {
   auto process = OpenProcess(PROCESS_ALL_ACCESS, false, pid);
   if (process == nullptr) {
-    return false;
+    throw AppError("failed to open process");
   }
 
   auto remote_shellcode =
@@ -107,7 +109,7 @@ bool inject_shellcode_by_id(rust::u32 pid, rust::Vec<rust::u8> shellcode,
                      PAGE_READWRITE);
   if (remote_shellcode == nullptr) {
     CloseHandle(process);
-    return false;
+    throw AppError("failed to allocate memory in remote process");
   }
 
   size_t written = 0;
@@ -116,7 +118,7 @@ bool inject_shellcode_by_id(rust::u32 pid, rust::Vec<rust::u8> shellcode,
   if (status == false) {
     VirtualFreeEx(process, remote_shellcode, 0, MEM_RELEASE);
     CloseHandle(process);
-    return false;
+    throw AppError("failed to write shellcode to remote process");
   }
 
   DWORD old = 0;
@@ -126,7 +128,7 @@ bool inject_shellcode_by_id(rust::u32 pid, rust::Vec<rust::u8> shellcode,
   if (status == false) {
     VirtualFreeEx(process, remote_shellcode, 0, MEM_RELEASE);
     CloseHandle(process);
-    return false;
+    throw AppError("failed to set memory protection");
   }
 
   void *remote_parameter = nullptr;
@@ -136,7 +138,7 @@ bool inject_shellcode_by_id(rust::u32 pid, rust::Vec<rust::u8> shellcode,
     if (remote_parameter == nullptr) {
       VirtualFreeEx(process, remote_shellcode, 0, MEM_RELEASE);
       CloseHandle(process);
-      return false;
+      throw AppError("failed to allocate memory in remote process");
     }
 
     status = WriteProcessMemory(process, remote_parameter, parameter.data(),
@@ -145,7 +147,7 @@ bool inject_shellcode_by_id(rust::u32 pid, rust::Vec<rust::u8> shellcode,
       VirtualFreeEx(process, remote_shellcode, 0, MEM_RELEASE);
       VirtualFreeEx(process, remote_parameter, 0, MEM_RELEASE);
       CloseHandle(process);
-      return false;
+      throw AppError("failed to write parameter to remote process");
     }
   }
 
@@ -157,12 +159,11 @@ bool inject_shellcode_by_id(rust::u32 pid, rust::Vec<rust::u8> shellcode,
     VirtualFreeEx(process, remote_shellcode, 0, MEM_RELEASE);
     VirtualFreeEx(process, remote_parameter, 0, MEM_RELEASE);
     CloseHandle(process);
-    return false;
+    throw AppError("failed to start remote thread");
   }
 
   CloseHandle(thread);
   CloseHandle(process);
-  return true;
 }
 
 rust::u32 id_by_name(rust::String name) {
@@ -181,7 +182,7 @@ rust::u32 id_by_name(rust::String name) {
   }
 
   do {
-    if (to_wstring(name) == entry.szExeFile) {
+    if (utf8_to_wstring(name) == entry.szExeFile) {
       CloseHandle(snapshot);
       return entry.th32ProcessID;
     }
