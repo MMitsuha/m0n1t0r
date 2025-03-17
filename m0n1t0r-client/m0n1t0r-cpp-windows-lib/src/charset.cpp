@@ -5,6 +5,9 @@ auto utf8_to_wstring(rust::String &string) -> std::wstring {
   auto ptr = string.c_str();
   auto wide_len =
       MultiByteToWideChar(CP_UTF8, 0, ptr, string.size(), nullptr, 0);
+  if (wide_len <= 0) {
+    throw AppError("failed to get wide len");
+  }
   std::wstring wide_string(wide_len, 0);
   if (MultiByteToWideChar(CP_UTF8, 0, ptr, string.size(), wide_string.data(),
                           wide_len) <= 0) {
