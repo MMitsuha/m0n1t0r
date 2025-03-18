@@ -70,7 +70,7 @@ impl m0n1t0r_common::autorun::Agent for AgentObj {
             UserDirs::new()
                 .ok_or(Error::BadUserDirectory)?
                 .home_dir()
-                .join(Shell::new()?.rc_file()),
+                .join(Shell::new().rc_file()),
         )
         .await
     }
@@ -81,7 +81,7 @@ impl m0n1t0r_common::autorun::Agent for AgentObj {
             UserDirs::new()
                 .ok_or(Error::BadUserDirectory)?
                 .home_dir()
-                .join(Shell::new()?.rc_file()),
+                .join(Shell::new().rc_file()),
         )
         .await
     }
@@ -92,7 +92,7 @@ impl m0n1t0r_common::autorun::Agent for AgentObj {
             UserDirs::new()
                 .ok_or(Error::BadUserDirectory)?
                 .home_dir()
-                .join(Shell::new()?.rc_file()),
+                .join(Shell::new().rc_file()),
         )
         .await
     }
@@ -103,7 +103,7 @@ impl m0n1t0r_common::autorun::Agent for AgentObj {
             UserDirs::new()
                 .ok_or(Error::BadUserDirectory)?
                 .home_dir()
-                .join(Shell::new()?.rc_file()),
+                .join(Shell::new().rc_file()),
         )
         .await
     }

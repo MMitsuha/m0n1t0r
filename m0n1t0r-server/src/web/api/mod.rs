@@ -2,12 +2,11 @@ mod client;
 mod global;
 mod server;
 
-use crate::{web::util, ServerMap};
-use actix_files::Files as ActixFiles;
+use crate::{ServerMap, web::util};
 use actix_web::{
+    App, HttpServer,
     middleware::{self, NormalizePath},
     web::{self, Data},
-    App, HttpServer,
 };
 use anyhow::Result;
 use middleware::Logger;
@@ -97,7 +96,6 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                             .service(server::proxy::delete),
                     ),
             )
-            .service(ActixFiles::new("/", "public").index_file("index.html"))
     })
     .bind_rustls_0_23(config.addr, config.tls_config.clone())?
     .run()
