@@ -51,6 +51,9 @@ pub enum Error {
     #[error("socks5 operation failed: {0}")]
     Socks5Exception(serde_error::Error) = -13,
 
+    #[error("auth failed: {0}")]
+    AuthFailed(serde_error::Error) = -14,
+
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error) = -255,
 }
@@ -156,5 +159,11 @@ impl From<actix_web::error::UrlencodedError> for Error {
 impl From<socks5_impl::Error> for Error {
     fn from(e: socks5_impl::Error) -> Self {
         Self::Socks5Exception(serde_error::Error::new(&e))
+    }
+}
+
+impl From<actix_identity::error::LoginError> for Error {
+    fn from(e: actix_identity::error::LoginError) -> Self {
+        Self::AuthFailed(serde_error::Error::new(&e))
     }
 }

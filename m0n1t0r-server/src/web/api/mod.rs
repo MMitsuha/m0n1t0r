@@ -1,10 +1,15 @@
+mod auth;
 mod client;
 mod global;
 mod server;
 
 use crate::{ServerMap, web::util};
+use actix_cors::Cors;
+use actix_identity::IdentityMiddleware;
+use actix_session::{SessionMiddleware, storage::CookieSessionStore};
 use actix_web::{
     App, HttpServer,
+    cookie::Key,
     middleware::{self, NormalizePath},
     web::{self, Data},
 };
@@ -35,6 +40,13 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
         App::new()
             .wrap(Logger::default())
             .wrap(NormalizePath::trim())
+            .wrap(IdentityMiddleware::default())
+            .wrap(SessionMiddleware::new(
+                CookieSessionStore::default(),
+                Key::from(env!("M0N1T0R_SECRET").replace('-', "").as_bytes()),
+            ))
+            // TODO: restrict origin
+            .wrap(Cors::permissive())
             .app_data(Data::new(server_map.clone()))
             .app_data(path_config)
             .app_data(query_config)
@@ -96,6 +108,7 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                             .service(server::proxy::delete),
                     ),
             )
+            .service(auth::post)
     })
     .bind_rustls_0_23(config.addr, config.tls_config.clone())?
     .run()

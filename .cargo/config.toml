@@ -4,5 +4,6 @@ xtask = "run --package xtask --bin xtask --"
 
 [env]
 CARGO_WORKSPACE_DIR = { value = "", relative = true }
-M0N1T0R_DOMAIN = "mmitsuha.xyz"
+M0N1T0R_DOMAIN = "home.mmitsuha.xyz"
 M0N1T0R_ORG = "K and A Ltd"
+M0N1T0R_SECRET = "e2ba92d3-9c5f-410a-9ce8-de0b8717a0f841dd9d92-9c44-455c-8f3e-3f92c4d03cd9"
