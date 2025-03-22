@@ -63,7 +63,17 @@ pub trait Agent: Sync {
         })?)
     }
 
-    async fn inject_shellcode_by_id(
+    async fn inject_shellcode_by_id_rtc(
+        &self,
+        _pid: u32,
+        _shellcode: Vec<u8>,
+        _ep_offset: u32,
+        _parameter: Vec<u8>,
+    ) -> AppResult<()> {
+        Err(Error::Unsupported)
+    }
+
+    async fn inject_shellcode_by_id_apc(
         &self,
         _pid: u32,
         _shellcode: Vec<u8>,

