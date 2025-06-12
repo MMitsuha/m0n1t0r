@@ -3,7 +3,6 @@
 extern crate m0n1t0r_macro;
 
 mod conn;
-mod db;
 mod server;
 mod web;
 

@@ -179,11 +179,13 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
             )
             .await?;
 
-        info!("current acp: {}", charset_agent.acp().await?);
-
-        // Make sure the chinese text "爱" below is encoded in utf8
-        let chinese_love = charset_agent.acp_to_utf8(vec![0xb0, 0xae]).await?;
-        assert_eq!(chinese_love.as_bytes(), "爱".as_bytes());
+        let charset = charset_agent.acp().await?;
+        info!("current acp: {}", charset);
+        // Make sure the system's acp is utf8
+        if charset == 936 {
+            let chinese_love = charset_agent.acp_to_utf8(vec![0xb0, 0xae]).await?;
+            assert_eq!(chinese_love.as_bytes(), vec![0xe7, 0x88, 0xb1]);
+        }
     }
 
     // Not testing autorun due to environment damage
