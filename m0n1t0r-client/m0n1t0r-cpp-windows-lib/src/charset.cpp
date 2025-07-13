@@ -1,7 +1,7 @@
 #include "charset.h"
 #include "error.h"
 
-auto utf8_to_wstring(rust::String &string) -> std::wstring {
+std::wstring utf8_to_wstring(rust::String string) {
   auto ptr = string.c_str();
   auto wide_len =
       MultiByteToWideChar(CP_UTF8, 0, ptr, string.size(), nullptr, 0);
@@ -16,7 +16,7 @@ auto utf8_to_wstring(rust::String &string) -> std::wstring {
   return wide_string;
 }
 
-auto acp_to_wstring(rust::Vec<uint8_t> const &string) -> std::wstring {
+std::wstring acp_to_wstring(rust::Vec<uint8_t> string) {
   auto ptr = (LPCCH)string.data();
   auto wide_len =
       MultiByteToWideChar(CP_ACP, 0, ptr, string.size(), nullptr, 0);
@@ -31,7 +31,7 @@ auto acp_to_wstring(rust::Vec<uint8_t> const &string) -> std::wstring {
   return wide_string;
 }
 
-auto wstring_to_utf8(std::wstring &wstring) -> rust::String {
+rust::String wstring_to_utf8(std::wstring &wstring) {
   auto ptr = (LPCWCH)wstring.data();
   auto utf8_len = WideCharToMultiByte(CP_UTF8, 0, ptr, wstring.size(), nullptr,
                                       0, nullptr, nullptr);
@@ -47,9 +47,9 @@ auto wstring_to_utf8(std::wstring &wstring) -> rust::String {
   return utf8_string;
 }
 
-auto acp_to_utf8(rust::Vec<uint8_t> const &string) -> rust::String {
+rust::String acp_to_utf8(rust::Vec<uint8_t> string) {
   auto wstring = acp_to_wstring(string);
   return wstring_to_utf8(wstring);
 }
 
-auto acp() -> uint32_t { return GetACP(); }
+uint32_t acp() { return GetACP(); }

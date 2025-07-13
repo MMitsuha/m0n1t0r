@@ -3,6 +3,6 @@
 #include <Windows.h>
 #include <string>
 
-auto utf8_to_wstring(rust::String &string) -> std::wstring;
-auto acp_to_utf8(rust::Vec<uint8_t> const &string) -> rust::String;
-auto acp() -> uint32_t;
+std::wstring utf8_to_wstring(rust::String string);
+rust::String acp_to_utf8(rust::Vec<uint8_t> string);
+uint32_t acp();

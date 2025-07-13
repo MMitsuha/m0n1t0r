@@ -96,15 +96,4 @@ impl m0n1t0r_common::autorun::Agent for AgentObj {
         )
         .await
     }
-
-    async fn add_current_user(&self) -> AppResult<()> {
-        self.add_internal(
-            env::current_exe()?.to_path_buf(),
-            UserDirs::new()
-                .ok_or(Error::BadUserDirectory)?
-                .home_dir()
-                .join(Shell::new().rc_file()),
-        )
-        .await
-    }
 }

@@ -11,29 +11,41 @@ pub mod terminate;
 pub mod update;
 
 use crate::{
-    web::{Response, Result as WebResult},
     ServerMap,
+    web::{Response, Result as WebResult},
 };
 use actix_web::{
-    get,
+    Responder, get,
     web::{Data, Json},
-    Responder,
 };
 use detail::Detail;
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::{sync::RwLock, task::JoinSet};
 
 #[get("")]
 pub async fn get(data: Data<Arc<RwLock<ServerMap>>>) -> WebResult<impl Responder> {
-    let lock_map = &data.read().await.map;
-    let mut details = Vec::new();
+    let lock_map = data.read().await.map.clone();
+    let details = Arc::new(RwLock::new(Vec::new()));
+    let mut tasks = JoinSet::new();
 
-    // TODO: Parallelize this
-    for (addr, server) in lock_map.iter() {
-        let lock_obj = server.read().await;
-        let client = lock_obj.client()?;
+    lock_map.into_iter().for_each(|(addr, server)| {
+        let details = details.clone();
+        tasks.spawn(async move {
+            let lock_obj = server.read().await;
+            let client = lock_obj.client()?;
 
-        details.push(Detail::new(addr, client).await?);
-    }
-    Ok(Json(Response::success(details)?))
+            details
+                .write()
+                .await
+                .push(Detail::new(&addr, client).await?);
+            Ok::<_, anyhow::Error>(())
+        });
+    });
+
+    tasks
+        .join_all()
+        .await
+        .into_iter()
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(Json(Response::success(&*details.read().await)?))
 }

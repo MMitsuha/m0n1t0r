@@ -17,7 +17,7 @@ impl m0n1t0r_common::charset::Agent for AgentObj {
         let (tx, rx) = oneshot::channel();
 
         thread::spawn(move || {
-            let _ = tx.send(ffi::acp_to_utf8(&string));
+            let _ = tx.send(ffi::acp_to_utf8(string));
             Ok::<_, anyhow::Error>(())
         });
         Ok(rx.await??.into())
@@ -41,7 +41,7 @@ mod ffi {
     unsafe extern "C++" {
         include!("m0n1t0r-client/m0n1t0r-cpp-windows-lib/include/charset.h");
 
-        fn acp_to_utf8(string: &Vec<u8>) -> Result<String>;
+        fn acp_to_utf8(string: Vec<u8>) -> Result<String>;
 
         fn acp() -> Result<u32>;
     }

@@ -1,0 +1,6 @@
+rule("gen.shellcode")
+    after_load(function (target)
+        target:set("toolchains", "mingw")
+        target:add("ldflags", "-nostdlib", "--entry=entry", "-T mingw/merge_sections.ld")
+        target:add("cxflags", "-ffunction-sections", "-fno-ident", "-fno-asynchronous-unwind-tables", "-Os", "-fno-exceptions", "-s")
+    end)

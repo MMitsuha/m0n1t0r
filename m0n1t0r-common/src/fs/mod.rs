@@ -29,7 +29,7 @@ impl File {
                 .file_name()
                 .unwrap_or_default()
                 .to_string_lossy()
-                .into(),
+                .to_string(),
             path: path.clone(),
             size: metadata.len(),
             is_dir: metadata.is_dir(),

@@ -7,10 +7,12 @@ use std::{
 };
 
 const XMAKE_PROJECT_LIST_WINDOWS: [&str; 1] = ["m0n1t0r-cpp-windows-lib"];
-const BRIDGE_LIST_WINDOWS: [&str; 2] = [
+const BRIDGE_LIST_WINDOWS: [&str; 3] = [
+    "src/client/windows/autorun.rs",
     "src/client/windows/process.rs",
     "src/client/windows/charset.rs",
 ];
+const FOREIGN_DEPENDENCIES_WINDOWS: [&str; 1] = ["libpeconv"];
 
 fn bridge_build() {
     #[cfg(feature = "windows")]
@@ -24,27 +26,38 @@ fn xmake_build_windows(paths: &mut Vec<PathBuf>, workspace: &Path) {
     paths.append(
         &mut XMAKE_PROJECT_LIST_WINDOWS
             .iter()
-            .map(|x| xmake::build(workspace.join("m0n1t0r-client").join(x).as_path()))
+            .map(|project| xmake::build(workspace.join("m0n1t0r-client").join(project).as_path()))
             .collect::<Vec<PathBuf>>(),
     );
-    XMAKE_PROJECT_LIST_WINDOWS.iter().for_each(|x| {
-        cargo_emit::rustc_link_lib!(x);
+    XMAKE_PROJECT_LIST_WINDOWS.iter().for_each(|project| {
+        cargo_emit::rustc_link_lib!(project);
+    });
+
+    FOREIGN_DEPENDENCIES_WINDOWS.iter().for_each(|dep| {
+        let (links, link_dirs) = dep::xrepo_fetch(dep);
+        links
+            .iter()
+            .zip(link_dirs.iter())
+            .for_each(|(link, link_dir)| {
+                cargo_emit::rustc_link_lib!(link);
+                cargo_emit::rustc_link_search!(link_dir);
+            });
     });
 }
 
 fn xmake_build(workspace: &Path) {
     dep::check_xmake();
+    dep::check_xrepo();
 
     let mut paths: Vec<PathBuf> = Vec::new();
 
     #[cfg(feature = "windows")]
     xmake_build_windows(&mut paths, workspace);
 
-    for path in paths {
-        let path = path.display();
+    paths.iter().map(|path| path.display()).for_each(|path| {
         cargo_emit::rustc_link_search!(path);
         cargo_emit::rerun_if_changed!(path);
-    }
+    });
 }
 
 #[cfg(feature = "windows")]

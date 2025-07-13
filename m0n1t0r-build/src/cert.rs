@@ -5,6 +5,8 @@ use std::{
     process::Command,
 };
 
+use crate::dep;
+
 const CA_CERT: &str = "ca.crt";
 const END_KEY: &str = "end.key";
 const END_CERT: &str = "end.crt";
@@ -31,6 +33,8 @@ pub fn check_no_rerun(certs: &Path) -> bool {
 }
 
 pub fn generate(certs: &Path) {
+    dep::check_openssl();
+
     // TODO: Fix this hack
     let ca_key = certs.join("ca.key");
     let end_csr = certs.join("end.csr");
@@ -38,6 +42,7 @@ pub fn generate(certs: &Path) {
     let ca_crt = certs.join(CA_CERT);
     let end_key = certs.join(END_KEY);
     let end_crt = certs.join(END_CERT);
+
     let ca_key = ca_key.to_str().unwrap();
     let end_csr = end_csr.to_str().unwrap();
     let cert_ext = cert_ext.to_str().unwrap();
@@ -119,9 +124,9 @@ pub fn generate(certs: &Path) {
         ],
     ];
 
-    fs::create_dir_all(certs).unwrap();
+    fs::create_dir_all(certs).expect("Failed to create certs directory.");
     File::create(certs.join(CERT_EXT))
-        .unwrap()
+        .expect("Failed to create cert.ext file.")
         .write(
             concat!(
                 "basicConstraints=CA:FALSE\nsubjectAltName = @alt_names\n[alt_names]\nDNS.1 = ",
@@ -130,11 +135,17 @@ pub fn generate(certs: &Path) {
             )
             .as_bytes(),
         )
-        .unwrap();
+        .expect("Failed to write to cert.ext file.");
 
     if commands
         .into_iter()
-        .map(|c| Command::new(c[0]).args(&c[1..]).spawn().unwrap().wait())
+        .map(|c| {
+            Command::new(c[0])
+                .args(&c[1..])
+                .spawn()
+                .expect("Failed to execute openssl.")
+                .wait()
+        })
         .any(|r| r.unwrap().success() == false)
         == true
     {
