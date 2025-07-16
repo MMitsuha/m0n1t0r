@@ -3,7 +3,6 @@ use actix_web::web::Buf;
 use anyhow::{Result, anyhow};
 use log::info;
 use m0n1t0r_common::{
-    autorun::Agent as _,
     charset::Agent as _,
     client::{Client, TargetPlatform},
     fs::Agent as _,
@@ -17,7 +16,6 @@ pub async fn run(server: Arc<RwLock<ServerObj>>) -> Result<()> {
     let client = lock_obj.client()?;
     let file_agent = client.fs_agent().await?;
     let process_agent = client.process_agent().await?;
-    let autorun_agent = client.autorun_agent().await?;
     let charset_agent = client.charset_agent().await?;
     let platform = client.target_platform().await?;
     let shell = client.shell().await?;

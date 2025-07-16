@@ -1,4 +1,5 @@
 pub mod infect;
+pub mod infectious;
 
 use crate::{
     ServerMap,

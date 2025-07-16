@@ -55,8 +55,11 @@ pub enum Error {
     #[error("unauthorized: {0}")]
     Unauthorized(serde_error::Error) = -15,
 
-    #[error("unknown error: {0}")]
-    Unknown(serde_error::Error) = -255,
+    #[error("generic error: {0}")]
+    GenericError(serde_error::Error) = -16,
+
+    #[error("unknown error")]
+    Unknown = -255,
 }
 
 impl actix_web::ResponseError for Error {
@@ -82,7 +85,7 @@ impl actix_web::ResponseError for Error {
 
 impl From<anyhow::Error> for Error {
     fn from(e: anyhow::Error) -> Self {
-        Self::Unknown(serde_error::Error::new(&*e))
+        Self::GenericError(serde_error::Error::new(&*e))
     }
 }
 

