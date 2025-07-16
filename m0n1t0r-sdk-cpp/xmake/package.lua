@@ -48,7 +48,7 @@ end
 add_static_require("vcpkg::boost-random")
 add_static_require("vcpkg::boost-filesystem")
 add_static_require("vcpkg::boost-atomic")
-add_static_require("vcpkg::websocketpp")
+add_static_require("websocketpp")
 add_static_require("nlohmann_json")
 add_static_require("spdlog")
 add_static_require("fmt")

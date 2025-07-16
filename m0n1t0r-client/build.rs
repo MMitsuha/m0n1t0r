@@ -12,7 +12,6 @@ const BRIDGE_LIST_WINDOWS: [&str; 3] = [
     "src/client/windows/process.rs",
     "src/client/windows/charset.rs",
 ];
-const FOREIGN_DEPENDENCIES_WINDOWS: [&str; 1] = ["libpeconv"];
 
 fn bridge_build() {
     #[cfg(feature = "windows")]
@@ -22,45 +21,21 @@ fn bridge_build() {
 }
 
 #[cfg(feature = "windows")]
-fn xmake_build_windows(paths: &mut Vec<PathBuf>, workspace: &Path) {
-    paths.append(
-        &mut XMAKE_PROJECT_LIST_WINDOWS
-            .iter()
-            .map(|project| xmake::build(workspace.join("m0n1t0r-client").join(project).as_path()))
-            .collect::<Vec<PathBuf>>(),
-    );
-    XMAKE_PROJECT_LIST_WINDOWS.iter().for_each(|project| {
-        cargo_emit::rustc_link_lib!(project);
-    });
-
-    FOREIGN_DEPENDENCIES_WINDOWS.iter().for_each(|dep| {
-        let (links, link_dirs) = dep::xrepo_fetch(dep);
-        links
-            .iter()
-            .zip(link_dirs.iter())
-            .for_each(|(link, link_dir)| {
-                cargo_emit::rustc_link_lib!(link);
-                cargo_emit::rustc_link_search!(link_dir);
-            });
-    });
+fn xmake_build_windows(workspace: &Path) {
+    XMAKE_PROJECT_LIST_WINDOWS
+        .iter()
+        .for_each(|project| xmake::build(workspace.join("m0n1t0r-client").join(project).as_path()));
 }
 
 fn xmake_build(workspace: &Path) {
     dep::check_xmake();
     dep::check_xrepo();
 
-    let mut paths: Vec<PathBuf> = Vec::new();
-
     #[cfg(feature = "windows")]
-    xmake_build_windows(&mut paths, workspace);
-
-    paths.iter().map(|path| path.display()).for_each(|path| {
-        cargo_emit::rustc_link_search!(path);
-        cargo_emit::rerun_if_changed!(path);
-    });
+    xmake_build_windows(workspace);
 }
 
-#[cfg(feature = "windows")]
+#[cfg(feature = "windows-uac")]
 fn add_administrator_manifest_windows() {
     let mut res = winres::WindowsResource::new();
     res.set_manifest(
@@ -93,6 +68,6 @@ fn main() {
     bridge_build();
     xmake_build(workspace);
 
-    #[cfg(feature = "windows")]
+    #[cfg(feature = "windows-uac")]
     add_administrator_manifest_windows();
 }

@@ -9,7 +9,7 @@ edition.workspace = true
 
 [dependencies]
 cargo-emit = "0.2.1"
-vergen = { version = "9.0.4", features = ["build", "cargo", "rustc", "si"] }
+vergen = { version = "9.0.6", features = ["build", "cargo", "rustc", "si"] }
 nom = "8.0.0"
 execute = "0.2.13"
 regex = "1.11.1"

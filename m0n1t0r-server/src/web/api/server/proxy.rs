@@ -3,46 +3,27 @@ use actix_web::{
     Responder, delete, get,
     web::{Json, Path},
 };
-use serde::Serialize;
-use std::net::SocketAddr;
+use slotmap::{DefaultKey, KeyData};
 
-#[derive(Serialize)]
-struct Detail {
-    addr: SocketAddr,
-    r#type: Type,
-}
-
-pub async fn close(addr: &SocketAddr) -> WebResult<()> {
+pub async fn close(key: DefaultKey) -> WebResult<()> {
     PROXY_MAP
         .read()
         .await
-        .get(addr)
+        .get(key)
         .ok_or(Error::NotFound)?
-        .0
+        .canceller
         .cancel();
     Ok(())
 }
 
 #[get("")]
 pub async fn get() -> WebResult<impl Responder> {
-    Ok(Json(Response::success(Detail::new().await)?))
+    Ok(Json(Response::success(PROXY_MAP.read().await.as_vec())?))
 }
 
-#[delete("/{addr}")]
-pub async fn delete(addr: Path<SocketAddr>) -> WebResult<impl Responder> {
-    Ok(Json(Response::success(close(&addr).await?)?))
-}
-
-impl Detail {
-    pub async fn new() -> Vec<Self> {
-        PROXY_MAP
-            .read()
-            .await
-            .iter()
-            .map(|(addr, (_, r#type))| Self {
-                addr: *addr,
-                r#type: *r#type,
-            })
-            .collect()
-    }
+#[delete("/{key}")]
+pub async fn delete(key: Path<u64>) -> WebResult<impl Responder> {
+    Ok(Json(Response::success(
+        close(KeyData::from_ffi(*key).into()).await?,
+    )?))
 }

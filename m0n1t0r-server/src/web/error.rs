@@ -6,6 +6,7 @@ use discriminant_rs::Discriminant;
 use serde::Serialize;
 use thiserror::Error;
 
+#[allow(unused)]
 #[derive(Error, Debug, Serialize, Clone, Discriminant)]
 #[repr(i16)]
 pub enum Error {
@@ -18,20 +19,20 @@ pub enum Error {
     #[error("specified object not found")]
     NotFound = -2,
 
-    #[error("remote call failed with exception: {0}")]
-    RtcException(m0n1t0r_common::Error) = -3,
+    #[error("remote call error: {0}")]
+    RtcError(m0n1t0r_common::Error) = -3,
 
-    #[error("web framework failed with exception: {0}")]
-    WebFrameworkException(serde_error::Error) = -4,
+    #[error("web framework error: {0}")]
+    WebFrameworkError(serde_error::Error) = -4,
 
-    #[error("channel connect failed with exception: {0}")]
-    RchException(#[from] remoc::rch::ConnectError) = -5,
+    #[error("remoc channel disconnected: {0}")]
+    RchDisconnected(#[from] remoc::rch::ConnectError) = -5,
 
     #[error("parse command failed: {0}")]
     InvalidCommand(serde_error::Error) = -6,
 
-    #[error("tokio io failed: {0}")]
-    TokioIoFailed(serde_error::Error) = -7,
+    #[error("tokio io error: {0}")]
+    TokioIoError(serde_error::Error) = -7,
 
     #[error("invalid ip address: {0}")]
     InvalidIpAddress(serde_error::Error) = -8,
@@ -39,20 +40,20 @@ pub enum Error {
     #[error("invalid web parameter: {0}")]
     InvalidWebParameter(serde_error::Error) = -9,
 
-    #[error("parse int failed: {0}")]
-    InvalidInt(serde_error::Error) = -10,
+    #[error("invalid int value: {0}")]
+    InvalidIntValue(serde_error::Error) = -10,
 
     #[error("qqkey operation failed: {0}")]
-    QQKeyException(#[from] qqkey::Error) = -11,
+    QQKeyError(#[from] qqkey::Error) = -11,
 
-    #[error("socks5 auth failed")]
-    Socks5AuthFailed(serde_error::Error) = -12,
+    #[error("socks5 error: {0}")]
+    Socks5Error(serde_error::Error) = -13,
 
-    #[error("socks5 operation failed: {0}")]
-    Socks5Exception(serde_error::Error) = -13,
+    #[error("forbidden: {0}")]
+    Forbidden(serde_error::Error) = -14,
 
-    #[error("auth failed: {0}")]
-    AuthFailed(serde_error::Error) = -14,
+    #[error("unauthorized: {0}")]
+    Unauthorized(serde_error::Error) = -15,
 
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error) = -255,
@@ -70,9 +71,10 @@ impl actix_web::ResponseError for Error {
             Error::NotFound => StatusCode::NOT_FOUND,
             Error::InvalidWebParameter(_)
             | Error::InvalidCommand(_)
-            | Error::InvalidInt(_)
+            | Error::InvalidIntValue(_)
             | Error::InvalidIpAddress(_) => StatusCode::BAD_REQUEST,
-            Error::Socks5AuthFailed(_) => StatusCode::UNAUTHORIZED,
+            Error::Forbidden(_) => StatusCode::FORBIDDEN,
+            Error::Unauthorized(_) => StatusCode::UNAUTHORIZED,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
@@ -92,25 +94,25 @@ impl From<serde_json::Error> for Error {
 
 impl From<m0n1t0r_common::Error> for Error {
     fn from(e: m0n1t0r_common::Error) -> Self {
-        Self::RtcException(e)
+        Self::RtcError(e)
     }
 }
 
 impl From<actix_web::Error> for Error {
     fn from(e: actix_web::Error) -> Self {
-        Self::WebFrameworkException(serde_error::Error::new(&e))
+        Self::WebFrameworkError(serde_error::Error::new(&e))
     }
 }
 
 impl From<actix_multipart::MultipartError> for Error {
     fn from(e: actix_multipart::MultipartError) -> Self {
-        Self::WebFrameworkException(serde_error::Error::new(&e))
+        Self::WebFrameworkError(serde_error::Error::new(&e))
     }
 }
 
 impl From<actix_web::error::JsonPayloadError> for Error {
     fn from(e: actix_web::error::JsonPayloadError) -> Self {
-        Self::WebFrameworkException(serde_error::Error::new(&e))
+        Self::WebFrameworkError(serde_error::Error::new(&e))
     }
 }
 
@@ -122,7 +124,7 @@ impl From<shell_words::ParseError> for Error {
 
 impl From<tokio::io::Error> for Error {
     fn from(e: tokio::io::Error) -> Self {
-        Self::TokioIoFailed(serde_error::Error::new(&e))
+        Self::TokioIoError(serde_error::Error::new(&e))
     }
 }
 
@@ -134,7 +136,7 @@ impl From<std::net::AddrParseError> for Error {
 
 impl From<std::num::ParseIntError> for Error {
     fn from(e: std::num::ParseIntError) -> Self {
-        Self::InvalidInt(serde_error::Error::new(&e))
+        Self::InvalidIntValue(serde_error::Error::new(&e))
     }
 }
 
@@ -158,12 +160,12 @@ impl From<actix_web::error::UrlencodedError> for Error {
 
 impl From<socks5_impl::Error> for Error {
     fn from(e: socks5_impl::Error) -> Self {
-        Self::Socks5Exception(serde_error::Error::new(&e))
+        Self::Socks5Error(serde_error::Error::new(&e))
     }
 }
 
 impl From<actix_identity::error::LoginError> for Error {
     fn from(e: actix_identity::error::LoginError) -> Self {
-        Self::AuthFailed(serde_error::Error::new(&e))
+        Self::Forbidden(serde_error::Error::new(&e))
     }
 }

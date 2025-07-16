@@ -3,10 +3,11 @@
 #include "error.h"
 #include "process.rs.h"
 #include <TlHelp32.h>
-#include <optional>
 #include <psapi.h>
 
-std::optional<std::tuple<HANDLE, HANDLE, HANDLE, HANDLE>> create_pipes() {
+std::tuple<HANDLE /*stdout_rx*/, HANDLE /*stdout_tx*/, HANDLE /*stderr_rx*/,
+           HANDLE /*stderr_tx*/>
+create_pipes() {
   SECURITY_ATTRIBUTES sa{};
   HANDLE stdout_rx, stdout_tx;
   HANDLE stderr_rx, stderr_tx;
@@ -15,13 +16,13 @@ std::optional<std::tuple<HANDLE, HANDLE, HANDLE, HANDLE>> create_pipes() {
   sa.lpSecurityDescriptor = nullptr;
 
   if (CreatePipe(&stdout_rx, &stdout_tx, &sa, 0) == 0) {
-    return std::nullopt;
+    throw AppError("failed to create stdout pipe");
   }
 
   if (CreatePipe(&stderr_rx, &stderr_tx, &sa, 0) == 0) {
     CloseHandle(stdout_rx);
     CloseHandle(stdout_tx);
-    return std::nullopt;
+    throw AppError("failed to create stderr pipe");
   }
 
   return std::make_tuple(stdout_rx, stdout_tx, stderr_rx, stderr_tx);
@@ -49,11 +50,7 @@ Output execute(rust::String command, rust::Vec<rust::String> args) {
   auto pipes = create_pipes();
   Output output{};
 
-  if (pipes.has_value() == false) {
-    return output;
-  }
-
-  auto [stdout_rx, stdout_tx, stderr_rx, stderr_tx] = pipes.value();
+  auto [stdout_rx, stdout_tx, stderr_rx, stderr_tx] = pipes;
   std::wstring command_line;
   STARTUPINFOW si{};
   PROCESS_INFORMATION pi{};
@@ -204,7 +201,7 @@ void inject_shellcode_by_id_apc(rust::u32 pid, rust::Vec<rust::u8> shellcode,
     throw AppError("failed to create snapshot");
   }
 
-  THREADENTRY32 te;
+  THREADENTRY32 te{};
   te.dwSize = sizeof(THREADENTRY32);
   for (Thread32First(snapshot, &te); Thread32Next(snapshot, &te);) {
     if (te.th32OwnerProcessID == pid) {

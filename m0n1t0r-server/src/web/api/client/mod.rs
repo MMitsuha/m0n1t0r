@@ -1,3 +1,4 @@
+pub mod autorun;
 pub mod detail;
 pub mod environment;
 pub mod fs;

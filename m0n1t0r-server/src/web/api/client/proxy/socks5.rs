@@ -1,15 +1,14 @@
 use crate::{
+    ServerMap,
     web::{
+        Response, Result as WebResult,
         api::{client::proxy, global::proxy::*},
         error::Error,
-        Response, Result as WebResult,
     },
-    ServerMap,
 };
 use actix_web::{
-    post,
+    Responder, post,
     web::{Data, Form, Json, Path},
-    Responder,
 };
 use anyhow::anyhow;
 use as_any::Downcast;
@@ -19,8 +18,8 @@ use serde::{Deserialize, Serialize};
 use socks5_impl::{
     protocol::{Address, Reply},
     server::{
-        auth::{NoAuth, UserKeyAuth},
         AuthAdaptor, ClientConnection, IncomingConnection, Server,
+        auth::{NoAuth, UserKeyAuth},
     },
 };
 use std::{net::SocketAddr, sync::Arc};
@@ -35,10 +34,54 @@ use tokio_util::{
     sync::CancellationToken,
 };
 
+pub mod pass {
+    pub use super::*;
+
+    #[derive(Serialize, Deserialize, PartialEq)]
+    struct PassForm {
+        from: SocketAddr,
+        name: String,
+        password: String,
+    }
+
+    #[post("/socks5/pass")]
+    pub async fn post(
+        data: Data<Arc<RwLock<ServerMap>>>,
+        addr: Path<SocketAddr>,
+        Form(form): Form<PassForm>,
+    ) -> WebResult<impl Responder> {
+        let auth = Arc::new(UserKeyAuth::new(&form.name, &form.password));
+        let addr = open(data, &addr, "0.0.0.0:0".parse().unwrap(), auth).await?;
+
+        Ok(Json(Response::success(addr)?))
+    }
+}
+
+pub mod noauth {
+    pub use super::*;
+
+    #[derive(Serialize, Deserialize, PartialEq)]
+    struct NoAuthForm {
+        from: SocketAddr,
+    }
+
+    #[post("/socks5/noauth")]
+    pub async fn post(
+        data: Data<Arc<RwLock<ServerMap>>>,
+        addr: Path<SocketAddr>,
+        Form(form): Form<NoAuthForm>,
+    ) -> WebResult<impl Responder> {
+        let auth = Arc::new(NoAuth::default());
+        let addr = open(data, &addr, form.from, auth).await?;
+
+        Ok(Json(Response::success(addr)?))
+    }
+}
+
 pub async fn open_internal<O>(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: &SocketAddr,
-    listen: SocketAddr,
+    from: SocketAddr,
     auth: AuthAdaptor<O>,
 ) -> WebResult<(SocketAddr, CancellationToken, CancellationToken)>
 where
@@ -48,7 +91,7 @@ where
     let canceller_global2 = canceller_global1.clone();
     let agent = Arc::new(agent);
 
-    let listener = Server::bind(listen, auth).await?;
+    let listener = Server::bind(from, auth).await?;
     let addr = listener.local_addr()?;
     let canceller_scoped1 = CancellationToken::new();
     let canceller_scoped2 = canceller_scoped1.clone();
@@ -57,9 +100,9 @@ where
         loop {
             let agent = agent.clone();
             select! {
-                accept = listener.accept() => match accept {
-                    Ok((conn, _)) => { tokio::spawn(handle(conn, agent, canceller_global2.clone(), canceller_scoped2.clone())); },
-                    Err(_) => continue,
+                accepted = listener.accept() => {
+                    let (conn, _) = accepted?;
+                    tokio::spawn(handle(conn, agent, canceller_global2.clone(), canceller_scoped2.clone()));
                 },
                 _ = canceller_global2.cancelled() => break,
                 _ = canceller_scoped2.cancelled() => break,
@@ -73,15 +116,19 @@ where
 pub async fn open<O>(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: &SocketAddr,
-    listen: SocketAddr,
+    from: SocketAddr,
     auth: AuthAdaptor<O>,
 ) -> WebResult<SocketAddr>
 where
     O: 'static + Sync + Sync + Send,
 {
-    let (addr, canceller_global1, canceller_scoped1) =
-        open_internal(data, addr, listen, auth).await?;
+    let (from, canceller_global1, canceller_scoped1) =
+        open_internal(data, addr, from, auth).await?;
     let canceller_scoped2 = canceller_scoped1.clone();
+    let key = PROXY_MAP.write().await.insert(Proxy::new(
+        Type::Socks5((from, addr).into()),
+        canceller_scoped2,
+    ));
 
     tokio::spawn(async move {
         loop {
@@ -90,53 +137,11 @@ where
                 _ = canceller_scoped1.cancelled() => break,
             }
         }
-        PROXY_MAP.write().await.remove(&addr);
+        PROXY_MAP.write().await.remove(key);
         Ok::<_, anyhow::Error>(())
     });
 
-    PROXY_MAP
-        .write()
-        .await
-        .insert(addr, (canceller_scoped2, Type::Socks5));
-
-    Ok(addr)
-}
-
-pub mod pass {
-    pub use super::*;
-
-    #[derive(Serialize, Deserialize, PartialEq)]
-    struct PassForm {
-        name: String,
-        password: String,
-    }
-
-    #[post("/socks5/pass")]
-    pub async fn post(
-        data: Data<Arc<RwLock<ServerMap>>>,
-        addr: Path<SocketAddr>,
-        form: Form<PassForm>,
-    ) -> WebResult<impl Responder> {
-        let auth = Arc::new(UserKeyAuth::new(&form.name, &form.password));
-        let addr = open(data, &addr, "0.0.0.0:0".parse().unwrap(), auth).await?;
-
-        Ok(Json(Response::success(addr)?))
-    }
-}
-
-pub mod noauth {
-    pub use super::*;
-
-    #[post("/socks5/noauth")]
-    pub async fn post(
-        data: Data<Arc<RwLock<ServerMap>>>,
-        addr: Path<SocketAddr>,
-    ) -> WebResult<impl Responder> {
-        let auth = Arc::new(NoAuth::default());
-        let addr = open(data, &addr, "0.0.0.0:0".parse().unwrap(), auth).await?;
-
-        Ok(Json(Response::success(addr)?))
-    }
+    Ok(from)
 }
 
 async fn handle<S>(
@@ -154,13 +159,13 @@ where
         match auth {
             Ok(b) => {
                 if *b == false {
-                    return Err(Error::Socks5AuthFailed(serde_error::Error::new(&*anyhow!(
+                    return Err(Error::Forbidden(serde_error::Error::new(&*anyhow!(
                         "password or username mismatch"
                     )))
                     .into());
                 }
             }
-            Err(e) => return Err(Error::Socks5AuthFailed(serde_error::Error::new(e))),
+            Err(e) => return Err(Error::Forbidden(serde_error::Error::new(e))),
         }
     }
 

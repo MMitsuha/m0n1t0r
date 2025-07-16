@@ -5,26 +5,26 @@ use thiserror::Error;
 
 #[derive(Error, Debug, Serialize, Deserialize, Clone)]
 pub enum Error {
-    #[error("remote call with exception: {0}")]
-    RtcException(#[from] remoc::rtc::CallError),
+    #[error("failed to call remote function over remoc: {0}")]
+    RtcError(#[from] remoc::rtc::CallError),
 
-    #[error("channel disconnected: {0}")]
-    ChannelDisconnected(#[from] remoc::rch::ConnectError),
+    #[error("remoc channel disconnected: {0}")]
+    RchDisconnected(#[from] remoc::rch::ConnectError),
 
-    #[error("tokio io failed: {0}")]
-    TokioIoFailed(serde_error::Error),
+    #[error("failed to send over remoc channel: {0}")]
+    RchSendError(remoc::rch::lr::SendErrorKind),
 
-    #[error("http request failed: {0}")]
-    HttpRequestFailed(serde_error::Error),
+    #[error("tokio io error: {0}")]
+    TokioIoError(serde_error::Error),
 
-    #[error("foreign function call failed: {0}")]
+    #[error("http request error: {0}")]
+    HttpRequestError(serde_error::Error),
+
+    #[error("foreign function call error: {0}")]
     FfiException(serde_error::Error),
 
-    #[error("api call failed: {0}")]
-    ApiCallException(serde_error::Error),
-
     #[error("qqkey operation failed: {0}")]
-    QQKeyException(#[from] qqkey::Error),
+    QQKeyError(#[from] qqkey::Error),
 
     #[error("specified object not found")]
     NotFound,
@@ -35,14 +35,8 @@ pub enum Error {
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error),
 
-    #[error("bad os string")]
-    BadOsString,
-
-    #[error("bad user directory")]
-    BadUserDirectory,
-
-    #[error("bad environment value")]
-    BadEnvironmentValue(serde_error::Error),
+    #[error("invalid environment value")]
+    InvalidEnvironmentValue(serde_error::Error),
 
     #[error("unsupported operation")]
     Unsupported,
@@ -59,13 +53,13 @@ impl From<anyhow::Error> for Error {
 
 impl From<tokio::io::Error> for Error {
     fn from(e: tokio::io::Error) -> Self {
-        Self::TokioIoFailed(serde_error::Error::new(&e))
+        Self::TokioIoError(serde_error::Error::new(&e))
     }
 }
 
 impl From<reqwest::Error> for Error {
     fn from(e: reqwest::Error) -> Self {
-        Self::HttpRequestFailed(serde_error::Error::new(&e))
+        Self::HttpRequestError(serde_error::Error::new(&e))
     }
 }
 
@@ -83,6 +77,12 @@ impl From<tokio::sync::oneshot::error::RecvError> for Error {
 
 impl From<std::env::VarError> for Error {
     fn from(e: std::env::VarError) -> Self {
-        Self::BadEnvironmentValue(serde_error::Error::new(&e))
+        Self::InvalidEnvironmentValue(serde_error::Error::new(&e))
+    }
+}
+
+impl<T> From<remoc::rch::lr::SendError<T>> for Error {
+    fn from(e: remoc::rch::lr::SendError<T>) -> Self {
+        Self::RchSendError(e.kind)
     }
 }
