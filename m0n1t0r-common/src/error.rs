@@ -35,6 +35,9 @@ pub enum Error {
     #[error("unknown error: {0}")]
     Unknown(serde_error::Error),
 
+    #[error("invalid user directory")]
+    InvalidUserDirectory,
+
     #[error("invalid environment value")]
     InvalidEnvironmentValue(serde_error::Error),
 

