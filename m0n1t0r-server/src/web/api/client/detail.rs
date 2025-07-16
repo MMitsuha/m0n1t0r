@@ -11,7 +11,7 @@ use m0n1t0r_common::{
     info,
 };
 use serde::Serialize;
-use std::{net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 
 #[derive(Serialize)]
@@ -22,6 +22,7 @@ pub struct Detail {
     system_info: info::System,
     build_time: String,
     commit_hash: String,
+    current_exe: PathBuf,
 }
 
 impl Detail {
@@ -33,6 +34,7 @@ impl Detail {
             system_info: client.system_info().await?,
             build_time: client.build_time().await?,
             commit_hash: client.commit_hash().await?,
+            current_exe: client.current_exe().await?,
         })
     }
 }

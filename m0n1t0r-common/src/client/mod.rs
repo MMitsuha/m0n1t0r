@@ -75,4 +75,8 @@ pub trait Client: Sync {
     async fn environment(&self) -> AppResult<HashMap<String, String>> {
         Ok(env::vars().collect())
     }
+
+    async fn current_exe(&self) -> AppResult<PathBuf> {
+        Ok(env::current_exe()?.to_path_buf())
+    }
 }
