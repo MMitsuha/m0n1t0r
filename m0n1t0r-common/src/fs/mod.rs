@@ -85,7 +85,7 @@ pub trait Agent: Sync {
             .append(true)
             .open(path)
             .await?
-            .write(&data)
+            .write_all(&data)
             .await?;
         Ok(())
     }

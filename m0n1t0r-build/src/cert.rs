@@ -127,7 +127,7 @@ pub fn generate(certs: &Path) {
     fs::create_dir_all(certs).expect("Failed to create certs directory.");
     File::create(certs.join(CERT_EXT))
         .expect("Failed to create cert.ext file.")
-        .write(
+        .write_all(
             concat!(
                 "basicConstraints=CA:FALSE\nsubjectAltName = @alt_names\n[alt_names]\nDNS.1 = ",
                 env!("M0N1T0R_DOMAIN"),

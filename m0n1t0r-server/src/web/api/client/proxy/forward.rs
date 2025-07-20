@@ -94,11 +94,9 @@ pub async fn open(
     ));
 
     tokio::spawn(async move {
-        loop {
-            select! {
-                _ = canceller_global1.cancelled() => break,
-                _ = canceller_scoped1.cancelled() => break,
-            }
+        select! {
+            _ = canceller_global1.cancelled() => {},
+            _ = canceller_scoped1.cancelled() => {},
         }
         PROXY_MAP.write().await.remove(key);
         Ok::<_, anyhow::Error>(())
