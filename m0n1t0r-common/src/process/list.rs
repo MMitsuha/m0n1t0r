@@ -6,11 +6,11 @@ pub async fn list() -> Vec<Process> {
     let process = System::new_with_specifics(
         RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()),
     );
-    let processes = process
+    
+
+    process
         .processes()
         .into_par_iter()
         .map(|(pid, process)| Process::from_process(pid, process))
-        .collect();
-
-    processes
+        .collect()
 }

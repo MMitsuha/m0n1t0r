@@ -20,7 +20,7 @@ fn main() -> Result<()> {
     Logger::try_with_str("debug")?.start()?;
     let args = Arguments::parse();
 
-    if args.upx == true {
+    if args.upx {
         info!("Using UPX located at: {}", env!("UPX_EXECUTABLE"));
 
         let current = env::current_exe()?;
@@ -46,10 +46,10 @@ fn main() -> Result<()> {
         }
     }
 
-    if args.cert == true {
+    if args.cert {
         let certs = cert::path();
 
-        if cert::check_no_rerun(&certs) == true {
+        if cert::check_no_rerun(&certs) {
             let mut input = String::new();
             warn!(
                 "Certificates found under {}. Should continue(y/N)?",

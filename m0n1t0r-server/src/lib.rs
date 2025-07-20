@@ -35,8 +35,8 @@ impl Config {
             .with_single_cert(certs, key)?;
 
         Ok(Self {
-            conn_addr: conn_addr.clone(),
-            api_addr: api_addr.clone(),
+            conn_addr: *conn_addr,
+            api_addr: *api_addr,
             tls_config,
         })
     }

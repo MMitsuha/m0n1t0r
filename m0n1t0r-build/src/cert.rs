@@ -22,14 +22,13 @@ pub fn check(certs: &Path) -> bool {
 }
 
 pub fn check_no_rerun(certs: &Path) -> bool {
-    [
+    ![
         certs.join(CA_CERT),
         certs.join(END_KEY),
         certs.join(END_CERT),
     ]
     .into_iter()
-    .any(|p| p.exists() == false)
-        == false
+    .any(|p| !p.exists())
 }
 
 pub fn generate(certs: &Path) {
@@ -146,8 +145,7 @@ pub fn generate(certs: &Path) {
                 .expect("Failed to execute openssl.")
                 .wait()
         })
-        .any(|r| r.unwrap().success() == false)
-        == true
+        .any(|r| !r.unwrap().success())
     {
         panic!("Failed to generate certificates");
     }

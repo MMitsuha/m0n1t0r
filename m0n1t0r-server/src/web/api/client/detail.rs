@@ -28,7 +28,7 @@ pub struct Detail {
 impl Detail {
     pub async fn new(addr: &SocketAddr, client: &ClientClient) -> WebResult<Self> {
         Ok(Self {
-            addr: addr.clone(),
+            addr: *addr,
             version: client.version().await?,
             target_platform: client.target_platform().await?,
             system_info: client.system_info().await?,

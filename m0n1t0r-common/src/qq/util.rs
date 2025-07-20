@@ -13,5 +13,5 @@ pub async fn account_by_id(id: i64) -> AppResult<Option<Account>> {
         return Ok(Some(Account::new(qq.clone(), id).await?));
     }
 
-    return Ok(None);
+    Ok(None)
 }

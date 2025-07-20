@@ -63,6 +63,12 @@ pub struct ServerMap {
     pub notify_rx: WatchReceiver<ConnectEvent>,
 }
 
+impl Default for ServerMap {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ServerMap {
     pub fn new() -> Self {
         let (notify_tx, notify_rx) = watch::channel(ConnectEvent::default());
@@ -89,12 +95,12 @@ impl From<&crate::Config> for Config {
 }
 
 /// Connect to a client and create a channel for client exchange.
-async fn make_channel<'transport>(
+async fn make_channel(
     canceller: CancellationToken,
     addr: &SocketAddr,
     stream: TlsStream<TcpStream>,
 ) -> Result<(RemoteSender<ServerClient>, RemoteReceiver<ClientClient>)> {
-    let addr = addr.clone();
+    let addr = *addr;
     let (stream_rx, stream_tx) = io::split(stream);
     let (conn, tx, rx): (_, RemoteSender<ServerClient>, RemoteReceiver<ClientClient>) =
         Connect::io(Cfg::throughput(), stream_rx, stream_tx).await?;

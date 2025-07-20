@@ -39,7 +39,7 @@ pub struct ClientObj {
 impl ClientObj {
     pub fn new(addr: &SocketAddr) -> Self {
         Self {
-            addr: addr.clone(),
+            addr: *addr,
             canceller: CancellationToken::new(),
             server_client: None,
             terminator: CancellationToken::new(),

@@ -71,7 +71,7 @@ pub mod noauth {
         addr: Path<SocketAddr>,
         Form(form): Form<NoAuthForm>,
     ) -> WebResult<impl Responder> {
-        let auth = Arc::new(NoAuth::default());
+        let auth = Arc::new(NoAuth);
         let addr = open(data, &addr, form.from, auth).await?;
 
         Ok(Json(Response::success(addr)?))
@@ -156,11 +156,10 @@ where
     if let Some(auth) = auth.downcast_ref::<std::io::Result<bool>>() {
         match auth {
             Ok(b) => {
-                if *b == false {
+                if !(*b) {
                     return Err(Error::Forbidden(serde_error::Error::new(&*anyhow!(
                         "password or username mismatch"
-                    )))
-                    .into());
+                    ))));
                 }
             }
             Err(e) => return Err(Error::Forbidden(serde_error::Error::new(e))),

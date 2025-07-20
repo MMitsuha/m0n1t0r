@@ -24,7 +24,7 @@ pub fn check_xrepo() {
     )
     .expect("Failed to convert xrepo output to string.");
 
-    if stdout.contains("xRepo") == false {
+    if !stdout.contains("xRepo") {
         panic!("No xrepo found. Please install xrepo. Output: {}.", stdout);
     }
 }
@@ -53,7 +53,7 @@ pub fn xrepo_fetch(dep: &str) -> (Vec<String>, Vec<String>) {
     let stdout = String::from_utf8(strip_ansi_escapes::strip(
         execute::shell(format!("xrepo fetch {}", dep))
             .output()
-            .expect(&format!("Failed to fetch dependency: {}.", dep))
+            .unwrap_or_else(|_| panic!("Failed to fetch dependency: {}.", dep))
             .stdout,
     ))
     .expect("Failed to convert xrepo output to string.");

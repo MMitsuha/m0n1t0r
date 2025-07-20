@@ -1,7 +1,11 @@
 use crate::Result as AppResult;
 use remoc::rtc;
 use serde::{Deserialize, Serialize};
-use std::{env, fs::Metadata, path::PathBuf};
+use std::{
+    env,
+    fs::Metadata,
+    path::{Path, PathBuf},
+};
 use tokio::{
     fs::{self, DirEntry},
     io::AsyncWriteExt,
@@ -23,14 +27,14 @@ impl File {
         Ok(Self::from_metadata(&metadata, &entry.path()))
     }
 
-    fn from_metadata(metadata: &Metadata, path: &PathBuf) -> Self {
+    fn from_metadata(metadata: &Metadata, path: &Path) -> Self {
         Self {
             name: path
                 .file_name()
                 .unwrap_or_default()
                 .to_string_lossy()
                 .to_string(),
-            path: path.clone(),
+            path: path.to_path_buf(),
             size: metadata.len(),
             is_dir: metadata.is_dir(),
             is_symlink: metadata.is_symlink(),

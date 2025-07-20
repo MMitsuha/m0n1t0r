@@ -72,9 +72,7 @@ pub mod by_file {
                 .update_by_file(
                     form.file.data.to_vec(),
                     form.temp
-                        .unwrap_or(Text {
-                            0: TEMP_FILE.into(),
-                        })
+                        .unwrap_or(Text(TEMP_FILE.into()))
                         .into_inner()
                         .into(),
                 )

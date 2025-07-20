@@ -41,12 +41,12 @@ impl Config {
 }
 
 /// Connect to a client and create a channel for client exchange.
-async fn make_channel<'transport>(
+async fn make_channel(
     canceller: CancellationToken,
     addr: &SocketAddr,
     stream: TlsStream<TcpStream>,
 ) -> Result<(RemoteSender<ClientClient>, RemoteReceiver<ServerClient>)> {
-    let addr = addr.clone();
+    let addr = *addr;
     let (socket_rx, socket_tx) = io::split(stream);
     let (conn, tx, rx): (_, RemoteSender<ClientClient>, RemoteReceiver<ServerClient>) =
         Connect::io(Cfg::throughput(), socket_rx, socket_tx).await?;
@@ -171,11 +171,11 @@ pub async fn accept(
         .connect(ServerName::try_from(host.to_string())?, stream)
         .await?;
     debug!("{}: connection opened", addr);
-    let client = Arc::new(RwLock::new(ClientObj::new(&addr)));
+    let client = Arc::new(RwLock::new(ClientObj::new(addr)));
     let canceller = client.read().await.canceller();
     let guard = canceller.clone().drop_guard();
     let terminator = client.read().await.terminator();
-    let (mut tx, mut rx) = make_channel(canceller.clone(), &addr, stream).await?;
+    let (mut tx, mut rx) = make_channel(canceller.clone(), addr, stream).await?;
     let (client_server, client_client) = ClientServerSharedMut::<_>::new(client.clone(), 1);
 
     let server_client = rx.recv().await?.ok_or(anyhow!("server is invalid"))?;
@@ -183,12 +183,12 @@ pub async fn accept(
 
     tokio::spawn(server_task(
         canceller.clone(),
-        addr.clone(),
+        *addr,
         client_server,
         client_map.clone(),
     ));
     client.write().await.initialize(server_client);
-    client_map.write().await.insert(addr.clone(), client);
+    client_map.write().await.insert(*addr, client);
     guard.disarm();
     info!("{}: connected", addr);
 

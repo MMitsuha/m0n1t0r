@@ -8,6 +8,12 @@ pub enum Shell {
     Unknown,
 }
 
+impl Default for Shell {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Shell {
     pub fn new() -> Self {
         env::var("SHELL")

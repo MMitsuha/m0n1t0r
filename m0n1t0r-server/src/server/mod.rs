@@ -21,7 +21,7 @@ impl ServerObj {
         let canceller = CancellationToken::new();
 
         Self {
-            addr: addr.clone(),
+            addr: *addr,
             canceller,
             client_client: None,
         }

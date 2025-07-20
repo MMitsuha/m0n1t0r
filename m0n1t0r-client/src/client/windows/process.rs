@@ -86,7 +86,7 @@ impl m0n1t0r_common::process::Agent for AgentObj {
             )?);
             Ok::<_, anyhow::Error>(())
         });
-        Ok(rx.await?.into())
+        Ok(rx.await?)
     }
 
     async fn inject_shellcode_by_id_apc(
@@ -104,7 +104,7 @@ impl m0n1t0r_common::process::Agent for AgentObj {
             )?);
             Ok::<_, anyhow::Error>(())
         });
-        Ok(rx.await?.into())
+        Ok(rx.await?)
     }
 
     async fn id_by_name(&self, name: String) -> AppResult<u32> {
