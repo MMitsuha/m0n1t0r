@@ -19,20 +19,16 @@
 2. Install `cxxbridge` using `cargo install cxxbridge-cmd`
 3. Install `vcpkg`
 4. Install `Qt` using `aqt`
-5. Run `./certs/generate.sh` if needed
-6. Run `cargo build` to build a general client and server or use `cargo build --features windows` to build a Windows specific client and server
-7. Build sdk using `cd ./m0n1t0r-sdk-cpp && xmake f -m release -y -v && xmake build -y -v && xmake package && cd ..`
-8. Build UI using `cd ./m0n1t0r-ui && xmake f -m release --qt=<PATH_TO_QT>/qt/ -v -y && xmake build -y -v && cd ..`
+5. Run `cargo xtask -c` to generate certs if needed
+6. Run `cargo build` to build a general client and server or use `cargo build --features linux` to build a Linux specific client and server
 
 - Windows
 
 1. Install build toolchain such as `msvc` or `gcc` (usually automatically done by `rustup`)
 2. Install `cxxbridge` using `cargo install cxxbridge-cmd`
 3. Install `xmake` and `msys2`
-4. Run `./certs/generate.sh` in `msys2` if needed
-5. Run `cargo build` to build client and server
-
-*WARNING: Due to `boost` build failure in Windows, you have to figure out a way to install `boost` manually and then continue to build UI*
+4. Run `cargo xtask -c` in `msys2` to generate certs if needed
+5. Run `cargo build` to build client and server or use `cargo build --features windows` to build a Windows specific client and server
 
 ## Roadmap
 

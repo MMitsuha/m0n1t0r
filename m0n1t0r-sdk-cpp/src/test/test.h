@@ -1,6 +1,0 @@
-#ifndef __M0N1T0R_M0N1T0R_SDK_CPP_SRC_TEST_TEST_H_
-#define __M0N1T0R_M0N1T0R_SDK_CPP_SRC_TEST_TEST_H_
-
-constexpr auto base_url = "http://127.0.0.1:10801";
-
-#endif // __M0N1T0R_M0N1T0R_SDK_CPP_SRC_TEST_TEST_H_
