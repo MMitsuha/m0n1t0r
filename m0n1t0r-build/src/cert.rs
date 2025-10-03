@@ -49,30 +49,26 @@ pub fn generate(certs: &Path) {
     let end_key = end_key.to_str().unwrap();
     let end_crt = end_crt.to_str().unwrap();
 
+    let dn = concat!(
+        "/C=",
+        env!("M0N1T0R_COUNTRY"),
+        "/ST=",
+        env!("M0N1T0R_STATE"),
+        "/L=",
+        env!("M0N1T0R_LOCALITY"),
+        "/O=",
+        env!("M0N1T0R_ORG"),
+        "/OU=",
+        env!("M0N1T0R_UNIT"),
+        "/CN=",
+        env!("M0N1T0R_DOMAIN"),
+        "."
+    );
+
     let commands = vec![
         vec![
-            "openssl",
-            "req",
-            "-x509",
-            "-sha512",
-            "-days",
-            "3650",
-            "-newkey",
-            "rsa:4096",
-            "-keyout",
-            ca_key,
-            "-out",
-            ca_crt,
-            "-nodes",
-            "-subj",
-            concat!(
-                // TODO: Customize this
-                "/C=CN/ST=ShangHai/L=ShangHai/O=",
-                env!("M0N1T0R_ORG"),
-                "/OU=./CN=",
-                env!("M0N1T0R_DOMAIN"),
-                "."
-            ),
+            "openssl", "req", "-x509", "-sha512", "-days", "3650", "-newkey", "rsa:4096",
+            "-keyout", ca_key, "-out", ca_crt, "-nodes", "-subj", dn,
         ],
         vec![
             "openssl",
@@ -85,22 +81,7 @@ pub fn generate(certs: &Path) {
             "rsa_keygen_bits:4096",
         ],
         vec![
-            "openssl",
-            "req",
-            "-new",
-            "-key",
-            end_key,
-            "-out",
-            end_csr,
-            "-subj",
-            concat!(
-                // TODO: Customize this
-                "/C=CN/ST=ShangHai/L=ShangHai/O=",
-                env!("M0N1T0R_ORG"),
-                "/OU=./CN=",
-                env!("M0N1T0R_DOMAIN"),
-                "."
-            ),
+            "openssl", "req", "-new", "-key", end_key, "-out", end_csr, "-subj", dn,
         ],
         vec![
             "openssl",
