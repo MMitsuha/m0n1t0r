@@ -1,7 +1,7 @@
 #![allow(unused)]
 
 #[cfg(not(any(
-    feature = "windows",
+    feature = "winnt",
     feature = "linux",
     feature = "macos",
     feature = "general"
@@ -22,13 +22,13 @@ const BRIDGE_LIST_WINDOWS: [&str; 3] = [
 ];
 
 fn bridge_build() {
-    #[cfg(feature = "windows")]
+    #[cfg(feature = "winnt")]
     BRIDGE_LIST_WINDOWS.iter().for_each(|x| {
         cxx_build::bridge(x);
     });
 }
 
-#[cfg(feature = "windows")]
+#[cfg(feature = "winnt")]
 fn xmake_build_windows(workspace: &Path) {
     XMAKE_PROJECT_LIST_WINDOWS
         .iter()
@@ -39,11 +39,11 @@ fn xmake_build(workspace: &Path) {
     dep::check_xmake();
     dep::check_xrepo();
 
-    #[cfg(feature = "windows")]
+    #[cfg(feature = "winnt")]
     xmake_build_windows(workspace);
 }
 
-#[cfg(feature = "windows-uac")]
+#[cfg(feature = "winnt-uac")]
 fn add_administrator_manifest_windows() {
     let mut res = winres::WindowsResource::new();
     res.set_manifest(
@@ -76,6 +76,6 @@ fn main() {
     bridge_build();
     xmake_build(workspace);
 
-    #[cfg(feature = "windows-uac")]
+    #[cfg(feature = "winnt-uac")]
     add_administrator_manifest_windows();
 }

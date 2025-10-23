@@ -7,6 +7,7 @@ use serde::Serialize;
 use thiserror::Error;
 
 #[allow(unused)]
+#[allow(clippy::enum_variant_names)]
 #[derive(Error, Debug, Serialize, Clone, Discriminant)]
 #[repr(i16)]
 pub enum Error {

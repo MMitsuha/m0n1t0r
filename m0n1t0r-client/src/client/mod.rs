@@ -6,7 +6,7 @@ mod general;
 #[cfg(any(feature = "linux", feature = "macos"))]
 mod unix;
 
-#[cfg(feature = "windows")]
+#[cfg(feature = "winnt")]
 mod windows;
 
 use chrono::{DateTime, Local};
@@ -24,9 +24,9 @@ use tokio_util::sync::CancellationToken;
 declare_agents!(
     general,
     [proxy, network, qq],
-    ["general", "macos", "linux", "windows"]
+    ["general", "macos", "linux", "winnt"]
 );
-declare_agents!(windows, [process, autorun, charset, fs], ["windows"]);
+declare_agents!(windows, [process, autorun, charset, fs], ["winnt"]);
 declare_agents!(
     general,
     [process, charset, fs],
@@ -68,7 +68,7 @@ impl ClientObj {
     }
 
     fn target_platform_internal() -> TargetPlatform {
-        if cfg!(feature = "windows") {
+        if cfg!(feature = "winnt") {
             TargetPlatform::Windows
         } else if cfg!(feature = "linux") {
             TargetPlatform::Linux

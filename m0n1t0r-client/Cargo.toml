@@ -16,13 +16,9 @@ linux = []
 macos = []
 
 [dependencies]
-actix-web = { version = "4.11.0", features = ["secure-cookies"] }
 anyhow = "1.0.98"
 remoc = { version = "0.15.6", features = ["full", "codec-message-pack", "default-codec-message-pack", "rmp-serde"], default-features = false }
-reqwest = { version = "0.12.22", features = ["json"] }
 serde = { version = "1.0.219", features = ["derive"] }
-strum = { version = "0.27.1", features = ["derive"] }
-thiserror = "2.0.12"
 tokio = { version = "1.46.1", features = ["full"] }
 tokio-util = "0.7.15"
 m0n1t0r-common = { path = "../m0n1t0r-common" }
@@ -32,10 +28,7 @@ cfg_block = "0.2.0"
 cxx = "1.0.160"
 tokio-rustls = { version = "0.26.2", features = ["ring", "logging", "tls12"], default-features = false }
 rustls = { version = "0.23.29", features = ["ring", "log", "logging", "std", "tls12"], default-features = false }
-rustls-pemfile = "2.2.0"
 rustls-pki-types = { version = "1.12.0", features = ["alloc"] }
-paste = "1.0.15"
-quote = "1.0.40"
 directories = "6.0.0"
 chrono = { version = "0.4.42", features = ["serde"] }
 
@@ -47,8 +40,6 @@ bit-iter = "1.3.1"
 [build-dependencies]
 xmake = { version = "0.3.4", git = "https://github.com/MMitsuha/xmake-rs.git" }
 cxx-build = "1.0.160"
-cargo-emit = "0.2.1"
-vergen = { version = "9.0.6", features = ["build", "cargo", "rustc", "si"] }
 m0n1t0r-build = { path = "../m0n1t0r-build" }
 
 [target.'cfg(windows)'.build-dependencies]
