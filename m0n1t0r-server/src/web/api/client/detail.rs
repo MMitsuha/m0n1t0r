@@ -6,6 +6,7 @@ use actix_web::{
     Responder, get,
     web::{Data, Json, Path},
 };
+use chrono::{DateTime, Local};
 use m0n1t0r_common::{
     client::{Client as _, ClientClient, TargetPlatform},
     info,
@@ -23,6 +24,7 @@ pub struct Detail {
     build_time: String,
     commit_hash: String,
     current_exe: PathBuf,
+    connected_time: DateTime<Local>,
 }
 
 impl Detail {
@@ -35,6 +37,7 @@ impl Detail {
             build_time: client.build_time().await?,
             commit_hash: client.commit_hash().await?,
             current_exe: client.current_exe().await?,
+            connected_time: client.connected_time().await?,
         })
     }
 }

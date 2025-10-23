@@ -1,11 +1,10 @@
 use crate::{
-    web::{util, Result as WebResult},
     ServerMap,
+    web::{Result as WebResult, util},
 };
 use actix_web::{
-    get,
+    HttpRequest, Responder, get,
     web::{Data, Payload},
-    HttpRequest, Responder,
 };
 use actix_ws::Message;
 use std::sync::Arc;

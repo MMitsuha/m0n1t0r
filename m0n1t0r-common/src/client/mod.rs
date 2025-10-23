@@ -2,6 +2,7 @@ use crate::{
     Result as AppResult, autorun, charset, fs, info, network, process, proxy, qq,
     util::{self, shell::Shell},
 };
+use chrono::{DateTime, Local};
 use remoc::rtc;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, env, path::PathBuf};
@@ -64,12 +65,12 @@ pub trait Client: Sync {
 
     async fn update_by_url(&self, url: Url, temp: PathBuf) -> AppResult<()> {
         util::network::download(url, &temp).await?;
-        util::update::update_internal(temp).await
+        util::update::update(temp).await
     }
 
     async fn update_by_file(&self, file: Vec<u8>, temp: PathBuf) -> AppResult<()> {
         tfs::write(&temp, file).await?;
-        util::update::update_internal(temp).await
+        util::update::update(temp).await
     }
 
     async fn environment(&self) -> AppResult<HashMap<String, String>> {
@@ -79,4 +80,6 @@ pub trait Client: Sync {
     async fn current_exe(&self) -> AppResult<PathBuf> {
         Ok(env::current_exe()?.to_path_buf())
     }
+
+    async fn connected_time(&self) -> AppResult<DateTime<Local>>;
 }

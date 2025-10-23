@@ -1,11 +1,10 @@
 use crate::{
-    web::{Error, Response, Result as WebResult},
     ServerMap,
+    web::{Error, Response, Result as WebResult},
 };
 use actix_web::{
-    get,
+    Responder, get,
     web::{Data, Json, Path},
-    Responder,
 };
 use m0n1t0r_common::client::Client as _;
 use std::{net::SocketAddr, sync::Arc};

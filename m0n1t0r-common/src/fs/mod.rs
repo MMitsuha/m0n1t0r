@@ -1,4 +1,4 @@
-use crate::Result as AppResult;
+use crate::{Error, Result as AppResult};
 use remoc::rtc;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -38,6 +38,17 @@ impl File {
             size: metadata.len(),
             is_dir: metadata.is_dir(),
             is_symlink: metadata.is_symlink(),
+        }
+    }
+
+    pub fn from_drive_letter(letter: &char) -> Self {
+        let path = format!("{}:\\", letter);
+        Self {
+            name: letter.to_string(),
+            path: PathBuf::from(path),
+            size: 0,
+            is_dir: true,
+            is_symlink: false,
         }
     }
 }
@@ -138,5 +149,9 @@ pub trait Agent: Sync {
 
     async fn is_symlink(&self, path: PathBuf) -> AppResult<bool> {
         Ok(fs::metadata(path).await?.is_symlink())
+    }
+
+    async fn drives(&self) -> AppResult<Vec<File>> {
+        Err(Error::Unsupported)
     }
 }

@@ -1,11 +1,10 @@
 use crate::{
-    web::{api::client::qq, Response, Result as WebResult},
     ServerMap,
+    web::{Response, Result as WebResult, api::client::qq},
 };
 use actix_web::{
-    get,
+    Responder, get,
     web::{Data, Json, Path},
-    Responder,
 };
 use m0n1t0r_common::qq::Agent as _;
 use std::{net::SocketAddr, sync::Arc};

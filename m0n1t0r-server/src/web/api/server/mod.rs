@@ -2,7 +2,7 @@ pub mod notify;
 pub mod proxy;
 
 use crate::web::{Response, Result as WebResult};
-use actix_web::{get, web::Json, Responder};
+use actix_web::{Responder, get, web::Json};
 use m0n1t0r_common::util;
 use serde::Serialize;
 

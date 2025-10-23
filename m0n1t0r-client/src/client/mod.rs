@@ -12,7 +12,8 @@ mod windows;
 #[cfg(any(feature = "windows", feature = "linux", feature = "macos"))]
 use m0n1t0r_common::client::TargetPlatform;
 
-use m0n1t0r_common::{Result as AppResult, client::Client, server::ServerClient};
+use chrono::{DateTime, Local};
+use m0n1t0r_common::{Result as AppResult, client::Client, server::ServerClient, util::time};
 use remoc::{prelude::ServerSharedMut, rtc};
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
@@ -20,11 +21,15 @@ use tokio_util::sync::CancellationToken;
 
 declare_agents!(
     general,
-    [proxy, network, fs, qq],
+    [proxy, network, qq],
     ["general", "macos", "linux", "windows"]
 );
-declare_agents!(windows, [process, autorun, charset], ["windows"]);
-declare_agents!(general, [process, charset], ["general", "macos", "linux"]);
+declare_agents!(windows, [process, autorun, charset, fs], ["windows"]);
+declare_agents!(
+    general,
+    [process, charset, fs],
+    ["general", "macos", "linux"]
+);
 declare_agents!(unix, [autorun], ["linux", "macos"]);
 declare_agents!(general, [autorun], ["general"]);
 
@@ -34,6 +39,7 @@ pub struct ClientObj {
     canceller: CancellationToken,
     server_client: Option<ServerClient>,
     terminator: CancellationToken,
+    time: DateTime<Local>,
 }
 
 impl ClientObj {
@@ -43,6 +49,7 @@ impl ClientObj {
             canceller: CancellationToken::new(),
             server_client: None,
             terminator: CancellationToken::new(),
+            time: time::local(),
         }
     }
 
@@ -80,6 +87,10 @@ impl Client for ClientObj {
     async fn terminate(&self) -> AppResult<()> {
         self.terminator.cancel();
         Ok(())
+    }
+
+    async fn connected_time(&self) -> AppResult<DateTime<Local>> {
+        Ok(self.time)
     }
 
     async fn fs_agent(&self) -> AppResult<m0n1t0r_common::fs::AgentClient> {

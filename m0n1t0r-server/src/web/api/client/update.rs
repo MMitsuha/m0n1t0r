@@ -1,12 +1,11 @@
 use crate::{
-    web::{Error, Response, Result as WebResult},
     ServerMap,
+    web::{Error, Response, Result as WebResult},
 };
-use actix_multipart::form::{bytes::Bytes, text::Text, MultipartForm};
+use actix_multipart::form::{MultipartForm, bytes::Bytes, text::Text};
 use actix_web::{
-    post,
+    Responder, post,
     web::{Data, Form, Json, Path},
-    Responder,
 };
 use m0n1t0r_common::client::Client as _;
 use serde::Deserialize;

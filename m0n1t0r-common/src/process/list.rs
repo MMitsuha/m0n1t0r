@@ -6,7 +6,6 @@ pub async fn list() -> Vec<Process> {
     let process = System::new_with_specifics(
         RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()),
     );
-    
 
     process
         .processes()

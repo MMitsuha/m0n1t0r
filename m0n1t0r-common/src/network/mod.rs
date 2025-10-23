@@ -1,4 +1,4 @@
-use crate::{util, Result as AppResult};
+use crate::{Result as AppResult, util};
 use remoc::rtc;
 use std::path::PathBuf;
 use url::Url;

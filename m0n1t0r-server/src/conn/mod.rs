@@ -59,8 +59,8 @@ impl Default for ConnectEvent {
 
 pub struct ServerMap {
     pub map: HashMap<SocketAddr, Arc<RwLock<ServerObj>>>,
-    notify_tx: WatchSender<ConnectEvent>,
     pub notify_rx: WatchReceiver<ConnectEvent>,
+    notify_tx: WatchSender<ConnectEvent>,
 }
 
 impl Default for ServerMap {
@@ -74,8 +74,8 @@ impl ServerMap {
         let (notify_tx, notify_rx) = watch::channel(ConnectEvent::default());
         Self {
             map: HashMap::new(),
-            notify_tx,
             notify_rx,
+            notify_tx,
         }
     }
 }
