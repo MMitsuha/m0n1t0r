@@ -27,9 +27,7 @@ pub trait Client: Sync {
         Ok(util::version::version().into())
     }
 
-    async fn target_platform(&self) -> AppResult<TargetPlatform> {
-        Ok(TargetPlatform::General)
-    }
+    async fn target_platform(&self) -> AppResult<TargetPlatform>;
 
     async fn system_info(&self) -> AppResult<info::System> {
         Ok(info::System::new())

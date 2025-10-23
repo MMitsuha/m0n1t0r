@@ -10,8 +10,8 @@ build = "build.rs"
 
 [features]
 general = []
-windows = []
-windows-uac = [ "windows" ]
+winnt = []
+winnt-uac = [ "winnt" ]
 linux = []
 macos = []
 

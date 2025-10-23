@@ -32,11 +32,10 @@ pub async fn get(
     let (agent, _) = agent(data, &addr).await?;
 
     if r#type == Type::Directory {
-        if path == PathBuf::from("/") {
-            if let Ok(drives) = agent.drives().await {
+        if path == PathBuf::from("/")
+            && let Ok(drives) = agent.drives().await {
                 return Ok(HttpResponse::Ok().json(Response::success(drives)?));
             }
-        }
 
         Ok(HttpResponse::Ok().json(Response::success(agent.list(path).await?)?))
     } else {

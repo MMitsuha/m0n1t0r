@@ -1,5 +1,13 @@
 #![allow(unused)]
 
+#[cfg(not(any(
+    feature = "windows",
+    feature = "linux",
+    feature = "macos",
+    feature = "general"
+)))]
+compile_error!("No target platform specified.");
+
 use m0n1t0r_build::{cert, dep};
 use std::{
     path::{Path, PathBuf},

@@ -9,11 +9,13 @@ mod unix;
 #[cfg(feature = "windows")]
 mod windows;
 
-#[cfg(any(feature = "windows", feature = "linux", feature = "macos"))]
-use m0n1t0r_common::client::TargetPlatform;
-
 use chrono::{DateTime, Local};
-use m0n1t0r_common::{Result as AppResult, client::Client, server::ServerClient, util::time};
+use m0n1t0r_common::{
+    Result as AppResult,
+    client::{Client, TargetPlatform},
+    server::ServerClient,
+    util::time,
+};
 use remoc::{prelude::ServerSharedMut, rtc};
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;

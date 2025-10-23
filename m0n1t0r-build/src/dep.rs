@@ -31,8 +31,8 @@ pub fn check_xrepo() {
 
 fn extract_paths(regex: &Regex, data: &str) -> Vec<String> {
     let mut paths = Vec::new();
-    if let Some(captures) = regex.captures(data) {
-        if let Some(content) = captures.get(1) {
+    if let Some(captures) = regex.captures(data)
+        && let Some(content) = captures.get(1) {
             let quoted_paths: Vec<&str> = content
                 .as_str()
                 .split(',')
@@ -45,7 +45,6 @@ fn extract_paths(regex: &Regex, data: &str) -> Vec<String> {
                 paths.push(path.to_string());
             }
         }
-    }
     paths
 }
 
