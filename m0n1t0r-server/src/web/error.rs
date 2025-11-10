@@ -59,6 +59,9 @@ pub enum Error {
     #[error("generic error: {0}")]
     GenericError(serde_error::Error) = -16,
 
+    #[error("unimplemented")]
+    Unimplemented = -17,
+
     #[error("unknown error")]
     Unknown = -255,
 }
@@ -171,5 +174,11 @@ impl From<socks5_impl::Error> for Error {
 impl From<actix_identity::error::LoginError> for Error {
     fn from(e: actix_identity::error::LoginError) -> Self {
         Self::Forbidden(serde_error::Error::new(&e))
+    }
+}
+
+impl From<actix_ws::ProtocolError> for Error {
+    fn from(e: actix_ws::ProtocolError) -> Self {
+        Self::WebFrameworkError(serde_error::Error::new(&e))
     }
 }

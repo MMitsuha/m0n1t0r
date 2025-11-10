@@ -8,7 +8,6 @@ use scrap::{
 use serde::{Deserialize, Serialize};
 use std::time::{Duration, Instant};
 use tokio::{runtime::Handle, task};
-use tokio_util::bytes;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct Display {
@@ -48,7 +47,12 @@ pub trait Agent: Sync {
             .collect())
     }
 
-    async fn view(&self, display: Display, quality: f32) -> AppResult<lr::Receiver<Vec<u8>>> {
+    async fn view(
+        &self,
+        display: Display,
+        quality: f32,
+        i444: bool,
+    ) -> AppResult<lr::Receiver<Vec<u8>>> {
         let (mut tx, rx) = lr::channel();
 
         task::spawn_blocking(move || {
@@ -67,7 +71,7 @@ pub trait Agent: Sync {
                     keyframe_interval: None,
                     codec: VpxVideoCodecId::VP9,
                 }),
-                false,
+                i444,
             )?;
             let mut yuv: Vec<u8> = Vec::new();
             let mut mid: Vec<u8> = Vec::new();
@@ -82,7 +86,8 @@ pub trait Agent: Sync {
                     }
                 }
             }
-            Ok::<(), Error>(())
+            #[allow(unreachable_code)]
+            Ok::<_, Error>(())
         });
         Ok(rx)
     }

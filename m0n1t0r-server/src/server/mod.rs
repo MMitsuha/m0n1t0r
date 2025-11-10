@@ -1,4 +1,4 @@
-// #[cfg(debug_assertions)]
+#[cfg(debug_assertions)]
 pub mod debug;
 
 use anyhow::{Result, anyhow};

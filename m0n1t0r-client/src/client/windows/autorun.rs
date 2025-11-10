@@ -47,7 +47,7 @@ impl m0n1t0r_common::autorun::Agent for AgentObj {
                 target.to_string_lossy().to_string(),
                 exe.to_string_lossy().to_string(),
             )?);
-            Ok::<_, anyhow::Error>(())
+            Ok::<_, Error>(())
         });
         Ok(rx.await?)
     }
@@ -60,7 +60,7 @@ impl m0n1t0r_common::autorun::Agent for AgentObj {
                 target.to_string_lossy().to_string(),
                 exe.to_string_lossy().to_string(),
             )?);
-            Ok::<_, anyhow::Error>(())
+            Ok::<_, Error>(())
         });
         Ok(rx.await?)
     }

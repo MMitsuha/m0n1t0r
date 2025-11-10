@@ -38,7 +38,7 @@ pub mod pass {
     pub use super::*;
 
     #[derive(Serialize, Deserialize, PartialEq)]
-    struct PassForm {
+    struct PasswordAuthForm {
         from: SocketAddr,
         name: String,
         password: String,
@@ -48,7 +48,7 @@ pub mod pass {
     pub async fn post(
         data: Data<Arc<RwLock<ServerMap>>>,
         addr: Path<SocketAddr>,
-        Form(form): Form<PassForm>,
+        Form(form): Form<PasswordAuthForm>,
     ) -> WebResult<impl Responder> {
         let auth = Arc::new(UserKeyAuth::new(&form.name, &form.password));
         let addr = open(data, &addr, "0.0.0.0:0".parse().unwrap(), auth).await?;
@@ -108,7 +108,7 @@ where
                 _ = canceller_scoped2.cancelled() => break,
             }
         }
-        Ok::<_, anyhow::Error>(())
+        Ok::<_, Error>(())
     });
     Ok((addr, canceller_global1, canceller_scoped1))
 }
@@ -136,7 +136,7 @@ where
             _ = canceller_scoped1.cancelled() => {},
         }
         PROXY_MAP.write().await.remove(key);
-        Ok::<_, anyhow::Error>(())
+        Ok::<_, Error>(())
     });
 
     Ok(from)

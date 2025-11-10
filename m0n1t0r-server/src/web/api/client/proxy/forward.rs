@@ -99,7 +99,7 @@ pub async fn open(
             _ = canceller_scoped1.cancelled() => {},
         }
         PROXY_MAP.write().await.remove(key);
-        Ok::<_, anyhow::Error>(())
+        Ok::<_, Error>(())
     });
 
     Ok(())

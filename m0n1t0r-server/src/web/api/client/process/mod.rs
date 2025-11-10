@@ -7,30 +7,28 @@ use crate::{
 };
 use actix_web::{
     Responder, delete, get,
-    web::{Data, Json, Path},
+    web::{Data, Json, Path, Query},
 };
 use m0n1t0r_common::{
     client::Client as _,
     process::{Agent as _, AgentClient},
 };
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
 use tokio_util::sync::CancellationToken;
 
-#[derive(Serialize, Deserialize, PartialEq)]
+#[derive(Deserialize, PartialEq)]
+#[serde(rename_all = "lowercase")]
 enum Type {
-    #[serde(rename = "pid")]
     Pid,
-    #[serde(rename = "name")]
     Name,
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "lowercase")]
 enum Execute {
-    #[serde(rename = "blocked")]
     Blocked,
-    #[serde(rename = "detached")]
     Detached,
 }
 
@@ -47,8 +45,14 @@ struct CommandForm {
     option: Execute,
 }
 
+#[derive(Deserialize)]
+struct ProcessQuery {
+    #[serde(rename = "type")]
+    r#type: Type,
+}
+
 #[get("")]
-pub async fn get(
+pub async fn all(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: Path<SocketAddr>,
 ) -> WebResult<impl Responder> {
@@ -57,15 +61,16 @@ pub async fn get(
     Ok(Json(Response::success(agent.list().await?)?))
 }
 
-#[delete("/{type}/{value}")]
+#[delete("/{value}")]
 pub async fn delete(
     data: Data<Arc<RwLock<ServerMap>>>,
-    path: Path<(SocketAddr, Type, String)>,
+    path: Path<(SocketAddr, String)>,
+    Query(query): Query<ProcessQuery>,
 ) -> WebResult<impl Responder> {
-    let (addr, r#type, value) = path.into_inner();
+    let (addr, value) = path.into_inner();
     let (agent, _) = agent(data, &addr).await?;
 
-    let processes = match r#type {
+    let processes = match query.r#type {
         Type::Pid => agent.kill_by_id(value.parse()?).await,
         Type::Name => agent.kill_by_name(value).await,
     }?;

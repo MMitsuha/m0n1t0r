@@ -10,7 +10,7 @@ use m0n1t0r_common::client::Client as _;
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
 
-#[get("/environment")]
+#[get("/environments")]
 pub async fn get(
     data: Data<Arc<RwLock<ServerMap>>>,
     addr: Path<SocketAddr>,

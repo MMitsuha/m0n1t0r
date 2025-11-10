@@ -1,4 +1,4 @@
-pub mod notify;
+pub mod notification;
 pub mod proxy;
 
 use crate::web::{Response, Result as WebResult};

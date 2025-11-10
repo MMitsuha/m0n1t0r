@@ -1,4 +1,4 @@
-use m0n1t0r_common::Result as AppResult;
+use m0n1t0r_common::{Error, Result as AppResult};
 use std::thread;
 use tokio::sync::oneshot;
 
@@ -16,7 +16,7 @@ impl m0n1t0r_common::charset::Agent for AgentObj {
 
         thread::spawn(move || {
             let _ = tx.send(ffi::acp_to_utf8(string));
-            Ok::<_, anyhow::Error>(())
+            Ok::<_, Error>(())
         });
         Ok(rx.await??)
     }
@@ -26,7 +26,7 @@ impl m0n1t0r_common::charset::Agent for AgentObj {
 
         thread::spawn(move || {
             let _ = tx.send(ffi::acp());
-            Ok::<_, anyhow::Error>(())
+            Ok::<_, Error>(())
         });
         Ok(rx.await??)
     }

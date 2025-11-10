@@ -1,4 +1,4 @@
-// #[cfg(debug_assertions)]
+#[cfg(debug_assertions)]
 use crate::server;
 
 use crate::ServerObj;
@@ -59,8 +59,8 @@ impl Default for ConnectEvent {
 
 pub struct ServerMap {
     pub map: HashMap<SocketAddr, Arc<RwLock<ServerObj>>>,
-    pub notify_rx: WatchReceiver<ConnectEvent>,
-    notify_tx: WatchSender<ConnectEvent>,
+    pub notification_rx: WatchReceiver<ConnectEvent>,
+    notification_tx: WatchSender<ConnectEvent>,
 }
 
 impl Default for ServerMap {
@@ -71,11 +71,11 @@ impl Default for ServerMap {
 
 impl ServerMap {
     pub fn new() -> Self {
-        let (notify_tx, notify_rx) = watch::channel(ConnectEvent::default());
+        let (notification_tx, notification_rx) = watch::channel(ConnectEvent::default());
         Self {
             map: HashMap::new(),
-            notify_rx,
-            notify_tx,
+            notification_rx,
+            notification_tx,
         }
     }
 }
@@ -141,7 +141,7 @@ async fn server_task(
             warn!("{}: disconnected unexpectedly", addr);
         }
     }
-    lock_map.notify_tx.send(ConnectEvent {
+    lock_map.notification_tx.send(ConnectEvent {
         event: ConnectEventEnum::Disconnect,
         addr,
     })?;
@@ -174,11 +174,11 @@ pub async fn accept(
         server_map.clone(),
     ));
     server.write().await.initialize(client_client);
-    // #[cfg(debug_assertions)]
+    #[cfg(debug_assertions)]
     server::debug::run(server.clone()).await?;
     let mut lock_map = server_map.write().await;
     lock_map.map.insert(addr, server);
-    lock_map.notify_tx.send(ConnectEvent {
+    lock_map.notification_tx.send(ConnectEvent {
         event: ConnectEventEnum::Connect,
         addr,
     })?;

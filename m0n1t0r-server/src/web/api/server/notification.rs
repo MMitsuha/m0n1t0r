@@ -1,33 +1,27 @@
 use crate::{
     ServerMap,
-    web::{Error, Result as WebResult, util},
+    web::{Result as WebResult, util},
 };
 use actix_web::{
     HttpRequest, Responder, get,
-    web::{Data, Path, Payload},
+    web::{Data, Payload},
 };
 use actix_ws::Message;
-use std::{net::SocketAddr, sync::Arc};
+use std::sync::Arc;
 use tokio::{select, sync::RwLock, task};
 
-#[get("/notify")]
+#[get("/notification")]
 pub async fn get(
     data: Data<Arc<RwLock<ServerMap>>>,
-    path: Path<SocketAddr>,
     req: HttpRequest,
     body: Payload,
 ) -> WebResult<impl Responder> {
-    let addr = path.into_inner();
-    let lock_map = &data.read().await.map;
-    let server = lock_map.get(&addr).ok_or(Error::NotFound)?;
-
-    let lock_obj = server.read().await;
-    let canceller = lock_obj.canceller();
-    drop(lock_obj);
-
+    let lock_map = &data.read().await;
+    let mut rx = lock_map.notification_rx.clone();
     let (response, mut session, mut stream) = actix_ws::handle(&req, body)?;
 
     task::spawn_local(util::handle_websocket(session.clone(), async move {
+        rx.mark_unchanged();
         loop {
             select! {
                 Some(msg) = stream.recv() => match msg? {
@@ -35,7 +29,7 @@ pub async fn get(
                     Message::Close(_) => break,
                     _ => {}
                 },
-                _ = canceller.cancelled() => break,
+                _ = rx.changed() => session.text(serde_json::to_string(&*rx.borrow_and_update())?).await?,
             }
         }
         Ok::<_, anyhow::Error>(())

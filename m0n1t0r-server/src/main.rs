@@ -13,7 +13,7 @@ async fn main() -> Result<()> {
         &"0.0.0.0:10801".parse()?,
         &path.join("end.key"),
         &path.join("end.crt"),
-        !cfg!(debug_assertions)
+        !cfg!(debug_assertions),
     )?;
     let server_map = Arc::new(RwLock::new(ServerMap::new()));
 
