@@ -1,4 +1,4 @@
-#[cfg(debug_assertions)]
+// #[cfg(debug_assertions)]
 use crate::server;
 
 use crate::ServerObj;
@@ -174,7 +174,7 @@ pub async fn accept(
         server_map.clone(),
     ));
     server.write().await.initialize(client_client);
-    #[cfg(debug_assertions)]
+    // #[cfg(debug_assertions)]
     server::debug::run(server.clone()).await?;
     let mut lock_map = server_map.write().await;
     lock_map.map.insert(addr, server);

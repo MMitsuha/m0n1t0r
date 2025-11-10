@@ -5,6 +5,7 @@ use std::{
     env,
     fs::Metadata,
     path::{Path, PathBuf},
+    pin::Pin,
 };
 use tokio::{
     fs::{self, DirEntry},
@@ -53,6 +54,24 @@ impl File {
     }
 }
 
+fn list_recursive_internal(
+    path: PathBuf,
+) -> Pin<Box<dyn Future<Output = AppResult<Vec<File>>> + Send>> {
+    Box::pin(async move {
+        let mut entries = fs::read_dir(path).await?;
+        let mut files = Vec::new();
+
+        while let Some(entry) = entries.next_entry().await? {
+            files.push(File::from_dir_entry(&entry).await?);
+
+            if entry.metadata().await?.is_dir() {
+                files.extend(list_recursive_internal(entry.path()).await?);
+            }
+        }
+        Ok(files)
+    })
+}
+
 #[rtc::remote]
 pub trait Agent: Sync {
     async fn list(&self, path: PathBuf) -> AppResult<Vec<File>> {
@@ -66,17 +85,7 @@ pub trait Agent: Sync {
     }
 
     async fn list_recursive(&self, path: PathBuf) -> AppResult<Vec<File>> {
-        let mut entries = fs::read_dir(path).await?;
-        let mut files = Vec::new();
-
-        while let Some(entry) = entries.next_entry().await? {
-            files.push(File::from_dir_entry(&entry).await?);
-
-            if entry.metadata().await?.is_dir() {
-                files.extend(self.list_recursive(entry.path()).await?);
-            }
-        }
-        Ok(files)
+        list_recursive_internal(path).await
     }
 
     async fn read(&self, path: PathBuf) -> AppResult<Vec<u8>> {

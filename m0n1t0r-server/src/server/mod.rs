@@ -1,4 +1,4 @@
-#[cfg(debug_assertions)]
+// #[cfg(debug_assertions)]
 pub mod debug;
 
 use anyhow::{Result, anyhow};
@@ -6,7 +6,6 @@ use m0n1t0r_common::{
     client::{Client, ClientClient},
     server::Server,
 };
-use remoc::rtc;
 use std::net::SocketAddr;
 use tokio_util::sync::CancellationToken;
 
@@ -52,5 +51,4 @@ impl ServerObj {
     }
 }
 
-#[rtc::async_trait]
 impl Server for ServerObj {}

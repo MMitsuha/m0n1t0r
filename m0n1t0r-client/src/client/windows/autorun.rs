@@ -1,5 +1,4 @@
 use m0n1t0r_common::{Error, Result as AppResult};
-use remoc::rtc;
 use std::{path::PathBuf, thread};
 use tokio::{process::Command, sync::oneshot};
 use winapi::um::winbase::CREATE_NO_WINDOW;
@@ -12,7 +11,6 @@ impl AgentObj {
     }
 }
 
-#[rtc::async_trait]
 impl m0n1t0r_common::autorun::Agent for AgentObj {
     async fn exist_current_user(&self) -> AppResult<bool> {
         Err(Error::Unimplemented)

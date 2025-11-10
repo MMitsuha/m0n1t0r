@@ -23,6 +23,9 @@ pub enum Error {
     #[error("foreign function call error: {0}")]
     FfiException(serde_error::Error),
 
+    #[error("protobuf error: {0}")]
+    ProtobufError(serde_error::Error),
+
     #[error("qqkey operation failed: {0}")]
     QQKeyError(#[from] qqkey::Error),
 
@@ -87,5 +90,11 @@ impl From<std::env::VarError> for Error {
 impl<T> From<remoc::rch::lr::SendError<T>> for Error {
     fn from(e: remoc::rch::lr::SendError<T>) -> Self {
         Self::RchSendError(e.kind)
+    }
+}
+
+impl From<hbb_common::protobuf::Error> for Error {
+    fn from(e: hbb_common::protobuf::Error) -> Self {
+        Self::ProtobufError(serde_error::Error::new(&e))
     }
 }

@@ -54,13 +54,11 @@ pub trait Agent: Sync {
     }
 
     async fn kill_by_id(&self, pid: u32) -> AppResult<Vec<Process>> {
-        Ok(kill_by(|p, _| p.as_u32() == pid)?)
+        kill_by(|p, _| p.as_u32() == pid)
     }
 
     async fn kill_by_name(&self, name: String) -> AppResult<Vec<Process>> {
-        Ok(kill_by(|_, process| {
-            process.name().to_string_lossy() == name
-        })?)
+        kill_by(|_, process| process.name().to_string_lossy() == name)
     }
 
     async fn inject_shellcode_by_id_rtc(

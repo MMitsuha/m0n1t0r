@@ -21,6 +21,7 @@ use tokio::sync::RwLock;
 pub struct Config {
     addr: SocketAddr,
     tls_config: rustls::ServerConfig,
+    use_https: bool,
 }
 
 impl From<&crate::Config> for Config {
@@ -28,12 +29,13 @@ impl From<&crate::Config> for Config {
         Self {
             addr: config.api_addr,
             tls_config: config.tls_config.clone(),
+            use_https: config.use_https,
         }
     }
 }
 
 pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<()> {
-    HttpServer::new(move || {
+    let server = HttpServer::new(move || {
         let (path_config, query_config, form_config, multipart_config, json_config) =
             util::extractor_config();
 
@@ -87,7 +89,6 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                                     .service(client::proxy::socks5::pass::post)
                                     .service(client::proxy::forward::post),
                             )
-                            .service(web::scope("/info").service(client::info::system::get))
                             .service(
                                 web::scope("/network").service(client::network::download::post),
                             )
@@ -115,8 +116,11 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                     ),
             )
             .service(auth::post)
-    })
-    .bind_rustls_0_23(config.addr, config.tls_config.clone())?
+    });
+    match config.use_https {
+        true => server.bind_rustls_0_23(config.addr, config.tls_config.clone()),
+        false => server.bind(config.addr),
+    }?
     .run()
     .await?;
     Ok(())

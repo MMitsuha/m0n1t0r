@@ -15,6 +15,7 @@ pub struct Config {
     conn_addr: SocketAddr,
     api_addr: SocketAddr,
     tls_config: rustls::ServerConfig,
+    use_https: bool,
 }
 
 impl Config {
@@ -23,6 +24,7 @@ impl Config {
         api_addr: &SocketAddr,
         key: &Path,
         cert: &Path,
+        use_https: bool,
     ) -> Result<Self> {
         let certs = CertificateDer::pem_file_iter(cert)?.collect::<Result<Vec<_>, _>>()?;
         let key = PrivateKeyDer::from_pem_file(key)?;
@@ -34,6 +36,7 @@ impl Config {
             conn_addr: *conn_addr,
             api_addr: *api_addr,
             tls_config,
+            use_https,
         })
     }
 }

@@ -2,7 +2,6 @@ pub mod autorun;
 pub mod detail;
 pub mod environment;
 pub mod fs;
-pub mod info;
 pub mod network;
 pub mod notify;
 pub mod process;

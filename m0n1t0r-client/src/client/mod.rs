@@ -16,14 +16,14 @@ use m0n1t0r_common::{
     server::ServerClient,
     util::time,
 };
-use remoc::{prelude::ServerSharedMut, rtc};
+use remoc::prelude::ServerSharedMut;
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
 use tokio_util::sync::CancellationToken;
 
 declare_agents!(
     general,
-    [proxy, network, qq],
+    [proxy, network, qq, rd],
     ["general", "macos", "linux", "winnt"]
 );
 declare_agents!(windows, [process, autorun, charset, fs], ["winnt"]);
@@ -80,7 +80,6 @@ impl ClientObj {
     }
 }
 
-#[rtc::async_trait]
 impl Client for ClientObj {
     async fn target_platform(&self) -> AppResult<TargetPlatform> {
         Ok(Self::target_platform_internal())
@@ -121,5 +120,9 @@ impl Client for ClientObj {
 
     async fn charset_agent(&self) -> AppResult<m0n1t0r_common::charset::AgentClient> {
         create_agent_instance!(charset)
+    }
+
+    async fn rd_agent(&self) -> AppResult<m0n1t0r_common::rd::AgentClient> {
+        create_agent_instance!(rd)
     }
 }

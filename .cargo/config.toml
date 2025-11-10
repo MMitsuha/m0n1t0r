@@ -11,3 +11,27 @@ M0N1T0R_DOMAIN = "home.mmitsuha.xyz"
 M0N1T0R_ORG = "K and A Ltd"
 M0N1T0R_UNIT = "."
 M0N1T0R_SECRET = "e2ba92d3-9c5f-410a-9ce8-de0b8717a0f841dd9d92-9c44-455c-8f3e-3f92c4d03cd9"
+
+[target.x86_64-pc-windows-msvc]
+rustflags = [
+    "-C", "target-feature=+crt-static",
+    "-l", "mfuuid",
+    "-l", "mfplat",
+    "-l", "mf",
+    "-l", "strmiids",
+    "-l", "mfreadwrite"
+]
+[target.i686-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static", "-C", "link-args=/NODEFAULTLIB:MSVCRT"]
+[target.'cfg(target_os="macos")']
+rustflags = [
+    "-C", "link-args=-sectcreate __CGPreLoginApp __cgpreloginapp /dev/null",
+]
+#[target.'cfg(target_os="linux")']
+# glibc-static required, this may fix https://github.com/rustdesk/rustdesk/issues/9103, but I do not want this big change
+# this is unlikely to help also, because the other so files still use libc dynamically
+#rustflags = [
+#    "-C", "link-args=-Wl,-Bstatic -lc -Wl,-Bdynamic"
+#]
+[net]
+git-fetch-with-cli = true

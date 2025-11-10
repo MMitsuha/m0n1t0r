@@ -2,7 +2,6 @@ use m0n1t0r_common::{Error, Result as AppResult, process::execute::Output};
 use remoc::{
     chmux::ReceiverStream,
     rch::bin::{self, Receiver, Sender},
-    rtc,
 };
 use std::{process::Stdio, thread};
 use tokio::{io, process::Command, select, sync::oneshot};
@@ -17,7 +16,6 @@ impl AgentObj {
     }
 }
 
-#[rtc::async_trait]
 impl m0n1t0r_common::process::Agent for AgentObj {
     async fn execute(&self, command: String, args: Vec<String>) -> AppResult<Output> {
         let (tx, rx) = oneshot::channel();

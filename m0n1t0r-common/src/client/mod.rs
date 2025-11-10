@@ -1,5 +1,5 @@
 use crate::{
-    Result as AppResult, autorun, charset, fs, info, network, process, proxy, qq,
+    Result as AppResult, autorun, charset, fs, info, network, process, proxy, qq, rd,
     util::{self, shell::Shell},
 };
 use chrono::{DateTime, Local};
@@ -60,6 +60,8 @@ pub trait Client: Sync {
     async fn autorun_agent(&self) -> AppResult<autorun::AgentClient>;
 
     async fn charset_agent(&self) -> AppResult<charset::AgentClient>;
+
+    async fn rd_agent(&self) -> AppResult<rd::AgentClient>;
 
     async fn update_by_url(&self, url: Url, temp: PathBuf) -> AppResult<()> {
         util::network::download(url, &temp).await?;

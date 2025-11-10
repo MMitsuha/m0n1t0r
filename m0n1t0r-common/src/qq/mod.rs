@@ -33,7 +33,7 @@ pub trait Agent: Sync {
 
     async fn urls(&self, id: i64) -> AppResult<UrlList> {
         let account = util::account_by_id(id).await?.ok_or(Error::NotFound)?;
-        Ok(UrlList::new(&account).await?)
+        UrlList::new(&account).await
     }
 
     async fn friends(&self, id: i64) -> AppResult<HashMap<i64, FriendGroup>> {

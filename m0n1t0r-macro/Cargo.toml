@@ -11,6 +11,6 @@ repository.workspace = true
 proc-macro = true
 
 [dependencies]
-syn = "2.0.99"
-quote = "1.0.39"
-proc-macro2 = "1.0.94"
+syn = "2.0.108"
+quote = "1.0.41"
+proc-macro2 = "1.0.102"

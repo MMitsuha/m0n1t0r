@@ -1,5 +1,4 @@
 use m0n1t0r_common::Result as AppResult;
-use remoc::rtc;
 use std::thread;
 use tokio::sync::oneshot;
 
@@ -11,7 +10,6 @@ impl AgentObj {
     }
 }
 
-#[rtc::async_trait]
 impl m0n1t0r_common::charset::Agent for AgentObj {
     async fn acp_to_utf8(&self, string: Vec<u8>) -> AppResult<String> {
         let (tx, rx) = oneshot::channel();
