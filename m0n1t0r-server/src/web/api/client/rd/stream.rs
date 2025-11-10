@@ -7,7 +7,7 @@ use actix_web::{
     web::{Data, Path, Payload, Query},
 };
 use actix_ws::Message;
-use anyhow::anyhow;
+use anyhow::{anyhow, bail};
 use core::slice;
 use ffmpeg_next::{Packet, Rational, codec, format::Pixel, frame::Video};
 use hbb_common::{
@@ -122,6 +122,8 @@ pub async fn get_mpeg1video(
                                 i += 1;
                             }
                         }
+                    } else {
+                        bail!("unsupported video frame type");
                     }
                 },
                 _ = canceller.cancelled() => break,
@@ -194,6 +196,8 @@ pub async fn get_yuv(
                                 session.binary(buffer).await?;
                             }
                         }
+                    } else {
+                        bail!("unsupported video frame type");
                     }
                 },
                 _ = canceller.cancelled() => break,

@@ -16,7 +16,7 @@ pub async fn post(_request: HttpRequest, Form(_form): Form<AuthForm>) -> WebResu
     Ok(Json(Response::success(())?))
 }
 
-#[delete("/sessions")]
+#[delete("/session")]
 pub async fn delete(_request: HttpRequest) -> WebResult<impl Responder> {
     // TODO: implement
     Ok(Json(Response::success(())?))
