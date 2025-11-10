@@ -7,6 +7,8 @@ use tokio::sync::RwLock;
 #[tokio::main]
 async fn main() -> Result<()> {
     Logger::try_with_str("debug")?.start()?;
+    ffmpeg_next::init()?;
+
     let path = Path::new(env!("CARGO_WORKSPACE_DIR")).join("certs");
     let config = Config::new(
         &"0.0.0.0:27853".parse()?,

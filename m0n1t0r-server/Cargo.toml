@@ -57,3 +57,4 @@ slotmap = { version = "1.0.7", features = ["serde"] }
 chrono = { version = "0.4.42", features = ["serde"] }
 scrap = { path = "../deps/scrap", features = ["wayland", "hwcodec", "vram"] }
 hbb_common = { git = "https://github.com/rustdesk/hbb_common" }
+ffmpeg-next = "8.0.0"

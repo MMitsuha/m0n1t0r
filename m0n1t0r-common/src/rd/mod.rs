@@ -51,7 +51,7 @@ pub trait Agent: Sync {
         &self,
         display: Display,
         quality: f32,
-        i444: bool,
+        keyframe_interval: Option<usize>,
     ) -> AppResult<lr::Receiver<Vec<u8>>> {
         let (mut tx, rx) = lr::channel();
 
@@ -68,10 +68,10 @@ pub trait Agent: Sync {
                     width: width as u32,
                     height: height as u32,
                     quality,
-                    keyframe_interval: None,
+                    keyframe_interval,
                     codec: VpxVideoCodecId::VP9,
                 }),
-                i444,
+                false,
             )?;
             let mut yuv: Vec<u8> = Vec::new();
             let mut mid: Vec<u8> = Vec::new();

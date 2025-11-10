@@ -62,6 +62,9 @@ pub enum Error {
     #[error("unimplemented")]
     Unimplemented = -17,
 
+    #[error("ffmpeg error: {0}")]
+    FFmpegError(serde_error::Error) = -19,
+
     #[error("unknown error")]
     Unknown = -255,
 }
@@ -180,5 +183,11 @@ impl From<actix_identity::error::LoginError> for Error {
 impl From<actix_ws::ProtocolError> for Error {
     fn from(e: actix_ws::ProtocolError) -> Self {
         Self::WebFrameworkError(serde_error::Error::new(&e))
+    }
+}
+
+impl From<ffmpeg_next::Error> for Error {
+    fn from(e: ffmpeg_next::Error) -> Self {
+        Self::FFmpegError(serde_error::Error::new(&e))
     }
 }

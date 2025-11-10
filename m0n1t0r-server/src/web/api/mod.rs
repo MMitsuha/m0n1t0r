@@ -110,7 +110,9 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                                         .service(
                                             web::scope("/rd")
                                                 .service(client::rd::all)
-                                                .service(client::rd::stream::get),
+                                                .service(client::rd::stream::get_mpeg1video)
+                                                .service(client::rd::stream::get_rgb)
+                                                .service(client::rd::stream::get_yuv),
                                         ),
                                 ),
                         )
