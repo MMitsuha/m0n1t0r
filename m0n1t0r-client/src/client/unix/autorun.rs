@@ -1,6 +1,5 @@
 use directories::UserDirs;
 use m0n1t0r_common::{Error, Result as AppResult, util::shell::Shell};
-use remoc::rtc;
 use std::{env, io::SeekFrom, path::PathBuf};
 use tokio::{
     fs,
@@ -62,7 +61,6 @@ impl AgentObj {
     }
 }
 
-#[rtc::async_trait]
 impl m0n1t0r_common::autorun::Agent for AgentObj {
     async fn exist_current_user(&self) -> AppResult<bool> {
         self.exist_internal(

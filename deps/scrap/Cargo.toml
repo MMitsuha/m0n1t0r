@@ -22,7 +22,7 @@ num_cpus = "1.15"
 lazy_static = "1.4"
 hbb_common = { git = "https://github.com/rustdesk/hbb_common" }
 webm = { git = "https://github.com/rustdesk-org/rust-webm" }
-serde = {version="1.0", features = ["derive"]}
+serde = {version = "1.0", features = ["derive"]}
 
 [dependencies.winapi]
 version = "0.3"
