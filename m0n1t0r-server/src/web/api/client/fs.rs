@@ -11,7 +11,11 @@ use m0n1t0r_common::{
     fs::{Agent as _, AgentClient},
 };
 use serde::Deserialize;
-use std::{net::SocketAddr, path::PathBuf, sync::Arc};
+use std::{
+    net::SocketAddr,
+    path::{Path as StdPath, PathBuf},
+    sync::Arc,
+};
 use tokio::sync::RwLock;
 use tokio_util::sync::CancellationToken;
 
@@ -39,7 +43,7 @@ pub async fn get(
 
     match query.r#type {
         Type::Directory => {
-            if query.path == *"/"
+            if query.path == StdPath::new("/")
                 && let Ok(drives) = agent.drives().await
             {
                 Ok(HttpResponse::Ok().json(Response::success(drives)?))
