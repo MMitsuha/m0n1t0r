@@ -28,18 +28,13 @@ use tokio::{
 use tokio_rustls::{TlsAcceptor, server::TlsStream};
 use tokio_util::sync::CancellationToken;
 
-#[derive(Debug, Clone, Copy, Serialize_repr, Deserialize_repr)]
+#[derive(Debug, Clone, Copy, Serialize_repr, Deserialize_repr, Default)]
 #[repr(i16)]
 pub enum ConnectEventEnum {
     Connect = 0,
     Disconnect = 1,
+    #[default]
     Invalid = 2,
-}
-
-impl Default for ConnectEventEnum {
-    fn default() -> Self {
-        Self::Invalid
-    }
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]

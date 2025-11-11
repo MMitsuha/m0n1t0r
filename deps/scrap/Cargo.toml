@@ -22,7 +22,7 @@ num_cpus = "1.15"
 lazy_static = "1.4"
 hbb_common = { git = "https://github.com/rustdesk/hbb_common" }
 webm = { git = "https://github.com/rustdesk-org/rust-webm" }
-serde = {version = "1.0", features = ["derive"]}
+serde = { version = "1.0", features = ["derive"] }
 
 [dependencies.winapi]
 version = "0.3"
@@ -31,6 +31,12 @@ features = ["dxgi", "dxgi1_2", "dxgi1_5", "d3d11", "winuser", "winerror", "errha
 
 [target.'cfg(target_os = "macos")'.dependencies]
 block = "0.1"
+dispatch2 = "0.3.0"
+objc2-app-kit = { version = "0.3.2", features = ["NSScreen"] }
+objc2 = "0.6.3"
+objc2-foundation = "0.3.2"
+objc2-core-graphics = "0.3.2"
+core-graphics = "0.25.0"
 
 [target.'cfg(target_os = "android")'.dependencies]
 android_logger = "0.13"

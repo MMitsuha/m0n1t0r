@@ -39,7 +39,7 @@ pub async fn get(
 
     match query.r#type {
         Type::Directory => {
-            if query.path == PathBuf::from("/")
+            if query.path == *"/"
                 && let Ok(drives) = agent.drives().await
             {
                 Ok(HttpResponse::Ok().json(Response::success(drives)?))

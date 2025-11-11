@@ -20,8 +20,8 @@ use rayon::{
     prelude::{ParallelSlice, ParallelSliceMut},
 };
 use scrap::{
-    CodecFormat, GoogleImage, ImageFormat, ImageRgb, ImageTexture, STRIDE_ALIGN, VpxDecoder,
-    VpxDecoderConfig, VpxVideoCodecId, codec::Decoder,
+    CodecFormat, GoogleImage, ImageFormat, ImageRgb, ImageTexture, VpxDecoder, VpxDecoderConfig,
+    VpxVideoCodecId, codec::Decoder,
 };
 use serde::{Deserialize, Serialize};
 use std::{net::SocketAddr, sync::Arc};
@@ -31,8 +31,8 @@ use tokio::{select, sync::RwLock, task};
 #[serde(rename_all = "lowercase")]
 enum Format {
     Raw,
-    ABGR,
-    ARGB,
+    Abgr,
+    Argb,
 }
 
 #[derive(Deserialize)]
@@ -101,8 +101,8 @@ pub async fn get_mpeg1video(
                             for frame in decoder.decode(&evf.data)? {
                                 let src_planes = frame.planes();
                                 let src_strides = frame.stride();
-                                let heights = vec![display.height, display.height / 2, display.height / 2];
-                                let dst_strides = vec![video.stride(0), video.stride(1), video.stride(2)];
+                                let heights = [display.height, display.height / 2, display.height / 2];
+                                let dst_strides = [video.stride(0), video.stride(1), video.stride(2)];
                                 unsafe {
                                     for i in 0..3 {
                                         slice::from_raw_parts(src_planes[i], src_strides[i] as usize * heights[i])
@@ -175,14 +175,14 @@ pub async fn get_yuv(
                         for evf in evfs.frames {
                             for frame in decoder.decode(&evf.data)? {
                                 let pixels = display.width * display.height;
-                                let heights = vec![display.height, display.height / 2, display.height / 2];
+                                let heights = [display.height, display.height / 2, display.height / 2];
                                 let src_planes = frame.planes();
                                 let src_strides = frame.stride();
                                 let mut buffer = vec![0; pixels * 3 / 2];
-                                let dst_strides = vec![display.width, display.width / 2, display.width / 2];
+                                let dst_strides = [display.width, display.width / 2, display.width / 2];
                                 let (dst_planes_1, dst_planes_12) = buffer.split_at_mut(pixels);
                                 let (dst_planes_2, dst_planes_3) = dst_planes_12.split_at_mut(pixels / 4);
-                                let mut dst_planes = vec![dst_planes_1, dst_planes_2, dst_planes_3];
+                                let dst_planes = [dst_planes_1, dst_planes_2, dst_planes_3];
                                 unsafe {
                                     for i in 0..3 {
                                         slice::from_raw_parts(src_planes[i], src_strides[i] as usize * heights[i])
@@ -237,10 +237,10 @@ pub async fn get_rgb(
         let mut rgb = ImageRgb::new(
             match query.format.ok_or(Error::NotFound)? {
                 Format::Raw => ImageFormat::Raw,
-                Format::ABGR => ImageFormat::ABGR,
-                Format::ARGB => ImageFormat::ARGB,
+                Format::Abgr => ImageFormat::ABGR,
+                Format::Argb => ImageFormat::ARGB,
             },
-            STRIDE_ALIGN,
+            1,
         );
         let mut texture = ImageTexture::default();
 

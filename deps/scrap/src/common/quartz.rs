@@ -83,7 +83,7 @@ pub struct PixelBuffer<'a> {
 
 impl<'a> crate::TraitPixelBuffer for PixelBuffer<'a> {
     fn data(&self) -> &[u8] {
-        &*self.frame
+        &self.frame
     }
 
     fn width(&self) -> usize {
@@ -95,9 +95,7 @@ impl<'a> crate::TraitPixelBuffer for PixelBuffer<'a> {
     }
 
     fn stride(&self) -> Vec<usize> {
-        let mut v = Vec::new();
-        v.push(self.frame.stride());
-        v
+        vec![self.frame.stride()]
     }
 
     fn pixfmt(&self) -> Pixfmt {
@@ -121,11 +119,11 @@ impl Display {
     }
 
     pub fn width(&self) -> usize {
-        self.0.width()
+        self.0.width().unwrap()
     }
 
     pub fn height(&self) -> usize {
-        self.0.height()
+        self.0.height().unwrap()
     }
 
     pub fn scale(&self) -> f64 {

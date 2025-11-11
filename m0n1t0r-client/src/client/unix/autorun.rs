@@ -28,7 +28,7 @@ impl AgentObj {
             .append(true)
             .open(file)
             .await?
-            .write(payload.as_bytes())
+            .write_all(payload.as_bytes())
             .await?;
         Ok(())
     }
@@ -55,7 +55,7 @@ impl AgentObj {
 
         file.set_len(0).await?;
         file.seek(SeekFrom::Start(0)).await?;
-        file.write(content.as_bytes()).await?;
+        file.write_all(content.as_bytes()).await?;
 
         Ok(())
     }

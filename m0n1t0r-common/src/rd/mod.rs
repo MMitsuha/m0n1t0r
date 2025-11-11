@@ -2,7 +2,7 @@ use crate::{Error, Result as AppResult};
 use hbb_common::protobuf::Message;
 use remoc::{rch::lr, rtc};
 use scrap::{
-    Capturer, TraitCapturer, VpxEncoderConfig, VpxVideoCodecId,
+    Capturer, Pixfmt, TraitCapturer, VpxEncoderConfig, VpxVideoCodecId,
     codec::{Encoder, EncoderCfg},
 };
 use serde::{Deserialize, Serialize};
@@ -58,8 +58,7 @@ pub trait Agent: Sync {
         task::spawn_blocking(move || {
             let display = scrap::Display::all()?
                 .into_iter()
-                .filter(|d| Display::from(d) == display)
-                .next()
+                .find(|d| Display::from(d) == display)
                 .ok_or(Error::NotFound)?;
             let (width, height) = (display.width(), display.height());
             let mut capturer = Capturer::new(display)?;
@@ -76,6 +75,10 @@ pub trait Agent: Sync {
             let mut yuv: Vec<u8> = Vec::new();
             let mut mid: Vec<u8> = Vec::new();
             let start = Instant::now();
+
+            if encoder.yuvfmt().pixfmt != Pixfmt::I420 {
+                return Err(Error::Unimplemented);
+            }
 
             loop {
                 if let Ok(frame) = capturer.frame(Duration::from_millis(0)) {
