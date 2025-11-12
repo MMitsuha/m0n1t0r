@@ -43,7 +43,7 @@ jobs:
 
     - name: Install dependencies with vcpkg
       run: |
-        ./vcpkg/vcpkg install libvpx libyuv opus aom mfx-dispatch ffmpeg
+        ./vcpkg/vcpkg install libvpx libyuv opus aom ffmpeg
 
     - name: Install toolchain
       run: brew install binutils meson nasm ninja autoconf automake autoconf-archive python@3.13 libtool pkgconf
