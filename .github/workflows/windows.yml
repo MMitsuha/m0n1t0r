@@ -65,3 +65,11 @@ jobs:
       shell: pwsh
       run: |
         cargo build --bin m0n1t0r-client --features winnt -r
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: m0n1t0r-windows
+        path: |
+          ./target/release/m0n1t0r-server.exe
+          ./target/release/m0n1t0r-client.exe
