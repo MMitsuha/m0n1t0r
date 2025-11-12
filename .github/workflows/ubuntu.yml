@@ -64,3 +64,4 @@ jobs:
         path: |
           ./target/release/m0n1t0r-server
           ./target/release/m0n1t0r-client
+          ./certs
