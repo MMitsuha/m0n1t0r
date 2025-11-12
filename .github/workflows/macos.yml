@@ -1,0 +1,65 @@
+name: MacOS Build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+      
+    - name: Install xmake
+      uses: xmake-io/github-action-setup-xmake@v1
+
+    - name: Install homebrew
+      id: set-up-homebrew
+      uses: Homebrew/actions/setup-homebrew@master
+
+    - name: Install dependencies
+      run: |
+        brew install binutils meson nasm ninja autoconf automake autoconf-archive python3 libtool cmake gcc wget pkg-config
+
+    - name: Clone vcpkg
+      run: |
+        git clone https://github.com/microsoft/vcpkg
+
+    - name: Bootstrap vcpkg
+      run: |
+        ./vcpkg/bootstrap-vcpkg.sh
+
+    - name: Install dependencies with vcpkg
+      run: |
+        ./vcpkg/vcpkg install libvpx libyuv opus aom mfx-dispatch ffmpeg
+
+    - name: Install toolchain
+      run: brew install binutils meson nasm ninja autoconf automake autoconf-archive python@3.13 libtool pkgconf
+
+    - name: Install cxxbridge-cmd
+      run: |
+        cargo install cxxbridge-cmd
+
+    - name: Run cargo xtask
+      run: |
+        cargo xtask -c
+
+    - name: Build m0n1t0r-server (release)
+      run: |
+        cargo build --bin m0n1t0r-server -r
+
+    - name: Build m0n1t0r-client (release, macos features)
+      run: |
+        cargo build --bin m0n1t0r-client --features macos -r
