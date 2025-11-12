@@ -66,6 +66,11 @@ jobs:
       run: |
         cargo build --bin m0n1t0r-client --features winnt -r
 
+    - name: Compress m0n1t0r-client
+      shell: pwsh
+      run: |
+        cargo rel-xtask -u
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:

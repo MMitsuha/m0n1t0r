@@ -57,6 +57,10 @@ jobs:
       run: |
         cargo build --bin m0n1t0r-client --features linux -r
 
+    - name: Compress m0n1t0r-client
+      run: |
+        cargo rel-xtask -u
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
