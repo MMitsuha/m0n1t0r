@@ -46,11 +46,14 @@ cargo build --bin m0n1t0r-server -r && cargo build --bin m0n1t0r-client --featur
 - MacOS
 
 ```zsh
-brew install binutils meson nasm ninja autoconf automake autoconf-archive python3 libtool cmake gcc wget pkg-config libresample ffmpeg
+brew install binutils meson nasm ninja autoconf automake autoconf-archive python3 libtool cmake gcc wget pkg-config libresample ffmpeg xmake
 git clone https://github.com/microsoft/vcpkg
 ./vcpkg/bootstrap-vcpkg.sh
 export VCPKG_ROOT=$PWD/vcpkg
 ./vcpkg/vcpkg install libvpx libyuv opus aom ffmpeg
+cargo install cxxbridge-cmd
+cargo xtask -c
+cargo build --bin m0n1t0r-server -r && cargo build --bin m0n1t0r-client --features macos -r
 ```
 
 ## Roadmap
