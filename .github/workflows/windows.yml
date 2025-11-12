@@ -1,0 +1,67 @@
+name: Windows Build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+      
+    - name: Install xmake
+      uses: xmake-io/github-action-setup-xmake@v1
+
+    - name: Install scoop
+      uses: MinoruSekine/setup-scoop@v4.0.2
+      with:
+          buckets: main
+          apps: pkg-config
+
+    - name: Clone vcpkg
+      shell: pwsh
+      run: |
+        git clone https://github.com/microsoft/vcpkg
+
+    - name: Bootstrap vcpkg
+      shell: pwsh
+      run: |
+        .\vcpkg\bootstrap-vcpkg.bat
+
+    - name: Install dependencies with vcpkg
+      shell: pwsh
+      run: |
+        .\vcpkg\vcpkg.exe install libvpx:x64-windows-static libyuv:x64-windows-static opus:x64-windows-static aom:x64-windows-static mfx-dispatch:x64-windows-static ffmpeg:x64-windows-static
+
+    - name: Install cxxbridge-cmd
+      shell: pwsh
+      run: |
+        cargo install cxxbridge-cmd
+
+    - name: Run cargo xtask
+      shell: pwsh
+      run: |
+        cargo xtask -c
+
+    - name: Build m0n1t0r-server (release)
+      shell: pwsh
+      run: |
+        cargo build --bin m0n1t0r-server -r
+
+    - name: Build m0n1t0r-client (release, winnt features)
+      shell: pwsh
+      run: |
+        cargo build --bin m0n1t0r-client --features winnt -r

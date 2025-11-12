@@ -8,27 +8,36 @@
 2. Socks5 proxy
 3. Command execution
 4. Restful web api control
-5. ~~Screen monitor~~ (removed due to unstable performance on different platforms)
+5. Remote screen monitor
 6. Shellcode execution
 
 ## Build
 
-- Unix
+- Ubuntu
 
-1. Install `xmake`, `libpipewire-0.3-dev`, `clang`, `libdbus-glib-1-dev`, `libclang-dev`, `libspa-0.2-dev`, `libboost-all-dev`, etc. (see more in `.github/workflows/ubuntu.yml`) using your package management tool (such as `apt` or `pacman`)
-2. Install `cxxbridge` using `cargo install cxxbridge-cmd`
-3. Install `vcpkg`
-4. Install `Qt` using `aqt`
-5. Run `cargo xtask -c` to generate certs if needed
-6. Run `cargo build` to build a general client and server or use `cargo build --features linux` to build a Linux specific client and server
+```bash
+sudo apt install -y zip g++ gcc git curl wget nasm yasm libgtk-3-dev clang libxcb-randr0-dev libxdo-dev libxfixes-dev libxcb-shape0-dev libxcb-xfixes0-dev libasound2-dev libpulse-dev cmake make libclang-dev ninja-build libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libpam0g-dev xmake pkg-config
+git clone https://github.com/microsoft/vcpkg
+vcpkg/bootstrap-vcpkg.sh
+export VCPKG_ROOT=$PWD/vcpkg
+vcpkg/vcpkg install libvpx libyuv opus aom mfx-dispatch ffmpeg
+cargo install cxxbridge-cmd
+cargo xtask -c
+cargo build --bin m0n1t0r-server -r && cargo build --bin m0n1t0r-client --features linux -r
+```
 
 - Windows
 
-1. Install build toolchain such as `msvc` or `gcc` (usually automatically done by `rustup`)
-2. Install `cxxbridge` using `cargo install cxxbridge-cmd`
-3. Install `xmake` and `msys2`
-4. Run `cargo xtask -c` in `msys2` to generate certs if needed
-5. Run `cargo build` to build client and server or use `cargo build --features windows` to build a Windows specific client and server
+```powershell
+git clone https://github.com/microsoft/vcpkg
+vcpkg/bootstrap-vcpkg.bat
+export VCPKG_ROOT=$PWD/vcpkg
+vcpkg/vcpkg install libvpx:x64-windows-static libyuv:x64-windows-static opus:x64-windows-static aom:x64-windows-static mfx-dispatch:x64-windows-static ffmpeg:x64-windows-static
+scoop install main/xmake
+cargo install cxxbridge-cmd
+cargo xtask -c
+cargo build --bin m0n1t0r-server -r && cargo build --bin m0n1t0r-client --features winnt -r
+```
 
 ## Roadmap
 
