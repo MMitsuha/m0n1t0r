@@ -31,7 +31,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        brew install binutils meson nasm ninja autoconf automake autoconf-archive python3 libtool cmake gcc wget pkg-config libswresample ffmpeg
+        brew install binutils meson nasm ninja autoconf automake autoconf-archive python3 libtool cmake gcc wget pkg-config libresample ffmpeg
 
     - name: Clone vcpkg
       run: |
