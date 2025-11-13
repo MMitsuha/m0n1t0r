@@ -16,12 +16,12 @@ pub async fn close(key: DefaultKey) -> WebResult<()> {
     Ok(())
 }
 
-#[get("/proxies")]
+#[get("/proxy")]
 pub async fn get() -> WebResult<impl Responder> {
     Ok(Json(Response::success(PROXY_MAP.read().await.as_vec())?))
 }
 
-#[delete("/proxies/{key}")]
+#[delete("/proxy/{key}")]
 pub async fn delete(key: Path<u64>) -> WebResult<impl Responder> {
     Ok(Json(Response::success(
         close(KeyData::from_ffi(*key).into()).await?,
