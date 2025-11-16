@@ -4,6 +4,7 @@ rule("ffi.rust")
         for i, file_path in ipairs(file_paths) do
             print(i, ": Generating FFI for :", file_path)
             local file_name = path.filename(file_path)
+            os.mkdir("src/rs")
             os.runv("cxxbridge", { file_path, "--header" }, { stdout = "include/" .. file_name .. ".h" })
             os.runv("cxxbridge", { file_path }, { stdout = "src/rs/" .. file_name .. ".cc" })
             target:add("files", "src/rs/" .. file_name .. ".cc")
