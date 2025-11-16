@@ -3449,6 +3449,7 @@ dependencies = [
  "async_channel_io",
  "async_fn_traits",
  "chrono",
+ "clap 4.5.51",
  "discriminant-rs",
  "dotenvy",
  "ffmpeg-next",

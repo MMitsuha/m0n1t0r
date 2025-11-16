@@ -7,7 +7,7 @@ mod general;
 mod unix;
 
 #[cfg(feature = "winnt")]
-mod windows;
+pub mod windows;
 
 use chrono::{DateTime, Local};
 use m0n1t0r_common::{

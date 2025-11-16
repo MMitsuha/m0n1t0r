@@ -1,4 +1,4 @@
-mod client;
+pub mod client;
 mod conn;
 mod init;
 

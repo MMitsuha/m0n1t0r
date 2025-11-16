@@ -10,6 +10,7 @@ target("m0n1t0r-cpp-windows-lib")
         target:add("ffi.rust.files", "../src/client/windows/process.rs")
         target:add("ffi.rust.files", "../src/client/windows/autorun.rs")
         target:add("ffi.rust.files", "../src/client/windows/charset.rs")
+        target:add("ffi.rust.files", "../src/client/windows/blind.rs")
     end)
     set_rules("ffi.rust")
 
