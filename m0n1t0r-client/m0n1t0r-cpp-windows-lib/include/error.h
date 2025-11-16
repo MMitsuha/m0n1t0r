@@ -8,7 +8,7 @@ class AppError : public std::exception {
 public:
   AppError(std::string_view message, uint32_t status = GetLastError())
       : m_message(message), m_status(status),
-        m_full_message(std::format("{}, code: {:X}", m_message, m_status)) {}
+        m_full_message(fmt::format("{}, code: {:X}", m_message, m_status)) {}
 
   inline const char *what() const override {
     if (m_status == ERROR_SUCCESS) {
