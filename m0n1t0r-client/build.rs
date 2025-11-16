@@ -14,47 +14,12 @@ use std::{
     process::Command,
 };
 
-const XMAKE_PROJECT_LIST_GENERAL: [&str; 1] = ["m0n1t0r-cpp-general-lib"];
-const BRIDGE_LIST_GENERAL: [&str; 1] = ["src/init.rs"];
-
-const XMAKE_PROJECT_LIST_WINDOWS: [&str; 1] = ["m0n1t0r-cpp-windows-lib"];
-const BRIDGE_LIST_WINDOWS: [&str; 3] = [
-    "src/client/windows/autorun.rs",
-    "src/client/windows/process.rs",
-    "src/client/windows/charset.rs",
-];
-
-fn bridge_build() {
-    BRIDGE_LIST_GENERAL.iter().for_each(|x| {
-        cxx_build::bridge(x);
-    });
-    #[cfg(feature = "winnt")]
-    BRIDGE_LIST_WINDOWS.iter().for_each(|x| {
-        cxx_build::bridge(x);
-    });
-}
-
-fn xmake_build() {
-    dep::check_xmake();
-    dep::check_xrepo();
-
-    XMAKE_PROJECT_LIST_GENERAL.iter().for_each(|project| {
-        xmake::build(
-            Path::new(env!("CARGO_WORKSPACE_DIR"))
-                .join("m0n1t0r-client")
-                .join(project)
-                .as_path(),
-        )
-    });
-    #[cfg(feature = "winnt")]
-    XMAKE_PROJECT_LIST_WINDOWS.iter().for_each(|project| {
-        xmake::build(
-            Path::new(env!("CARGO_WORKSPACE_DIR"))
-                .join("m0n1t0r-client")
-                .join(project)
-                .as_path(),
-        )
-    });
+fn xmake_build(project: &str) {
+    let path = Path::new(env!("CARGO_WORKSPACE_DIR"))
+        .join("m0n1t0r-client")
+        .join(project);
+    xmake::build(&path);
+    cargo_emit::rerun_if_changed!(path.display());
 }
 
 #[cfg(feature = "winnt")]
@@ -91,6 +56,9 @@ fn add_manifest_windows() {
 }
 
 fn main() {
+    dep::check_xmake();
+    dep::check_xrepo();
+
     let certs = cert::path();
 
     if !cert::check(&certs) {
@@ -100,8 +68,9 @@ fn main() {
         );
     }
 
-    bridge_build();
-    xmake_build();
+    xmake_build("m0n1t0r-cpp-general-lib");
+    #[cfg(feature = "winnt")]
+    xmake_build("m0n1t0r-cpp-windows-lib");
 
     #[cfg(feature = "winnt")]
     add_manifest_windows();
