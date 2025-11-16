@@ -1,7 +1,7 @@
 #ifndef C__USERS_MMITS_M0N1T0R_M0N1T0R_CLIENT_M0N1T0R_CPP_GENERAL_LIB_INCLUDE_ERROR_H_
 #define C__USERS_MMITS_M0N1T0R_M0N1T0R_CLIENT_M0N1T0R_CPP_GENERAL_LIB_INCLUDE_ERROR_H_
 
-#include <format>
+#include <fmt/format.h>
 #include <string>
 #include <string_view>
 
@@ -9,7 +9,7 @@ class AppError : public std::exception {
 public:
   AppError(std::string_view message, uint32_t status)
       : m_message(message), m_status(status),
-        m_full_message(std::format("{}, code: {:X}", m_message, m_status)) {}
+        m_full_message(fmt::format("{}, code: {:X}", m_message, m_status)) {}
 
   inline const char *what() const noexcept override {
     if (m_status == 0) {

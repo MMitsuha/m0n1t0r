@@ -1,7 +1,7 @@
 includes("../xmake/ffi.lua")
 add_rules("mode.debug", "mode.release")
 
-add_requires("libpeconv")
+add_requires("libpeconv", "fmt")
 
 target("m0n1t0r-cpp-windows-lib")
     set_kind("static")
@@ -13,7 +13,7 @@ target("m0n1t0r-cpp-windows-lib")
     end)
     set_rules("ffi.rust")
 
-    add_packages("libpeconv")
+    add_packages("libpeconv", "fmt")
 
     add_includedirs("include")
     add_files("src/*.cpp")

@@ -1,7 +1,7 @@
 includes("../xmake/ffi.lua")
 add_rules("mode.debug", "mode.release")
 
-add_requires("vcpkg::vmaware-vm-detection")
+add_requires("vcpkg::vmaware-vm-detection", "fmt")
 
 target("m0n1t0r-cpp-general-lib")
     set_kind("static")
@@ -11,7 +11,7 @@ target("m0n1t0r-cpp-general-lib")
     end)
     set_rules("ffi.rust")
 
-    add_packages("vcpkg::vmaware-vm-detection")
+    add_packages("vcpkg::vmaware-vm-detection", "fmt")
 
     add_includedirs("include")
     add_files("src/*.cpp")
