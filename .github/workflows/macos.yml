@@ -53,9 +53,9 @@ jobs:
       run: |
         cargo xtask -c
 
-    - name: Build m0n1t0r-server (release)
+    - name: Build m0n1t0r-server (release, macos features)
       run: |
-        cargo build --bin m0n1t0r-server -r
+        cargo build --bin m0n1t0r-server --features macos -r
 
     - name: Build m0n1t0r-client (release, macos features)
       run: |

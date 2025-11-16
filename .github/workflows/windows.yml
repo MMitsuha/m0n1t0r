@@ -56,10 +56,10 @@ jobs:
       run: |
         cargo xtask -c
 
-    - name: Build m0n1t0r-server (release)
+    - name: Build m0n1t0r-server (release, winnt features)
       shell: pwsh
       run: |
-        cargo build --bin m0n1t0r-server -r
+        cargo build --bin m0n1t0r-server --features winnt -r
 
     - name: Build m0n1t0r-client (release, winnt features)
       shell: pwsh
