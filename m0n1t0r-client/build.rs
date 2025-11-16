@@ -50,6 +50,9 @@ fn xmake_build() {
 
 #[cfg(feature = "winnt")]
 fn add_manifest_windows() {
+    use winapi::um::winnt;
+    use winres::VersionInfo;
+
     let mut res = winres::WindowsResource::new();
     res.set_icon(
         Path::new(env!("CARGO_WORKSPACE_DIR"))
@@ -57,9 +60,9 @@ fn add_manifest_windows() {
             .to_str()
             .unwrap(),
     )
-    .set_language(winapi::um::winnt::MAKELANGID(
-        winapi::um::winnt::LANG_ENGLISH,
-        winapi::um::winnt::SUBLANG_ENGLISH_US,
+    .set_language(winnt::MAKELANGID(
+        winnt::LANG_ENGLISH,
+        winnt::SUBLANG_ENGLISH_US,
     ));
     #[cfg(feature = "winnt-uac")]
     res.set_manifest(

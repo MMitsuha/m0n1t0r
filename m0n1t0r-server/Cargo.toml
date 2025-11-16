@@ -8,6 +8,11 @@ edition = "2024"
 repository.workspace = true
 build = "build.rs"
 
+[package.metadata.winres]
+OriginalFilename = "m0n1t0r-server.exe"
+FileDescription = "Made with ❤ by Mitsuha"
+LegalCopyright = "Copyright © 2025 Mitsuha. All rights reserved."
+
 [features]
 general = []
 winnt = []
