@@ -13,7 +13,7 @@
 3. Command execution
 4. Restful web api control
 5. Remote screen monitor
-6. Shellcode execution
+6. Shellcode execution (Voidgate support)
 
 ## Build
 

@@ -48,6 +48,7 @@ fn xmake_build() {
     xmake_build_windows();
 }
 
+#[cfg(feature = "winnt")]
 fn add_manifest_windows() {
     let mut res = winres::WindowsResource::new();
     res.set_icon(

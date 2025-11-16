@@ -13,6 +13,7 @@ use std::{
     process::Command,
 };
 
+#[cfg(feature = "winnt")]
 fn add_manifest_windows() {
     let mut res = winres::WindowsResource::new();
     res.set_icon(
