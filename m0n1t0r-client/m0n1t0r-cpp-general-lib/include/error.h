@@ -1,4 +1,6 @@
-#pragma once
+#ifndef C__USERS_MMITS_M0N1T0R_M0N1T0R_CLIENT_M0N1T0R_CPP_GENERAL_LIB_INCLUDE_ERROR_H_
+#define C__USERS_MMITS_M0N1T0R_M0N1T0R_CLIENT_M0N1T0R_CPP_GENERAL_LIB_INCLUDE_ERROR_H_
+
 #include <format>
 #include <string>
 #include <string_view>
@@ -9,7 +11,7 @@ public:
       : m_message(message), m_status(status),
         m_full_message(std::format("{}, code: {:X}", m_message, m_status)) {}
 
-  inline const char *what() const override {
+  inline const char *what() const noexcept override {
     if (m_status == 0) {
       return m_message.c_str();
     } else {
@@ -22,3 +24,5 @@ private:
   std::string m_full_message;
   uint32_t m_status;
 };
+
+#endif // C__USERS_MMITS_M0N1T0R_M0N1T0R_CLIENT_M0N1T0R_CPP_GENERAL_LIB_INCLUDE_ERROR_H_
