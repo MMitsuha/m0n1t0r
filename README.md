@@ -27,7 +27,7 @@ export VCPKG_ROOT=$PWD/vcpkg
 ./vcpkg/vcpkg install libvpx libyuv opus aom mfx-dispatch ffmpeg
 cargo install cxxbridge-cmd
 cargo xtask -c
-cargo build --bin m0n1t0r-server -r && cargo build --bin m0n1t0r-client --features linux -r
+cargo build --bin m0n1t0r-server --features linux -r && cargo build --bin m0n1t0r-client --features linux -r
 ```
 
 - Windows
@@ -40,7 +40,7 @@ export VCPKG_ROOT=$PWD/vcpkg
 scoop install main/xmake
 cargo install cxxbridge-cmd
 cargo xtask -c
-cargo build --bin m0n1t0r-server -r && cargo build --bin m0n1t0r-client --features winnt -r
+cargo build --bin m0n1t0r-server --features winnt -r && cargo build --bin m0n1t0r-client --features winnt -r
 ```
 
 - MacOS
@@ -53,7 +53,7 @@ export VCPKG_ROOT=$PWD/vcpkg
 ./vcpkg/vcpkg install libvpx libyuv opus aom ffmpeg
 cargo install cxxbridge-cmd
 cargo xtask -c
-cargo build --bin m0n1t0r-server -r && cargo build --bin m0n1t0r-client --features macos -r
+cargo build --bin m0n1t0r-server --features macos -r && cargo build --bin m0n1t0r-client --features macos -r
 ```
 
 ## Roadmap
