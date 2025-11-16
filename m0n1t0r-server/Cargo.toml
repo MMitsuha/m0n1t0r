@@ -6,6 +6,13 @@ description.workspace = true
 readme.workspace = true
 edition = "2024"
 repository.workspace = true
+build = "build.rs"
+
+[features]
+general = []
+winnt = []
+linux = []
+macos = []
 
 [dependencies]
 actix-web = { version = "4.11.0", features = ["secure-cookies", "http2", "rustls-0_23"] }
@@ -58,3 +65,7 @@ chrono = { version = "0.4.42", features = ["serde"] }
 scrap = { path = "../deps/scrap", features = ["wayland"] }
 hbb_common = { git = "https://github.com/rustdesk/hbb_common" }
 ffmpeg-next = "8.0.0"
+
+[target.'cfg(windows)'.build-dependencies]
+winres = "0.1.12"
+winapi = { version = "0.3.9", features = ["winbase"] }

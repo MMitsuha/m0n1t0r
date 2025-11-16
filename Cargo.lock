@@ -3445,6 +3445,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "url",
+ "winapi 0.3.9",
+ "winres",
 ]
 
 [[package]]

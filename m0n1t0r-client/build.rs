@@ -29,23 +29,38 @@ fn bridge_build() {
 }
 
 #[cfg(feature = "winnt")]
-fn xmake_build_windows(workspace: &Path) {
-    XMAKE_PROJECT_LIST_WINDOWS
-        .iter()
-        .for_each(|project| xmake::build(workspace.join("m0n1t0r-client").join(project).as_path()));
+fn xmake_build_windows() {
+    XMAKE_PROJECT_LIST_WINDOWS.iter().for_each(|project| {
+        xmake::build(
+            Path::new(env!("CARGO_WORKSPACE_DIR"))
+                .join("m0n1t0r-client")
+                .join(project)
+                .as_path(),
+        )
+    });
 }
 
-fn xmake_build(workspace: &Path) {
+fn xmake_build() {
     dep::check_xmake();
     dep::check_xrepo();
 
     #[cfg(feature = "winnt")]
-    xmake_build_windows(workspace);
+    xmake_build_windows();
 }
 
-#[cfg(feature = "winnt-uac")]
-fn add_administrator_manifest_windows() {
+fn add_manifest_windows() {
     let mut res = winres::WindowsResource::new();
+    res.set_icon(
+        Path::new(env!("CARGO_WORKSPACE_DIR"))
+            .join("resource/mc.ico")
+            .to_str()
+            .unwrap(),
+    )
+    .set_language(winapi::um::winnt::MAKELANGID(
+        winapi::um::winnt::LANG_ENGLISH,
+        winapi::um::winnt::SUBLANG_ENGLISH_US,
+    ));
+    #[cfg(feature = "winnt-uac")]
     res.set_manifest(
         r#"
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
@@ -63,7 +78,6 @@ fn add_administrator_manifest_windows() {
 }
 
 fn main() {
-    let workspace = Path::new(env!("CARGO_WORKSPACE_DIR"));
     let certs = cert::path();
 
     if !cert::check(&certs) {
@@ -74,8 +88,8 @@ fn main() {
     }
 
     bridge_build();
-    xmake_build(workspace);
+    xmake_build();
 
-    #[cfg(feature = "winnt-uac")]
-    add_administrator_manifest_windows();
+    #[cfg(feature = "winnt")]
+    add_manifest_windows();
 }

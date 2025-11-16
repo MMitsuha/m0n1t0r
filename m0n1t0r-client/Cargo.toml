@@ -45,3 +45,4 @@ m0n1t0r-build = { path = "../m0n1t0r-build" }
 
 [target.'cfg(windows)'.build-dependencies]
 winres = "0.1.12"
+winapi = { version = "0.3.9", features = ["winbase"] }
