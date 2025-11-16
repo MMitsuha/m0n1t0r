@@ -1,8 +1,10 @@
 mod client;
 mod conn;
+mod init;
 
 pub use client::ClientObj;
 pub use conn::ClientMap;
+pub use init::init;
 
 use anyhow::Result;
 use log::warn;

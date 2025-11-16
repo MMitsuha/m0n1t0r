@@ -14,6 +14,9 @@ use std::{
     process::Command,
 };
 
+const XMAKE_PROJECT_LIST_GENERAL: [&str; 1] = ["m0n1t0r-cpp-general-lib"];
+const BRIDGE_LIST_GENERAL: [&str; 1] = ["src/init.rs"];
+
 const XMAKE_PROJECT_LIST_WINDOWS: [&str; 1] = ["m0n1t0r-cpp-windows-lib"];
 const BRIDGE_LIST_WINDOWS: [&str; 3] = [
     "src/client/windows/autorun.rs",
@@ -22,14 +25,28 @@ const BRIDGE_LIST_WINDOWS: [&str; 3] = [
 ];
 
 fn bridge_build() {
+    BRIDGE_LIST_GENERAL.iter().for_each(|x| {
+        cxx_build::bridge(x);
+    });
     #[cfg(feature = "winnt")]
     BRIDGE_LIST_WINDOWS.iter().for_each(|x| {
         cxx_build::bridge(x);
     });
 }
 
-#[cfg(feature = "winnt")]
-fn xmake_build_windows() {
+fn xmake_build() {
+    dep::check_xmake();
+    dep::check_xrepo();
+
+    XMAKE_PROJECT_LIST_GENERAL.iter().for_each(|project| {
+        xmake::build(
+            Path::new(env!("CARGO_WORKSPACE_DIR"))
+                .join("m0n1t0r-client")
+                .join(project)
+                .as_path(),
+        )
+    });
+    #[cfg(feature = "winnt")]
     XMAKE_PROJECT_LIST_WINDOWS.iter().for_each(|project| {
         xmake::build(
             Path::new(env!("CARGO_WORKSPACE_DIR"))
@@ -38,14 +55,6 @@ fn xmake_build_windows() {
                 .as_path(),
         )
     });
-}
-
-fn xmake_build() {
-    dep::check_xmake();
-    dep::check_xrepo();
-
-    #[cfg(feature = "winnt")]
-    xmake_build_windows();
 }
 
 #[cfg(feature = "winnt")]
