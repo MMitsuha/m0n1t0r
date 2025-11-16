@@ -14,6 +14,12 @@ use std::{
     process::Command,
 };
 
+fn bridge_build(bridges: &[&str]) {
+    bridges.iter().for_each(|x| {
+        cxx_build::bridge(x);
+    });
+}
+
 fn xmake_build(project: &str) {
     let path = Path::new(env!("CARGO_WORKSPACE_DIR"))
         .join("m0n1t0r-client")
@@ -67,6 +73,14 @@ fn main() {
             certs.display()
         );
     }
+
+    bridge_build(&["src/init.rs"]);
+    #[cfg(feature = "winnt")]
+    bridge_build(&[
+        "src/client/windows/autorun.rs",
+        "src/client/windows/process.rs",
+        "src/client/windows/charset.rs",
+    ]);
 
     xmake_build("m0n1t0r-cpp-general-lib");
     #[cfg(feature = "winnt")]
