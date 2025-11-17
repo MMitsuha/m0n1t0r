@@ -12,6 +12,20 @@ pub async fn patch_etw_event_write() -> AppResult<()> {
     Ok(rx.await??)
 }
 
+pub struct AgentObj {}
+
+impl AgentObj {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl m0n1t0r_common::blind::Agent for AgentObj {
+    async fn patch_etw_event_write(&self) -> AppResult<()> {
+        patch_etw_event_write().await
+    }
+}
+
 #[cxx::bridge]
 mod ffi {
     extern "Rust" {}

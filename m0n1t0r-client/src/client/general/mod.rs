@@ -1,1 +1,1 @@
-default_agents!([network, proxy, process, autorun, qq, charset, fs, rd]);
+default_agents!([network, proxy, process, autorun, qq, charset, fs, rd, blind]);

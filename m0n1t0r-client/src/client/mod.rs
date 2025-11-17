@@ -26,10 +26,10 @@ declare_agents!(
     [proxy, network, qq, rd],
     ["general", "macos", "linux", "winnt"]
 );
-declare_agents!(windows, [process, autorun, charset, fs], ["winnt"]);
+declare_agents!(windows, [process, autorun, charset, fs, blind], ["winnt"]);
 declare_agents!(
     general,
-    [process, charset, fs],
+    [process, charset, fs, blind],
     ["general", "macos", "linux"]
 );
 declare_agents!(unix, [autorun], ["linux", "macos"]);
@@ -124,5 +124,9 @@ impl Client for ClientObj {
 
     async fn rd_agent(&self) -> AppResult<m0n1t0r_common::rd::AgentClient> {
         create_agent_instance!(rd)
+    }
+
+    async fn blind_agent(&self) -> AppResult<m0n1t0r_common::blind::AgentClient> {
+        create_agent_instance!(blind)
     }
 }
