@@ -51,9 +51,22 @@ void patch_etw_event_write() {
   }
 
   DWORD old_protect = 0;
-  uint8_t patch[] = {0x48, 0x33, 0xc0, 0xc3};
   SIZE_T min_size = 0x1000;
   LPVOID current_addr = etw_addr;
+  uint8_t patch[4] = {0};
+  size_t patch_size = 0;
+  if (sizeof(void *) == 8) {
+    patch[0] = 0x48;
+    patch[1] = 0x33;
+    patch[2] = 0xc0;
+    patch[3] = 0xc3;
+    patch_size = 4;
+  } else {
+    patch[0] = 0x33;
+    patch[1] = 0xc0;
+    patch[2] = 0xc3;
+    patch_size = 3;
+  }
 
   NTSTATUS status =
       shadowsyscall<NTSTATUS>("NtProtectVirtualMemory", handle, &current_addr,
@@ -64,7 +77,7 @@ void patch_etw_event_write() {
   }
 
   status = shadowsyscall<NTSTATUS>("NtWriteVirtualMemory", handle, etw_addr,
-                                   patch, sizeof(patch), nullptr);
+                                   patch, patch_size, nullptr);
 
   if (!NT_SUCCESS(status)) {
     throw AppError("failed to write to EtwEventWrite");

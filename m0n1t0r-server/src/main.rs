@@ -8,17 +8,17 @@ use tokio::sync::RwLock;
 #[derive(Parser, Debug)]
 #[command(version, about = "m0n1t0r RAT")]
 struct Arguments {
-    #[arg(short, long, default_value = "0.0.0.0:27853")]
+    #[arg(long, default_value = "0.0.0.0:27853")]
     conn_addr: SocketAddr,
-    #[arg(short, long, default_value = "0.0.0.0:10801")]
+    #[arg(long, default_value = "0.0.0.0:10801")]
     api_addr: SocketAddr,
-    #[arg(short, long)]
+    #[arg(long)]
     key: PathBuf,
-    #[arg(short, long)]
+    #[arg(long)]
     cert: PathBuf,
-    #[arg(short, long, default_value_t = !cfg!(debug_assertions))]
+    #[arg(long, default_value_t = !cfg!(debug_assertions))]
     use_https: bool,
-    #[arg(short, long, default_value = "debug")]
+    #[arg(long, default_value = "debug")]
     log_level: String,
 }
 
