@@ -30,7 +30,7 @@ m0n1t0r-common = { path = "../m0n1t0r-common" }
 log = "0.4.28"
 flexi_logger = { version = "0.31.7", features = ["async"] }
 cfg_block = "0.2.0"
-cxx = "1.0.187"
+cxx = "1.0.194"
 tokio-rustls = { version = "0.26.4", features = ["ring", "logging", "tls12"], default-features = false }
 rustls = { version = "0.23.34", features = ["ring", "log", "logging", "std", "tls12"], default-features = false }
 rustls-pki-types = { version = "1.12.0", features = ["alloc"] }
