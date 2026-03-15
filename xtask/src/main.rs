@@ -3,8 +3,8 @@ use clap::Parser;
 use flexi_logger::Logger;
 use log::{info, warn};
 use m0n1t0r_build::cert;
+use m0n1t0r_common::config::{CertConfig, FileConfig};
 use rcgen::{CertificateParams, DnType, IsCa, KeyPair};
-use serde::Deserialize;
 use std::fs;
 use time::{Duration, OffsetDateTime};
 
@@ -15,21 +15,6 @@ struct Arguments {
     verbose: bool,
     #[arg(short, long)]
     cert: bool,
-}
-
-#[derive(Deserialize)]
-struct CertConfig {
-    country: String,
-    state: String,
-    locality: String,
-    org: String,
-    unit: String,
-    domain: String,
-}
-
-#[derive(Deserialize)]
-struct FileConfig {
-    cert: CertConfig,
 }
 
 fn generate_certs(config: &CertConfig, certs_dir: &std::path::Path) -> Result<()> {
@@ -114,8 +99,8 @@ fn main() -> Result<()> {
         }
 
         let config_path = "config.toml";
-        let content = fs::read_to_string(config_path)
-            .context(format!("failed to read {config_path}"))?;
+        let content =
+            fs::read_to_string(config_path).context(format!("failed to read {config_path}"))?;
         let file_config: FileConfig =
             toml::from_str(&content).context(format!("failed to parse {config_path}"))?;
 

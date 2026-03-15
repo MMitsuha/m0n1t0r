@@ -9,21 +9,11 @@
 compile_error!("No target platform specified.");
 
 use m0n1t0r_build::{cert, dep};
-use serde::Deserialize;
+use m0n1t0r_common::config::FileConfig;
 use std::{
     path::{Path, PathBuf},
     process::Command,
 };
-
-#[derive(Deserialize)]
-struct CertConfig {
-    domain: String,
-}
-
-#[derive(Deserialize)]
-struct FileConfig {
-    cert: CertConfig,
-}
 
 fn bridge_build(bridges: &[&str]) {
     bridges.iter().for_each(|x| {

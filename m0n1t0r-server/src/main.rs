@@ -1,75 +1,9 @@
 use anyhow::{Context, Result};
 use flexi_logger::Logger;
+use m0n1t0r_common::config::FileConfig;
 use m0n1t0r_server::{Config, ServerMap};
-use serde::Deserialize;
-use std::{net::SocketAddr, path::PathBuf, sync::Arc};
+use std::sync::Arc;
 use tokio::sync::RwLock;
-
-fn default_conn_addr() -> SocketAddr {
-    "0.0.0.0:27853".parse().unwrap()
-}
-
-fn default_api_addr() -> SocketAddr {
-    "0.0.0.0:10801".parse().unwrap()
-}
-
-fn default_log_level() -> String {
-    "debug".into()
-}
-
-#[derive(Deserialize)]
-struct GeneralConfig {
-    #[serde(default = "default_log_level")]
-    log_level: String,
-    secret: String,
-}
-
-#[derive(Deserialize)]
-struct ConnConfig {
-    #[serde(default = "default_conn_addr")]
-    addr: SocketAddr,
-}
-
-impl Default for ConnConfig {
-    fn default() -> Self {
-        Self {
-            addr: default_conn_addr(),
-        }
-    }
-}
-
-#[derive(Deserialize)]
-struct ApiConfig {
-    #[serde(default = "default_api_addr")]
-    addr: SocketAddr,
-    #[serde(default)]
-    use_https: bool,
-}
-
-impl Default for ApiConfig {
-    fn default() -> Self {
-        Self {
-            addr: default_api_addr(),
-            use_https: false,
-        }
-    }
-}
-
-#[derive(Deserialize)]
-struct TlsConfig {
-    key: PathBuf,
-    cert: PathBuf,
-}
-
-#[derive(Deserialize)]
-struct FileConfig {
-    general: GeneralConfig,
-    #[serde(default)]
-    conn: ConnConfig,
-    #[serde(default)]
-    api: ApiConfig,
-    tls: TlsConfig,
-}
 
 #[tokio::main]
 async fn main() -> Result<()> {

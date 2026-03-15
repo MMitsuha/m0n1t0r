@@ -1,4 +1,5 @@
 pub mod autorun;
+pub mod config;
 pub mod blind;
 pub mod charset;
 pub mod client;
