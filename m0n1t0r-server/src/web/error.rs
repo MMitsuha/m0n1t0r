@@ -61,13 +61,11 @@ pub enum AuthError {
     PasswordMismatch,
 }
 
+#[cfg(feature = "rd")]
 #[derive(Error, Debug, Serialize, Clone)]
 pub enum MediaError {
     #[error("ffmpeg error: {0}")]
     FFmpeg(serde_error::Error),
-
-    #[error("unsupported video frame type")]
-    UnsupportedFormat,
 }
 
 #[derive(Error, Debug, Serialize, Clone)]
@@ -97,6 +95,7 @@ pub enum Error {
     #[error(transparent)]
     Auth(AuthError),
 
+    #[cfg(feature = "rd")]
     #[error(transparent)]
     Media(MediaError),
 
@@ -144,9 +143,9 @@ impl Discriminant<i16> for Error {
             Error::Generic(_) => -16,
             Error::Unimplemented => -17,
             Error::Network(NetworkError::InvalidForward) => -18,
+            #[cfg(feature = "rd")]
             Error::Media(MediaError::FFmpeg(_)) => -19,
             Error::Auth(AuthError::PasswordMismatch) => -20,
-            Error::Media(MediaError::UnsupportedFormat) => -21,
             Error::Unknown => -255,
         }
     }
@@ -185,11 +184,12 @@ impl actix_web::ResponseError for Error {
             // 500 Internal Server Error — server-side failures
             Error::Io(IoError::Tokio(_))
             | Error::Framework(FrameworkError::Actix(_))
-            | Error::Media(MediaError::FFmpeg(_))
-            | Error::Media(MediaError::UnsupportedFormat)
             | Error::External(ExternalError::QQKey(_))
             | Error::Generic(_)
             | Error::Unknown => StatusCode::INTERNAL_SERVER_ERROR,
+
+            #[cfg(feature = "rd")]
+            Error::Media(_) => StatusCode::INTERNAL_SERVER_ERROR,
 
             // 501 Not Implemented
             Error::Unimplemented => StatusCode::NOT_IMPLEMENTED,
