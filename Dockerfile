@@ -33,7 +33,7 @@ COPY . .
 RUN cargo xtask -c
 
 # Build server in release mode
-RUN cargo build --release --features linux --bin m0n1t0r-server
+RUN cargo build --release --features linux,rd --bin m0n1t0r-server
 
 # =============================================================================
 # Stage 2: Build the UI static assets

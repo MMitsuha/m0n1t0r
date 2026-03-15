@@ -25,21 +25,18 @@ jobs:
             server_bin: m0n1t0r-server
             client_bin: m0n1t0r-client
             vcpkg_packages: libvpx libyuv opus aom ffmpeg
-            compress: false
           - os: ubuntu-latest
             platform: linux
             artifact: m0n1t0r-linux
             server_bin: m0n1t0r-server
             client_bin: m0n1t0r-client
             vcpkg_packages: libvpx libyuv opus aom mfx-dispatch ffmpeg
-            compress: true
           - os: windows-latest
             platform: winnt
             artifact: m0n1t0r-windows
             server_bin: m0n1t0r-server.exe
             client_bin: m0n1t0r-client.exe
             vcpkg_packages: libvpx:x64-windows-static libyuv:x64-windows-static opus:x64-windows-static aom:x64-windows-static mfx-dispatch:x64-windows-static ffmpeg:x64-windows-static
-            compress: true
 
     runs-on: ${{ matrix.os }}
 
@@ -49,8 +46,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -135,14 +130,10 @@ jobs:
         shell: bash
 
       - name: Build server
-        run: cargo build --bin m0n1t0r-server --features ${{ matrix.platform }} -r
+        run: cargo build --bin m0n1t0r-server --features ${{ matrix.platform }},rd -r
 
       - name: Build client
-        run: cargo build --bin m0n1t0r-client --features ${{ matrix.platform }} -r
-
-      - name: Compress client binary
-        if: matrix.compress
-        run: cargo rel-xtask -u
+        run: cargo build --bin m0n1t0r-client --features ${{ matrix.platform }},rd -r
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
