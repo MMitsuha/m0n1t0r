@@ -141,6 +141,7 @@ impl<T> From<remoc::rch::lr::SendError<T>> for Error {
     }
 }
 
+#[cfg(feature = "rd")]
 impl From<hbb_common::protobuf::Error> for Error {
     fn from(e: hbb_common::protobuf::Error) -> Self {
         Self::Parse(ParseError::Protobuf(serde_error::Error::new(&e)))

@@ -1,13 +1,6 @@
-use crate::{Error, Result as AppResult};
-use hbb_common::protobuf::Message;
+use crate::Result as AppResult;
 use remoc::{rch::lr, rtc};
-use scrap::{
-    Capturer, Pixfmt, TraitCapturer, VpxEncoderConfig, VpxVideoCodecId,
-    codec::{Encoder, EncoderCfg},
-};
 use serde::{Deserialize, Serialize};
-use std::time::{Duration, Instant};
-use tokio::{runtime::Handle, task};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct Display {
@@ -19,36 +12,45 @@ pub struct Display {
     pub origin: (i32, i32),
 }
 
-impl From<&scrap::Display> for Display {
-    fn from(display: &scrap::Display) -> Self {
-        Self {
-            name: display.name(),
-            width: display.width(),
-            height: display.height(),
-            is_online: display.is_online(),
-            is_primary: display.is_primary(),
-            origin: display.origin(),
-        }
-    }
-}
-
 impl std::fmt::Display for Display {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} ({}x{})", self.name, self.width, self.height)
     }
 }
 
-#[rtc::remote]
-pub trait Agent: Sync {
-    async fn displays(&self) -> AppResult<Vec<Display>> {
+#[cfg(feature = "rd")]
+mod imp {
+    use super::*;
+    use crate::Error;
+    use hbb_common::protobuf::Message;
+    use scrap::{
+        Capturer, Pixfmt, TraitCapturer, VpxEncoderConfig, VpxVideoCodecId,
+        codec::{Encoder, EncoderCfg},
+    };
+    use std::time::{Duration, Instant};
+    use tokio::{runtime::Handle, task};
+
+    impl From<&scrap::Display> for Display {
+        fn from(display: &scrap::Display) -> Self {
+            Self {
+                name: display.name(),
+                width: display.width(),
+                height: display.height(),
+                is_online: display.is_online(),
+                is_primary: display.is_primary(),
+                origin: display.origin(),
+            }
+        }
+    }
+
+    pub async fn displays() -> AppResult<Vec<Display>> {
         Ok(scrap::Display::all()?
             .into_iter()
             .map(|display| Display::from(&display))
             .collect())
     }
 
-    async fn view(
-        &self,
+    pub async fn view(
         display: Display,
         quality: f32,
         keyframe_interval: Option<usize>,
@@ -93,5 +95,38 @@ pub trait Agent: Sync {
             Ok::<_, Error>(())
         });
         Ok(rx)
+    }
+}
+
+#[cfg(not(feature = "rd"))]
+mod imp {
+    use super::*;
+
+    pub async fn displays() -> AppResult<Vec<Display>> {
+        unimplemented!()
+    }
+
+    pub async fn view(
+        _display: Display,
+        _quality: f32,
+        _keyframe_interval: Option<usize>,
+    ) -> AppResult<lr::Receiver<Vec<u8>>> {
+        unimplemented!()
+    }
+}
+
+#[rtc::remote]
+pub trait Agent: Sync {
+    async fn displays(&self) -> AppResult<Vec<Display>> {
+        imp::displays().await
+    }
+
+    async fn view(
+        &self,
+        display: Display,
+        quality: f32,
+        keyframe_interval: Option<usize>,
+    ) -> AppResult<lr::Receiver<Vec<u8>>> {
+        imp::view(display, quality, keyframe_interval).await
     }
 }

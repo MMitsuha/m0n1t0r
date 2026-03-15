@@ -18,6 +18,7 @@ general = []
 winnt = []
 linux = []
 macos = []
+rd = ["dep:ffmpeg-next", "dep:scrap", "dep:hbb_common", "dep:rayon", "m0n1t0r-common/rd"]
 
 [dependencies]
 actix-web = { version = "4.11.0", features = ["secure-cookies", "http2", "rustls-0_23"] }
@@ -52,7 +53,7 @@ async-compat = "0.2.5"
 tokio-stream = "0.1.17"
 libsw = "3.5.0"
 serde_repr = "0.1.20"
-rayon = "1.11.0"
+rayon = { version = "1.11.0", optional = true }
 async_fn_traits = "0.1.1"
 itertools = "0.14.0"
 qqkey = { path = "../deps/qqkey" }
@@ -67,9 +68,9 @@ actix-identity = "0.9.0"
 actix-session = { version = "0.11.0", features = ["cookie-session"] }
 slotmap = { version = "1.0.7", features = ["serde"] }
 chrono = { version = "0.4.44", features = ["serde"] }
-scrap = { path = "../deps/scrap", features = ["wayland"] }
-hbb_common = { git = "https://github.com/rustdesk/hbb_common" }
-ffmpeg-next = "8.0.0"
+scrap = { path = "../deps/scrap", features = ["wayland"], optional = true }
+hbb_common = { git = "https://github.com/rustdesk/hbb_common", optional = true }
+ffmpeg-next = { version = "8.0.0", optional = true }
 toml = "0.8.21"
 
 [target.'cfg(windows)'.build-dependencies]

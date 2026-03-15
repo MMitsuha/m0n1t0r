@@ -41,6 +41,7 @@ async fn main() -> Result<()> {
         toml::from_str(&content).context(format!("failed to parse {config_path}"))?;
 
     Logger::try_with_str(&file_config.log_level)?.start()?;
+    #[cfg(feature = "rd")]
     ffmpeg_next::init()?;
 
     let config = Config::new(

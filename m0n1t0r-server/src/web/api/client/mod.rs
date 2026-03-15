@@ -6,6 +6,7 @@ pub mod notification;
 pub mod process;
 pub mod proxy;
 pub mod qq;
+#[cfg(feature = "rd")]
 pub mod rd;
 pub mod update;
 

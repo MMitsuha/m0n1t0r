@@ -22,9 +22,10 @@ cargo xtask -c
 
 ### Build Rust Binaries
 Platform feature flags are **required** and mutually exclusive: `macos`, `linux`, `winnt`, `winnt-uac`
+Optional feature: `rd` (remote desktop — enables ffmpeg, scrap, hbb_common dependencies)
 ```
-cargo build --bin m0n1t0r-server --features macos -r
-cargo build --bin m0n1t0r-client --features macos -r
+cargo build --bin m0n1t0r-server --features macos,rd -r
+cargo build --bin m0n1t0r-client --features macos,rd -r
 ```
 
 ### Build UI

@@ -19,6 +19,7 @@ winnt = []
 winnt-uac = ["winnt"]
 linux = []
 macos = []
+rd = ["m0n1t0r-common/rd", "dep:scrap"]
 
 [dependencies]
 anyhow = "1.0.100"
@@ -36,7 +37,7 @@ rustls = { version = "0.23.37", features = ["ring", "log", "logging", "std", "tl
 rustls-pki-types = { version = "1.12.0", features = ["alloc"] }
 directories = "6.0.0"
 chrono = { version = "0.4.44", features = ["serde"] }
-scrap = { path = "../deps/scrap", features = ["wayland"] }
+scrap = { path = "../deps/scrap", features = ["wayland"], optional = true }
 serde-error = "0.1.3"
 
 [target.'cfg(windows)'.dependencies]

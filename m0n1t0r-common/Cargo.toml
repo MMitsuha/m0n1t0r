@@ -8,6 +8,9 @@ edition = "2024"
 repository.workspace = true
 build = "build.rs"
 
+[features]
+rd = ["dep:scrap", "dep:hbb_common"]
+
 [dependencies]
 anyhow = "1.0.100"
 remoc = { version = "0.18.3", features = ["full", "codec-message-pack", "default-codec-message-pack", "rmp-serde"], default-features = false }
@@ -37,8 +40,8 @@ rustls = { version = "0.23.37", features = ["ring", "log", "logging", "std", "tl
 ring-channel = "0.12.0"
 rayon = "1.11.0"
 qqkey = { path = "../deps/qqkey" }
-scrap = { path = "../deps/scrap", features = ["wayland"] }
-hbb_common = { git = "https://github.com/rustdesk/hbb_common" }
+scrap = { path = "../deps/scrap", features = ["wayland"], optional = true }
+hbb_common = { git = "https://github.com/rustdesk/hbb_common", optional = true }
 
 [build-dependencies]
 cargo-emit = "0.2.1"

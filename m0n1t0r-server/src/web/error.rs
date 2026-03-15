@@ -312,6 +312,7 @@ impl From<qqkey::Error> for Error {
     }
 }
 
+#[cfg(feature = "rd")]
 impl From<ffmpeg_next::Error> for Error {
     fn from(e: ffmpeg_next::Error) -> Self {
         Self::Media(MediaError::FFmpeg(serde_error::Error::new(&e)))
@@ -336,12 +337,14 @@ impl From<remoc::rch::base::RecvError> for Error {
     }
 }
 
+#[cfg(feature = "rd")]
 impl From<scrap::Error> for Error {
     fn from(e: scrap::Error) -> Self {
         Self::Media(MediaError::FFmpeg(serde_error::Error::new(&e)))
     }
 }
 
+#[cfg(feature = "rd")]
 impl From<hbb_common::protobuf::Error> for Error {
     fn from(e: hbb_common::protobuf::Error) -> Self {
         Self::from(m0n1t0r_common::Error::from(e))
