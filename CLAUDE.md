@@ -39,8 +39,9 @@ cd m0n1t0r-ui && bun run lint
 
 ### Run Server
 ```
-./target/release/m0n1t0r-server --key certs/end.key --cert certs/end.crt
+./target/release/m0n1t0r-server [config.toml]
 ```
+Configuration is read from a TOML file (defaults to `config.toml` in the working directory).
 Default ports: `0.0.0.0:27853` (client TLS connections), `0.0.0.0:10801` (REST/WebSocket API).
 
 ### Client
@@ -84,8 +85,16 @@ cargo xtask -u
 
 ### Key Build-Time Environment Variables
 - `M0N1T0R_DOMAIN` — Server address baked into release client binary
-- `M0N1T0R_SECRET` — Session cookie signing key
 - `M0N1T0R_COUNTRY`, `M0N1T0R_STATE`, `M0N1T0R_LOCALITY`, `M0N1T0R_ORG`, `M0N1T0R_UNIT` — TLS cert subject fields
+
+### Server Runtime Configuration (`config.toml`)
+- `conn_addr` — Client TLS listener address (default: `0.0.0.0:27853`)
+- `api_addr` — REST/WebSocket API address (default: `0.0.0.0:10801`)
+- `key` — TLS private key path (required)
+- `cert` — TLS certificate path (required)
+- `use_https` — Use TLS for API server (default: `false`)
+- `log_level` — Logging verbosity (default: `debug`)
+- `secret` — Session cookie signing key (required)
 
 ### Key Dependencies
 - **tokio** — Async runtime

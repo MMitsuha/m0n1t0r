@@ -22,6 +22,7 @@ pub struct Config {
     addr: SocketAddr,
     tls_config: rustls::ServerConfig,
     use_https: bool,
+    secret: String,
 }
 
 impl From<&crate::Config> for Config {
@@ -30,11 +31,13 @@ impl From<&crate::Config> for Config {
             addr: config.api_addr,
             tls_config: config.tls_config.clone(),
             use_https: config.use_https,
+            secret: config.secret.clone(),
         }
     }
 }
 
 pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<()> {
+    let secret = config.secret.clone();
     let server = HttpServer::new(move || {
         let (path_config, query_config, form_config, multipart_config, json_config) =
             util::extractor_config();
@@ -45,7 +48,7 @@ pub async fn run(config: &Config, server_map: Arc<RwLock<ServerMap>>) -> Result<
             .wrap(IdentityMiddleware::default())
             .wrap(SessionMiddleware::new(
                 CookieSessionStore::default(),
-                Key::from(env!("M0N1T0R_SECRET").replace('-', "").as_bytes()),
+                Key::from(secret.replace('-', "").as_bytes()),
             ))
             // TODO: restrict origin
             .wrap(Cors::permissive())

