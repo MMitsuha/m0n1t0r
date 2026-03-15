@@ -1,5 +1,4 @@
 use crate::web::{Error, Result as WebResult};
-use discriminant_rs::Discriminant;
 use serde::Serialize;
 use serde_json::Value;
 

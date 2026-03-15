@@ -2,7 +2,6 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 use crate::web::Response;
 use actix_web::{HttpResponse, http::StatusCode};
-use discriminant_rs::Discriminant;
 use serde::Serialize;
 use thiserror::Error;
 
@@ -121,8 +120,8 @@ pub enum Error {
     Unknown,
 }
 
-impl Discriminant<i16> for Error {
-    fn discriminant(&self) -> i16 {
+impl Error {
+    pub fn discriminant(&self) -> i16 {
         match self {
             Error::Okay => 0,
             Error::Parse(ParseError::Serialize(_)) => -1,
