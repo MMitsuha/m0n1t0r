@@ -1,24 +1,24 @@
-use std::path::{Path, PathBuf};
+use crate::config;
+use std::path::PathBuf;
 
-const CA_CERT: &str = "ca.crt";
-const END_KEY: &str = "end.key";
-const END_CERT: &str = "end.crt";
-
-pub fn path() -> PathBuf {
-    Path::new(env!("CARGO_WORKSPACE_DIR")).join("certs")
+pub fn path() -> [PathBuf; 2] {
+    let config = config::read();
+    [config.tls.cert, config.tls.key]
 }
 
-pub fn check(certs: &Path) -> bool {
-    cargo_emit::rerun_if_changed!(certs.display());
-    check_no_rerun(certs)
+pub fn ensure() {
+    let certs = path();
+    for cert in &certs {
+        cargo_emit::rerun_if_changed!(cert.display());
+        if !check() {
+            panic!(
+                "No certificate {} found. Please run `cargo xtask -c` to generate one.",
+                cert.display()
+            );
+        }
+    }
 }
 
-pub fn check_no_rerun(certs: &Path) -> bool {
-    ![
-        certs.join(CA_CERT),
-        certs.join(END_KEY),
-        certs.join(END_CERT),
-    ]
-    .into_iter()
-    .any(|p| !p.exists())
+pub fn check() -> bool {
+    path().into_iter().any(|cert| !cert.exists())
 }

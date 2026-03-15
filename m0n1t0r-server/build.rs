@@ -1,5 +1,3 @@
-#![allow(unused)]
-
 #[cfg(not(any(
     feature = "winnt",
     feature = "linux",
@@ -8,13 +6,9 @@
 )))]
 compile_error!("No target platform specified.");
 
-use std::{
-    path::{Path, PathBuf},
-    process::Command,
-};
-
 #[cfg(feature = "winnt")]
 fn add_manifest_windows() {
+    use std::path::Path;
     use winapi::um::winnt;
 
     let mut res = winres::WindowsResource::new();

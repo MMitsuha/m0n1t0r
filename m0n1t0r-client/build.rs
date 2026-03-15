@@ -1,5 +1,3 @@
-#![allow(unused)]
-
 #[cfg(not(any(
     feature = "winnt",
     feature = "linux",
@@ -9,14 +7,11 @@
 compile_error!("No target platform specified.");
 
 use m0n1t0r_build::{cert, config, dep};
-use std::{
-    path::{Path, PathBuf},
-    process::Command,
-};
+use std::path::Path;
 
 fn bridge_build(bridges: &[&str]) {
     bridges.iter().for_each(|x| {
-        cxx_build::bridge(x);
+        let _ = cxx_build::bridge(x);
     });
 }
 
@@ -65,25 +60,11 @@ fn main() {
     dep::check_xmake();
     dep::check_xrepo();
 
-    let config_path = config::path();
+    config::ensure();
+    cert::ensure();
 
-    if !config::check(&config_path) {
-        panic!(
-            "No valid config found at {}. Please run `cargo xtask -i` to generate one.",
-            config_path.display()
-        );
-    }
-
-    cargo_emit::rustc_env!("M0N1T0R_DOMAIN", "{}", config::domain(&config_path));
-
-    let certs = cert::path();
-
-    if !cert::check(&certs) {
-        panic!(
-            "No certificates under {} found. Please run `cargo xtask -c` to generate one.",
-            certs.display()
-        );
-    }
+    cargo_emit::rustc_env!("M0N1T0R_DOMAIN", "{}", config::read().cert.domain);
+    cargo_emit::rustc_env!("M0N1T0R_CONN_PORT", "{}", config::read().conn.addr.port());
 
     bridge_build(&["src/init.rs"]);
     #[cfg(feature = "winnt")]

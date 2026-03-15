@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use flexi_logger::Logger;
-use m0n1t0r_common::config::FileConfig;
+use m0n1t0r_build::config::FileConfig;
 use m0n1t0r_server::{Config, ServerMap};
 use std::sync::Arc;
 use tokio::sync::RwLock;

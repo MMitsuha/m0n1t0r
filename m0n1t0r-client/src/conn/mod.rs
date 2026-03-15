@@ -13,8 +13,7 @@ use remoc::{
     rch::base::{Receiver as RemoteReceiver, Sender as RemoteSender},
 };
 use rustls::RootCertStore;
-#[allow(unused_imports)]
-use rustls_pki_types::{CertificateDer, DnsName, ServerName, pem::PemObject as _};
+use rustls_pki_types::{CertificateDer, ServerName, pem::PemObject as _};
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 use tokio::{
     io,
@@ -96,8 +95,12 @@ fn ca_store() -> Result<RootCertStore> {
         "certs/ca.crt"
     ))) {
         store
-            .add(cert.map_err(|e| m0n1t0r_common::Error::Parse(ParseError::Certificate(serde_error::Error::new(&e))))?)
-            .map_err(|e| m0n1t0r_common::Error::Parse(ParseError::Certificate(serde_error::Error::new(&e))))?;
+            .add(cert.map_err(|e| {
+                m0n1t0r_common::Error::Parse(ParseError::Certificate(serde_error::Error::new(&e)))
+            })?)
+            .map_err(|e| {
+                m0n1t0r_common::Error::Parse(ParseError::Certificate(serde_error::Error::new(&e)))
+            })?;
     }
 
     Ok(store)
@@ -171,8 +174,9 @@ pub async fn accept(
     let stream = TcpStream::connect(addr).await?;
     let stream = connector
         .connect(
-            ServerName::try_from(host.to_string())
-                .map_err(|e| m0n1t0r_common::Error::Parse(ParseError::DnsName(serde_error::Error::new(&e))))?,
+            ServerName::try_from(host.to_string()).map_err(|e| {
+                m0n1t0r_common::Error::Parse(ParseError::DnsName(serde_error::Error::new(&e)))
+            })?,
             stream,
         )
         .await?;

@@ -6,8 +6,6 @@ use m0n1t0r_client::Config;
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
-const DEFAULT_SERVER_PORT: u16 = 27853;
-
 #[cfg(not(debug_assertions))]
 async fn init() -> Result<()> {
     use std::time::Duration;
@@ -30,11 +28,12 @@ async fn main() -> Result<()> {
     #[cfg(not(debug_assertions))]
     init().await?;
 
+    let port = env!("M0N1T0R_CONN_PORT").parse()?;
     let client_map = Arc::new(RwLock::new(HashMap::new()));
     #[cfg(debug_assertions)]
-    let config = Config::new("127.0.0.1", DEFAULT_SERVER_PORT);
+    let config = Config::new("127.0.0.1", port);
     #[cfg(not(debug_assertions))]
-    let config = Config::new(env!("M0N1T0R_DOMAIN"), DEFAULT_SERVER_PORT);
+    let config = Config::new(env!("M0N1T0R_DOMAIN"), port);
 
     m0n1t0r_client::run(&config, client_map).await?;
     Ok(())

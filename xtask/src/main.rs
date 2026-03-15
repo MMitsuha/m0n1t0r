@@ -3,12 +3,12 @@ use clap::Parser;
 use dialoguer::{Confirm, Input};
 use flexi_logger::Logger;
 use log::{info, warn};
-use m0n1t0r_build::{cert, config as build_config};
-use m0n1t0r_common::config::{
-    ApiConfig, CertConfig, ConnConfig, FileConfig, GeneralConfig, TlsConfig,
+use m0n1t0r_build::{
+    cert as build_cert, config as build_config,
+    config::{ApiConfig, CertConfig, ConnConfig, FileConfig, GeneralConfig, TlsConfig},
 };
 use rcgen::{CertificateParams, DnType, IsCa, KeyPair};
-use std::{fs, path::Path};
+use std::fs;
 use time::{Duration, OffsetDateTime};
 
 #[derive(Parser, Debug)]
@@ -20,8 +20,14 @@ struct Arguments {
     init: bool,
 }
 
-fn generate_certs(config: &CertConfig, certs_dir: &Path) -> Result<()> {
-    fs::create_dir_all(certs_dir)?;
+fn generate_certs() -> Result<()> {
+    let config = build_config::read();
+    if let Some(parent) = config.tls.cert.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    if let Some(parent) = config.tls.key.parent() {
+        fs::create_dir_all(parent)?;
+    }
 
     let now = OffsetDateTime::now_utc();
     let not_after = now + Duration::days(3650);
@@ -33,59 +39,58 @@ fn generate_certs(config: &CertConfig, certs_dir: &Path) -> Result<()> {
     ca_params.not_after = not_after;
     ca_params
         .distinguished_name
-        .push(DnType::CountryName, &config.country);
+        .push(DnType::CountryName, &config.cert.country);
     ca_params
         .distinguished_name
-        .push(DnType::StateOrProvinceName, &config.state);
+        .push(DnType::StateOrProvinceName, &config.cert.state);
     ca_params
         .distinguished_name
-        .push(DnType::LocalityName, &config.locality);
+        .push(DnType::LocalityName, &config.cert.locality);
     ca_params
         .distinguished_name
-        .push(DnType::OrganizationName, &config.org);
+        .push(DnType::OrganizationName, &config.cert.org);
     ca_params
         .distinguished_name
-        .push(DnType::OrganizationalUnitName, &config.unit);
+        .push(DnType::OrganizationalUnitName, &config.cert.unit);
     ca_params
         .distinguished_name
-        .push(DnType::CommonName, format!("{}.", &config.domain));
+        .push(DnType::CommonName, format!("{}.", &config.cert.domain));
 
     let ca_key = KeyPair::generate()?;
     let ca_cert = ca_params.self_signed(&ca_key)?;
 
     // Generate end entity
-    let mut end_params = CertificateParams::new(vec![config.domain.clone()])?;
+    let mut end_params = CertificateParams::new(vec![config.cert.domain.clone()])?;
     end_params.is_ca = IsCa::NoCa;
     end_params.not_before = now;
     end_params.not_after = not_after;
     end_params
         .distinguished_name
-        .push(DnType::CountryName, &config.country);
+        .push(DnType::CountryName, &config.cert.country);
     end_params
         .distinguished_name
-        .push(DnType::StateOrProvinceName, &config.state);
+        .push(DnType::StateOrProvinceName, &config.cert.state);
     end_params
         .distinguished_name
-        .push(DnType::LocalityName, &config.locality);
+        .push(DnType::LocalityName, &config.cert.locality);
     end_params
         .distinguished_name
-        .push(DnType::OrganizationName, &config.org);
+        .push(DnType::OrganizationName, &config.cert.org);
     end_params
         .distinguished_name
-        .push(DnType::OrganizationalUnitName, &config.unit);
+        .push(DnType::OrganizationalUnitName, &config.cert.unit);
     end_params
         .distinguished_name
-        .push(DnType::CommonName, format!("{}.", &config.domain));
+        .push(DnType::CommonName, format!("{}.", &config.cert.domain));
 
     let end_key = KeyPair::generate()?;
     let end_cert = end_params.signed_by(&end_key, &ca_cert, &ca_key)?;
 
     // Write files
-    fs::write(certs_dir.join("ca.crt"), ca_cert.pem())?;
-    fs::write(certs_dir.join("end.key"), end_key.serialize_pem())?;
-    fs::write(certs_dir.join("end.crt"), end_cert.pem())?;
+    fs::write(config.tls.key, end_key.serialize_pem())?;
+    fs::write(config.tls.cert, end_cert.pem())?;
 
-    info!("Certificates generated under {}", certs_dir.display());
+    info!("Certificates generated");
     Ok(())
 }
 
@@ -96,15 +101,8 @@ fn prompt(name: &str, default: &str) -> Result<String> {
         .interact_text()?)
 }
 
-fn init_config(config_path: &Path) -> Result<()> {
-    if config_path.exists()
-        && !Confirm::new()
-            .with_prompt(format!("{} already exists. Overwrite?", config_path.display()))
-            .default(false)
-            .interact()?
-    {
-        return Ok(());
-    }
+fn init_config() -> Result<()> {
+    let config_path = build_config::path();
 
     println!("=== General ===");
     let log_level = prompt("Log level", "debug")?;
@@ -159,7 +157,7 @@ fn init_config(config_path: &Path) -> Result<()> {
     };
 
     let content = toml::to_string_pretty(&config)?;
-    fs::write(config_path, &content)?;
+    fs::write(&config_path, &content)?;
     info!("Config written to {}", config_path.display());
 
     Ok(())
@@ -170,32 +168,19 @@ fn main() -> Result<()> {
     let args = Arguments::parse();
 
     if args.init {
-        let config_path = build_config::path();
-        init_config(&config_path)?;
+        if build_config::check() {
+            warn!("Config found.");
+            return Ok(());
+        }
+        init_config()?;
     }
 
     if args.cert {
-        let certs = cert::path();
-
-        if cert::check_no_rerun(&certs) {
-            warn!("Certificates found under {}.", certs.display());
+        if build_cert::check() {
+            warn!("Certificates found.");
             return Ok(());
         }
-
-        let config_path = build_config::path();
-
-        if !build_config::check_no_rerun(&config_path) {
-            panic!(
-                "No valid config found at {}. Please run `cargo xtask -i` to generate one.",
-                config_path.display()
-            );
-        }
-
-        let content = fs::read_to_string(&config_path)
-            .context(format!("failed to read {}", config_path.display()))?;
-        let file_config: FileConfig = toml::from_str(&content)
-            .context(format!("failed to parse {}", config_path.display()))?;
-        generate_certs(&file_config.cert, &certs)?;
+        generate_certs()?;
     }
 
     Ok(())

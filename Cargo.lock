@@ -3474,7 +3474,9 @@ dependencies = [
  "execute",
  "nom 8.0.0",
  "regex",
+ "serde 1.0.228",
  "strip-ansi-escapes",
+ "toml 0.8.23",
  "vergen",
 ]
 
@@ -3503,7 +3505,6 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "tokio-util",
- "toml 0.8.23",
  "winapi 0.3.9",
  "windows 0.62.2",
  "winres",
@@ -3576,6 +3577,7 @@ dependencies = [
  "lazy_static",
  "libsw",
  "log",
+ "m0n1t0r-build",
  "m0n1t0r-common",
  "qqkey",
  "rayon",
@@ -7886,7 +7888,6 @@ dependencies = [
  "flexi_logger 0.31.8",
  "log",
  "m0n1t0r-build",
- "m0n1t0r-common",
  "rcgen",
  "time",
  "toml 0.8.23",

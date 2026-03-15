@@ -47,12 +47,8 @@ pub enum ParseError {
     WebParameter(serde_error::Error),
 }
 
-#[allow(unused)]
 #[derive(Error, Debug, Serialize, Clone)]
 pub enum AuthError {
-    #[error("unauthorized: {0}")]
-    Unauthorized(serde_error::Error),
-
     #[error("forbidden: {0}")]
     Forbidden(serde_error::Error),
 
@@ -79,7 +75,6 @@ pub enum ExternalError {
     QQKey(qqkey::Error),
 }
 
-#[allow(unused)]
 #[derive(Error, Debug, Serialize, Clone)]
 pub enum Error {
     #[error(transparent)]
@@ -138,7 +133,6 @@ impl Error {
             Error::Network(NetworkError::DnsLookupFailed) => -12,
             Error::Network(NetworkError::Socks5(_)) => -13,
             Error::Auth(AuthError::Forbidden(_)) => -14,
-            Error::Auth(AuthError::Unauthorized(_)) => -15,
             Error::Generic(_) => -16,
             Error::Unimplemented => -17,
             Error::Network(NetworkError::InvalidForward) => -18,
@@ -165,9 +159,6 @@ impl actix_web::ResponseError for Error {
             | Error::Parse(ParseError::Command(_))
             | Error::Parse(ParseError::IntValue(_))
             | Error::Parse(ParseError::IpAddress(_)) => StatusCode::BAD_REQUEST,
-
-            // 401 Unauthorized
-            Error::Auth(AuthError::Unauthorized(_)) => StatusCode::UNAUTHORIZED,
 
             // 403 Forbidden
             Error::Auth(AuthError::Forbidden(_)) | Error::Auth(AuthError::PasswordMismatch) => {
