@@ -22,11 +22,10 @@ struct Arguments {
 
 fn generate_certs() -> Result<()> {
     let config = build_config::read();
-    if let Some(parent) = config.tls.cert.parent() {
-        fs::create_dir_all(parent)?;
-    }
-    if let Some(parent) = config.tls.key.parent() {
-        fs::create_dir_all(parent)?;
+    for path in [&config.tls.ca, &config.tls.cert, &config.tls.key] {
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
     }
 
     let now = OffsetDateTime::now_utc();
@@ -87,6 +86,7 @@ fn generate_certs() -> Result<()> {
     let end_cert = end_params.signed_by(&end_key, &ca_cert, &ca_key)?;
 
     // Write files
+    fs::write(config.tls.ca, ca_cert.pem())?;
     fs::write(config.tls.key, end_key.serialize_pem())?;
     fs::write(config.tls.cert, end_cert.pem())?;
 
@@ -122,6 +122,7 @@ fn init_config() -> Result<()> {
         .interact()?;
 
     println!("\n=== TLS ===");
+    let tls_ca = prompt("CA cert path", "certs/ca.crt")?;
     let tls_key = prompt("TLS key path", "certs/end.key")?;
     let tls_cert = prompt("TLS cert path", "certs/end.crt")?;
 
@@ -145,6 +146,7 @@ fn init_config() -> Result<()> {
         tls: TlsConfig {
             key: tls_key.into(),
             cert: tls_cert.into(),
+            ca: tls_ca.into(),
         },
         cert: CertConfig {
             country,
@@ -176,7 +178,7 @@ fn main() -> Result<()> {
     }
 
     if args.cert {
-        if build_cert::check() {
+        if !build_cert::check() {
             warn!("Certificates found.");
             return Ok(());
         }

@@ -58,6 +58,7 @@ impl Default for ApiConfig {
 pub struct TlsConfig {
     pub key: PathBuf,
     pub cert: PathBuf,
+    pub ca: PathBuf,
 }
 
 #[derive(Serialize, Deserialize)]

@@ -63,8 +63,16 @@ fn main() {
     config::ensure();
     cert::ensure();
 
-    cargo_emit::rustc_env!("M0N1T0R_DOMAIN", "{}", config::read().cert.domain);
-    cargo_emit::rustc_env!("M0N1T0R_CONN_PORT", "{}", config::read().conn.addr.port());
+    let cfg = config::read();
+    cargo_emit::rustc_env!("M0N1T0R_DOMAIN", "{}", cfg.cert.domain);
+    cargo_emit::rustc_env!("M0N1T0R_CONN_PORT", "{}", cfg.conn.addr.port());
+    cargo_emit::rustc_env!(
+        "M0N1T0R_CA",
+        "{}",
+        Path::new(env!("CARGO_WORKSPACE_DIR"))
+            .join(&cfg.tls.ca)
+            .display()
+    );
 
     bridge_build(&["src/init.rs"]);
     #[cfg(feature = "winnt")]

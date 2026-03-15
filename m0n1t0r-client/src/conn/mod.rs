@@ -90,10 +90,7 @@ async fn server_task(
 fn ca_store() -> Result<RootCertStore> {
     let mut store = RootCertStore::empty();
 
-    for cert in CertificateDer::pem_slice_iter(include_bytes!(concat!(
-        env!("CARGO_WORKSPACE_DIR"),
-        "certs/ca.crt"
-    ))) {
+    for cert in CertificateDer::pem_slice_iter(include_bytes!(env!("M0N1T0R_CA"))) {
         store
             .add(cert.map_err(|e| {
                 m0n1t0r_common::Error::Parse(ParseError::Certificate(serde_error::Error::new(&e)))

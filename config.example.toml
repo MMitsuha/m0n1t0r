@@ -10,6 +10,7 @@ addr = "0.0.0.0:10801"
 use_https = false
 
 [tls]
+ca = "certs/ca.crt"
 key = "certs/end.key"
 cert = "certs/end.crt"
 
