@@ -84,13 +84,10 @@ In debug mode, connects to `127.0.0.1:27853`. In release mode, server address is
 - `M0N1T0R_COUNTRY`, `M0N1T0R_STATE`, `M0N1T0R_LOCALITY`, `M0N1T0R_ORG`, `M0N1T0R_UNIT` — TLS cert subject fields
 
 ### Server Runtime Configuration (`config.toml`)
-- `conn_addr` — Client TLS listener address (default: `0.0.0.0:27853`)
-- `api_addr` — REST/WebSocket API address (default: `0.0.0.0:10801`)
-- `key` — TLS private key path (required)
-- `cert` — TLS certificate path (required)
-- `use_https` — Use TLS for API server (default: `false`)
-- `log_level` — Logging verbosity (default: `debug`)
-- `secret` — Session cookie signing key (required)
+- **`[general]`** — `log_level` (default: `debug`), `secret` (required, session cookie signing key)
+- **`[conn]`** — `addr` (default: `0.0.0.0:27853`, client TLS listener)
+- **`[api]`** — `addr` (default: `0.0.0.0:10801`, REST/WebSocket API), `use_https` (default: `false`)
+- **`[tls]`** — `key`, `cert` (required, PEM file paths)
 
 ### Key Dependencies
 - **tokio** — Async runtime

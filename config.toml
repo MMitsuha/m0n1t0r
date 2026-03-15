@@ -1,7 +1,14 @@
-conn_addr = "0.0.0.0:27853"
-api_addr = "0.0.0.0:10801"
-key = "certs/end.key"
-cert = "certs/end.crt"
-use_https = false
+[general]
 log_level = "debug"
 secret = "e2ba92d3-9c5f-410a-9ce8-de0b8717a0f841dd9d92-9c44-455c-8f3e-3f92c4d03cd9"
+
+[conn]
+addr = "0.0.0.0:27853"
+
+[api]
+addr = "0.0.0.0:10801"
+use_https = false
+
+[tls]
+key = "certs/end.key"
+cert = "certs/end.crt"
