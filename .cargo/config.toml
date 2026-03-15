@@ -4,12 +4,7 @@ xtask = "run --package xtask --bin xtask --"
 
 [env]
 CARGO_WORKSPACE_DIR = { value = "", relative = true }
-M0N1T0R_COUNTRY = "CN"
-M0N1T0R_STATE = "ShangHai"
-M0N1T0R_LOCALITY = "ShangHai"
 M0N1T0R_DOMAIN = "home.mmitsuha.xyz"
-M0N1T0R_ORG = "K and A Ltd"
-M0N1T0R_UNIT = "."
 
 [target.'cfg(all(target_os="windows", target_env="msvc"))']
 rustflags = [

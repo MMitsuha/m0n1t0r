@@ -1778,27 +1778,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "discriminant-derive"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ac9470ba300cf35183b73ce3c04905830a7151e78774019c6a49148b196f724"
-dependencies = [
- "proc-macro2 1.0.106",
- "quote 1.0.44",
- "syn 2.0.117",
-]
-
-[[package]]
-name = "discriminant-rs"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7ebbd42865c893403ad9f1616ab4c20567b33eae06ab8021b765c2b49ffcbee"
-dependencies = [
- "discriminant-derive",
- "num-traits 0.2.19",
-]
-
-[[package]]
 name = "dispatch2"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3556,7 +3535,6 @@ dependencies = [
  "async_channel_io",
  "async_fn_traits",
  "chrono",
- "discriminant-rs",
  "dotenvy",
  "ffmpeg-next",
  "flexi_logger 0.31.8",
@@ -4351,6 +4329,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "19b17cddbe7ec3f8bc800887bab5e717348c95ea2ca0b1bf0837fb964dc67099"
 
 [[package]]
+name = "pem"
+version = "3.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d30c53c26bc5b31a98cd02d20f25a7c8567146caf63ed593a9d87b2775291be"
+dependencies = [
+ "base64 0.22.1",
+ "serde_core",
+]
+
+[[package]]
 name = "percent-encoding"
 version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4964,6 +4952,19 @@ checksum = "22e18b0f0062d30d4230b2e85ff77fdfe4326feb054b9783a3460d8435c8ab91"
 dependencies = [
  "crossbeam-deque",
  "crossbeam-utils",
+]
+
+[[package]]
+name = "rcgen"
+version = "0.13.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75e669e5202259b5314d1ea5397316ad400819437857b90861765f24c4cf80a2"
+dependencies = [
+ "pem",
+ "ring",
+ "rustls-pki-types",
+ "time",
+ "yasna",
 ]
 
 [[package]]
@@ -7847,11 +7848,23 @@ name = "xtask"
 version = "1.1.0"
 dependencies = [
  "anyhow",
- "cargo-emit",
  "clap 4.5.60",
  "flexi_logger 0.31.8",
  "log",
  "m0n1t0r-build",
+ "rcgen",
+ "serde 1.0.228",
+ "time",
+ "toml 0.8.23",
+]
+
+[[package]]
+name = "yasna"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e17bb3549cc1321ae1296b9cdc2698e2b6cb1992adfa19a8c72e5b7a738f44cd"
+dependencies = [
+ "time",
 ]
 
 [[package]]

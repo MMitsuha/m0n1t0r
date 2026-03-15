@@ -1,13 +1,6 @@
 use regex::Regex;
 use std::process::Command;
 
-pub fn check_openssl() {
-    Command::new("openssl")
-        .arg("-v")
-        .output()
-        .expect("No openssl found. Please install openssl.");
-}
-
 pub fn check_xmake() {
     Command::new("xmake")
         .arg("--help")

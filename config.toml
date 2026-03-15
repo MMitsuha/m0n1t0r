@@ -12,3 +12,11 @@ use_https = false
 [tls]
 key = "certs/end.key"
 cert = "certs/end.crt"
+
+[cert]
+country = "CN"
+state = "ShangHai"
+locality = "ShangHai"
+org = "K and A Ltd"
+unit = "."
+domain = "home.mmitsuha.xyz"
