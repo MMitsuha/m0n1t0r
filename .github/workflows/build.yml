@@ -99,7 +99,10 @@ jobs:
 
       - name: Clone vcpkg
         if: steps.vcpkg-cache.outputs.cache-hit != 'true'
-        run: git clone https://github.com/microsoft/vcpkg
+        run: |
+          [ -d vcpkg ] && rm -rf vcpkg
+          git clone https://github.com/microsoft/vcpkg
+        shell: bash
 
       - name: Bootstrap vcpkg (Unix)
         if: steps.vcpkg-cache.outputs.cache-hit != 'true' && runner.os != 'Windows'
