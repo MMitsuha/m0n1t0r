@@ -15,15 +15,10 @@ m0n1t0r is a cross-platform C2 (command and control) framework written in Rust. 
 - vcpkg with packages: `libvpx libyuv opus aom ffmpeg`
 - System: `binutils meson nasm ninja autoconf automake cmake pkg-config ffmpeg` (via brew on macOS)
 
-### Generate config.toml (required before first build)
+### First-Time Setup
 ```
-cargo xtask -i
-```
-Interactive TUI wizard that creates `config.toml` with all settings.
-
-### Generate TLS Certificates (required before first build)
-```
-cargo xtask -c
+cargo xtask -i    # interactive config.toml generator
+cargo xtask -c    # generate TLS certificates
 ```
 
 ### Build Rust Binaries
@@ -49,10 +44,9 @@ cd m0n1t0r-ui && bun run lint
 ./target/release/m0n1t0r-server [config.toml]
 ```
 Configuration is read from a TOML file (defaults to `config.toml` in the working directory).
-Default ports: `0.0.0.0:27853` (client TLS connections), `0.0.0.0:10801` (REST/WebSocket API).
 
 ### Client
-In debug mode, connects to `127.0.0.1:27853`. In release mode, server address is baked in via `M0N1T0R_DOMAIN` env var at compile time.
+In debug mode, connects to `127.0.0.1`. In release mode, server address and port are baked in from `config.toml` `[cert].domain` and `[conn].addr` at compile time.
 
 ## Architecture
 
@@ -61,19 +55,19 @@ In debug mode, connects to `127.0.0.1:27853`. In release mode, server address is
 - **m0n1t0r-client** — Agent binary that connects back to the server over TLS
 - **m0n1t0r-common** — Shared types, RPC trait definitions, error types (the contract between server and client)
 - **m0n1t0r-ui** — React + TypeScript + Vite + Ant Design web dashboard
-- **m0n1t0r-build** — Build-time utilities (cert generation, version tracking via vergen, dependency validation)
+- **m0n1t0r-build** — Build-time utilities (config loading, cert validation, version tracking via vergen, dependency validation)
 - **m0n1t0r-macro** — Procedural macros
-- **xtask** — Build automation (cert generation)
+- **xtask** — Build automation (interactive config generator, cert generation via rcgen)
 - **deps/** — Vendored dependencies (qqkey, scrap with wayland support)
 
 ### Communication Model
-1. **Client → Server**: TLS connection on port 27853, bidirectional async RPC via `remoc` crate with MessagePack serialization
-2. **UI → Server**: HTTP REST API + WebSocket on port 10801 at `/api/v1/`
-3. Server maintains a `ServerMap` (slotmap-based) tracking connected clients as `ServerObj` instances
+1. **Client → Server**: TLS connection (port configurable via `[conn].addr`), bidirectional async RPC via `remoc` crate with MessagePack serialization
+2. **UI → Server**: HTTP REST API + WebSocket (port configurable via `[api].addr`) at `/api/v1/`
+3. Server maintains a `ServerMap` tracking connected clients as `ServerObj` instances
 4. API handlers look up clients in the map and invoke RPC methods through remoc channels
 
 ### Server API Layout (`m0n1t0r-server/src/web/api/`)
-- `client/` — Per-client endpoints: fs, process, proxy, rd (remote desktop), qq, update, autorun
+- `client/` — Per-client endpoints: fs, process, proxy, rd (remote desktop, requires `rd` feature), qq, update, autorun
 - `server/` — Server-wide: notifications, proxy list
 - `session/` — Authentication (TODO)
 - `global/` — Server info, version
@@ -86,20 +80,22 @@ In debug mode, connects to `127.0.0.1:27853`. In release mode, server address is
 - Platform dispatch uses Cargo features and `cfg_block`
 
 ### Configuration (`config.toml`)
-- **`[general]`** — `log_level` (default: `debug`), `secret` (required, session cookie signing key)
+Generated interactively via `cargo xtask -i`. See `config.example.toml` for reference.
+- **`[general]`** — `log_level` (default: `debug`), `secret` (session cookie signing key)
 - **`[conn]`** — `addr` (default: `0.0.0.0:27853`, client TLS listener)
 - **`[api]`** — `addr` (default: `0.0.0.0:10801`, REST/WebSocket API), `use_https` (default: `false`)
-- **`[tls]`** — `key`, `cert` (required, PEM file paths)
-- **`[cert]`** — `country`, `state`, `locality`, `org`, `unit`, `domain` (used by `cargo xtask -c` to generate TLS certs)
+- **`[tls]`** — `key`, `cert` (PEM file paths for TLS)
+- **`[cert]`** — `country`, `state`, `locality`, `org`, `unit`, `domain` (used by `cargo xtask -c` to generate TLS certs; `domain` is also baked into client binary)
 
 ### Key Dependencies
 - **tokio** — Async runtime
 - **actix-web** — HTTP server (with rustls, secure cookies, WebSocket via actix-ws)
 - **remoc** — Async RPC framework (MessagePack codec over TLS)
 - **rustls** — TLS implementation (both server and client)
+- **rcgen** — Pure Rust TLS certificate generation (xtask)
 - **cxx** — C++ FFI for platform-specific native code
-- **ffmpeg-next** — Video encoding for remote desktop
-- **scrap** — Screen capture (vendored, with wayland support)
+- **ffmpeg-next** — Video encoding for remote desktop (optional, behind `rd` feature)
+- **scrap** — Screen capture (vendored, with wayland support, optional behind `rd` feature)
 
 ### Release Profile
 Binaries are optimized for size: `opt-level = "z"`, LTO enabled, single codegen unit, symbols stripped, panic=abort.

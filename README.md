@@ -8,7 +8,7 @@ A high-performance, cross-platform command and control framework for red teams, 
 ## Features
 
 - **File Operations** — Browse, upload, download, and delete files on remote clients
-- **Remote Desktop** — Real-time screen capture with multi-display and quality control (VP9/RGB/MPEG1/YUV)
+- **Remote Desktop** — Real-time screen capture with multi-display and quality control (VP9/RGB/MPEG1/YUV) *(optional `rd` feature)*
 - **Interactive Shell** — Execute commands and spawn interactive terminal sessions
 - **SOCKS5 Proxy** — Create SOCKS5 proxies (no-auth / password) and TCP port forwards through clients
 - **Process Management** — List, kill, and execute processes (blocked or detached)
@@ -26,10 +26,9 @@ m0n1t0r/
 ├── m0n1t0r-client/    # Agent — connects back to server over TLS
 ├── m0n1t0r-common/    # Shared types, RPC definitions, and utilities
 ├── m0n1t0r-ui/        # React + TypeScript web dashboard
-├── m0n1t0r-build/     # Build-time helpers (cert generation)
+├── m0n1t0r-build/     # Build-time helpers (config loading, cert validation)
 ├── m0n1t0r-macro/     # Procedural macros
 ├── xtask/             # Build tasks (cargo xtask)
-├── certs/             # Generated TLS certificates
 └── deps/              # Vendored dependencies
 ```
 
@@ -51,29 +50,30 @@ Communication between server and clients uses **remoc** (async RPC with MessageP
 - **FFmpeg** development libraries
 - **Node.js / Bun** — for building the web UI (optional)
 
-## Environment Variables
+## Configuration
 
-The following must be set at **build time** (or via a `.env` file):
+All settings are stored in a single `config.toml` file (see `config.example.toml` for reference). Generate it interactively:
 
-| Variable | Description |
-|----------|-------------|
-| `M0N1T0R_DOMAIN` | Server hostname — baked into client binary and used as TLS cert CN/SAN |
-| `M0N1T0R_SECRET` | Session cookie signing key for the API server |
-| `M0N1T0R_COUNTRY` | TLS certificate subject — Country (C) |
-| `M0N1T0R_STATE` | TLS certificate subject — State (ST) |
-| `M0N1T0R_LOCALITY` | TLS certificate subject — Locality (L) |
-| `M0N1T0R_ORG` | TLS certificate subject — Organization (O) |
-| `M0N1T0R_UNIT` | TLS certificate subject — Organizational Unit (OU) |
+```bash
+cargo xtask -i
+```
+
+| Section | Key Fields | Description |
+|---------|-----------|-------------|
+| `[general]` | `log_level`, `secret` | Logging level and session cookie signing key |
+| `[conn]` | `addr` | Client TLS listener address (default: `0.0.0.0:27853`) |
+| `[api]` | `addr`, `use_https` | REST/WebSocket API address (default: `0.0.0.0:10801`) |
+| `[tls]` | `key`, `cert` | Paths to TLS certificate PEM files |
+| `[cert]` | `country`, `state`, `locality`, `org`, `unit`, `domain` | Certificate subject fields; `domain` is also baked into the client binary |
 
 ## Build
 
-### 1. Generate TLS Certificates
+### 1. Generate Configuration and TLS Certificates
 
 ```bash
-cargo xtask -c
+cargo xtask -i    # interactive config.toml generator
+cargo xtask -c    # generate TLS certificates (pure Rust, no openssl needed)
 ```
-
-This generates a self-signed CA and end-entity certificate under `certs/`. The CA certificate is embedded into the client binary during compilation.
 
 ### 2. Build Server & Client
 
@@ -95,9 +95,10 @@ export VCPKG_ROOT=$PWD/vcpkg
 ./vcpkg/vcpkg install libvpx libyuv opus aom mfx-dispatch ffmpeg
 
 cargo install cxxbridge-cmd
+cargo xtask -i
 cargo xtask -c
-cargo build --bin m0n1t0r-server --features linux -r
-cargo build --bin m0n1t0r-client --features linux -r
+cargo build --bin m0n1t0r-server --features linux,rd -r
+cargo build --bin m0n1t0r-client --features linux,rd -r
 ```
 
 #### Windows
@@ -112,9 +113,10 @@ $env:VCPKG_ROOT = "$PWD/vcpkg"
 
 scoop install main/xmake
 cargo install cxxbridge-cmd
+cargo xtask -i
 cargo xtask -c
-cargo build --bin m0n1t0r-server --features winnt -r
-cargo build --bin m0n1t0r-client --features winnt -r
+cargo build --bin m0n1t0r-server --features winnt,rd -r
+cargo build --bin m0n1t0r-client --features winnt,rd -r
 ```
 
 #### macOS
@@ -129,9 +131,10 @@ export VCPKG_ROOT=$PWD/vcpkg
 ./vcpkg/vcpkg install libvpx libyuv opus aom ffmpeg
 
 cargo install cxxbridge-cmd
+cargo xtask -i
 cargo xtask -c
-cargo build --bin m0n1t0r-server --features macos -r
-cargo build --bin m0n1t0r-client --features macos -r
+cargo build --bin m0n1t0r-server --features macos,rd -r
+cargo build --bin m0n1t0r-client --features macos,rd -r
 ```
 
 ### 3. Build Web UI (Optional)
@@ -154,6 +157,12 @@ A platform feature **must** be specified at build time:
 | `winnt` | Windows |
 | `winnt-uac` | Windows with UAC elevation (client only) |
 | `macos` | macOS |
+
+Optional features:
+
+| Feature | Description |
+|---------|-------------|
+| `rd` | Remote desktop (enables ffmpeg, scrap, hbb_common) |
 
 ## Docker
 
@@ -181,25 +190,14 @@ docker compose run -v ./certs:/app/certs m0n1t0r
 ### Start the Server
 
 ```bash
-m0n1t0r-server \
-  --conn-addr 0.0.0.0:27853 \
-  --api-addr 0.0.0.0:10801 \
-  --key certs/end.key \
-  --cert certs/end.crt
+m0n1t0r-server [config.toml]
 ```
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--conn-addr` | `0.0.0.0:27853` | Address for client connections |
-| `--api-addr` | `0.0.0.0:10801` | Address for the REST/WebSocket API |
-| `--key` | *(required)* | Path to TLS private key PEM |
-| `--cert` | *(required)* | Path to TLS certificate PEM |
-| `--use-https` | `true` in release | Enable HTTPS for the API |
-| `--log-level` | `debug` | Log verbosity level |
+The server reads all settings from `config.toml` (defaults to `config.toml` in the working directory). See `config.example.toml` for all available options.
 
 ### Deploy the Client
 
-The client binary requires no arguments. The server address is baked in at compile time via `M0N1T0R_DOMAIN`. It connects to port `27853` and automatically reconnects every 10 seconds on failure.
+The client binary requires no arguments. The server address and port are baked in at compile time from `config.toml`. It automatically reconnects every 10 seconds on failure.
 
 On Windows, the client runs as a hidden process (no console window).
 

@@ -34,7 +34,6 @@ All REST endpoints return a standard JSON envelope:
 | -11 | QQKeyError | 500 | QQ key operation failed |
 | -13 | Socks5Error | 500 | SOCKS5 protocol error |
 | -14 | Forbidden | 403 | Forbidden |
-| -15 | Unauthorized | 401 | Unauthorized |
 | -16 | GenericError | 500 | Generic error |
 | -17 | Unimplemented | 500 | Feature not implemented |
 | -19 | FFmpegError | 500 | FFmpeg encoding/decoding error |
@@ -44,7 +43,7 @@ All REST endpoints return a standard JSON envelope:
 
 ## Session
 
-> **Note:** Session endpoints are currently **not implemented** (TODO). The server uses cookie-based sessions with `M0N1T0R_SECRET` as the signing key. CORS is permissive (allows all origins).
+> **Note:** Session endpoints are currently **not implemented** (TODO). The server uses cookie-based sessions with `[general].secret` from `config.toml` as the signing key. CORS is permissive (allows all origins).
 
 ### POST /api/v1/session
 
