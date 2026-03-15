@@ -8,7 +8,7 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ gcc git curl wget nasm yasm clang cmake make ninja-build pkg-config \
-    libclang-dev libssl-dev ca-certificates openssl \
+    libclang-dev libssl-dev ca-certificates \
     libgtk-3-dev libxcb-randr0-dev libxdo-dev libxfixes-dev \
     libxcb-shape0-dev libxcb-xfixes0-dev libasound2-dev libpulse-dev \
     libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libpam0g-dev \
@@ -29,10 +29,11 @@ RUN /opt/vcpkg/vcpkg install libvpx libyuv opus aom ffmpeg
 # Copy source tree
 COPY . .
 
-# Generate TLS certificates
-RUN cargo xtask -c
+# Use example config for build (config.toml is gitignored)
+RUN cp config.example.toml config.toml
 
-# Build server in release mode
+# Generate TLS certificates and build server
+RUN cargo xtask -c
 RUN cargo build --release --features linux,rd --bin m0n1t0r-server
 
 # =============================================================================
@@ -54,7 +55,7 @@ RUN bun run build
 FROM debian:trixie-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates openssl nginx \
+    ca-certificates nginx \
     libgtk-3-0 libxcb-randr0 libxdo3 libxfixes3 \
     libxcb-shape0 libxcb-xfixes0 libasound2t64 libpulse0 \
     libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 libpam0g \
@@ -63,8 +64,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Copy server binary
+# Copy server binary and config
 COPY --from=server-builder /app/target/release/m0n1t0r-server /app/m0n1t0r-server
+COPY --from=server-builder /app/config.toml /app/config.toml
 
 # Copy generated certificates
 COPY --from=server-builder /app/certs /app/certs

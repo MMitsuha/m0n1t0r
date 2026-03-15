@@ -125,6 +125,10 @@ jobs:
         if: steps.cxxbridge-cache.outputs.cache-hit != 'true'
         run: cargo install cxxbridge-cmd
 
+      - name: Create config.toml from example
+        run: cp config.example.toml config.toml
+        shell: bash
+
       - name: Generate TLS certificates
         run: cargo xtask -c
         shell: bash
