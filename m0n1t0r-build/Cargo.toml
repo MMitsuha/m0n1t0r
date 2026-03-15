@@ -14,3 +14,5 @@ nom = "8.0.0"
 execute = "0.2.13"
 regex = "1.12.2"
 strip-ansi-escapes = "0.2.1"
+toml = "0.8"
+serde = { version = "1", features = ["derive"] }

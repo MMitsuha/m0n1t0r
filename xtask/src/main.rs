@@ -3,7 +3,7 @@ use clap::Parser;
 use dialoguer::{Confirm, Input};
 use flexi_logger::Logger;
 use log::{info, warn};
-use m0n1t0r_build::cert;
+use m0n1t0r_build::{cert, config as build_config};
 use m0n1t0r_common::config::{
     ApiConfig, CertConfig, ConnConfig, FileConfig, GeneralConfig, TlsConfig,
 };
@@ -170,7 +170,7 @@ fn main() -> Result<()> {
     let args = Arguments::parse();
 
     if args.init {
-        let config_path = Path::new(env!("CARGO_WORKSPACE_DIR")).join("config.toml");
+        let config_path = build_config::path();
         init_config(&config_path)?;
     }
 
@@ -182,12 +182,19 @@ fn main() -> Result<()> {
             return Ok(());
         }
 
-        let config_path = Path::new(env!("CARGO_WORKSPACE_DIR")).join("config.toml");
+        let config_path = build_config::path();
+
+        if !build_config::check_no_rerun(&config_path) {
+            panic!(
+                "No valid config found at {}. Please run `cargo xtask -i` to generate one.",
+                config_path.display()
+            );
+        }
+
         let content = fs::read_to_string(&config_path)
             .context(format!("failed to read {}", config_path.display()))?;
-        let file_config: FileConfig =
-            toml::from_str(&content).context(format!("failed to parse {}", config_path.display()))?;
-
+        let file_config: FileConfig = toml::from_str(&content)
+            .context(format!("failed to parse {}", config_path.display()))?;
         generate_certs(&file_config.cert, &certs)?;
     }
 
