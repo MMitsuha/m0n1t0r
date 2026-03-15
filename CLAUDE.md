@@ -79,9 +79,6 @@ In debug mode, connects to `127.0.0.1:27853`. In release mode, server address is
 - `unix/` — Linux/macOS-specific
 - Platform dispatch uses Cargo features and `cfg_block`
 
-### Key Build-Time Environment Variables
-- `M0N1T0R_DOMAIN` — Server address baked into release client binary
-
 ### Configuration (`config.toml`)
 - **`[general]`** — `log_level` (default: `debug`), `secret` (required, session cookie signing key)
 - **`[conn]`** — `addr` (default: `0.0.0.0:27853`, client TLS listener)

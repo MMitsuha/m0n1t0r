@@ -9,10 +9,21 @@
 compile_error!("No target platform specified.");
 
 use m0n1t0r_build::{cert, dep};
+use serde::Deserialize;
 use std::{
     path::{Path, PathBuf},
     process::Command,
 };
+
+#[derive(Deserialize)]
+struct CertConfig {
+    domain: String,
+}
+
+#[derive(Deserialize)]
+struct FileConfig {
+    cert: CertConfig,
+}
 
 fn bridge_build(bridges: &[&str]) {
     bridges.iter().for_each(|x| {
@@ -73,6 +84,14 @@ fn main() {
             certs.display()
         );
     }
+
+    let config_path = Path::new(env!("CARGO_WORKSPACE_DIR")).join("config.toml");
+    cargo_emit::rerun_if_changed!(config_path.display());
+    let content = std::fs::read_to_string(&config_path)
+        .unwrap_or_else(|_| panic!("failed to read {}", config_path.display()));
+    let file_config: FileConfig = toml::from_str(&content)
+        .unwrap_or_else(|_| panic!("failed to parse {}", config_path.display()));
+    cargo_emit::rustc_env!("M0N1T0R_DOMAIN", "{}", file_config.cert.domain);
 
     bridge_build(&["src/init.rs"]);
     #[cfg(feature = "winnt")]

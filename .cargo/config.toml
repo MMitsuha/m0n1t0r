@@ -1,10 +1,8 @@
 [alias]
-rel-xtask = "run -r --package xtask --bin xtask --"
 xtask = "run --package xtask --bin xtask --"
 
 [env]
 CARGO_WORKSPACE_DIR = { value = "", relative = true }
-M0N1T0R_DOMAIN = "home.mmitsuha.xyz"
 
 [target.'cfg(all(target_os="windows", target_env="msvc"))']
 rustflags = [

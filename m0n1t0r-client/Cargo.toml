@@ -50,6 +50,8 @@ xmake = { git = "https://github.com/MMitsuha/xmake-rs.git" }
 cxx-build = "1.0.187"
 m0n1t0r-build = { path = "../m0n1t0r-build" }
 cargo-emit = "0.2.1"
+toml = "0.8"
+serde = { version = "1", features = ["derive"] }
 
 [target.'cfg(windows)'.build-dependencies]
 winres = "0.1.12"
