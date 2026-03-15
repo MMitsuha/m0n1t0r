@@ -48,11 +48,6 @@ Default ports: `0.0.0.0:27853` (client TLS connections), `0.0.0.0:10801` (REST/W
 ### Client
 In debug mode, connects to `127.0.0.1:27853`. In release mode, server address is baked in via `M0N1T0R_DOMAIN` env var at compile time.
 
-### UPX Compression (optional)
-```
-cargo xtask -u
-```
-
 ## Architecture
 
 ### Workspace Structure
@@ -62,8 +57,8 @@ cargo xtask -u
 - **m0n1t0r-ui** — React + TypeScript + Vite + Ant Design web dashboard
 - **m0n1t0r-build** — Build-time utilities (cert generation, version tracking via vergen, dependency validation)
 - **m0n1t0r-macro** — Procedural macros
-- **xtask** — Build automation (cert generation, UPX compression)
-- **deps/** — Vendored dependencies (qqkey, scrap with wayland support, upx)
+- **xtask** — Build automation (cert generation)
+- **deps/** — Vendored dependencies (qqkey, scrap with wayland support)
 
 ### Communication Model
 1. **Client → Server**: TLS connection on port 27853, bidirectional async RPC via `remoc` crate with MessagePack serialization

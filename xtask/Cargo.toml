@@ -23,4 +23,3 @@ m0n1t0r-build = { path = "../m0n1t0r-build" }
 
 [build-dependencies]
 cargo-emit = "0.2.1"
-cmake = "0.1.53"

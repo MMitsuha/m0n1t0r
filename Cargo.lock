@@ -7849,7 +7849,6 @@ dependencies = [
  "anyhow",
  "cargo-emit",
  "clap 4.5.60",
- "cmake",
  "flexi_logger 0.31.8",
  "log",
  "m0n1t0r-build",
