@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::{net::SocketAddr, path::PathBuf};
 
 fn default_conn_addr() -> SocketAddr {
@@ -13,14 +13,14 @@ fn default_log_level() -> String {
     "debug".into()
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct GeneralConfig {
     #[serde(default = "default_log_level")]
     pub log_level: String,
     pub secret: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ConnConfig {
     #[serde(default = "default_conn_addr")]
     pub addr: SocketAddr,
@@ -34,7 +34,7 @@ impl Default for ConnConfig {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ApiConfig {
     #[serde(default = "default_api_addr")]
     pub addr: SocketAddr,
@@ -51,13 +51,13 @@ impl Default for ApiConfig {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct TlsConfig {
     pub key: PathBuf,
     pub cert: PathBuf,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CertConfig {
     pub country: String,
     pub state: String,
@@ -67,7 +67,7 @@ pub struct CertConfig {
     pub domain: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct FileConfig {
     pub general: GeneralConfig,
     #[serde(default)]

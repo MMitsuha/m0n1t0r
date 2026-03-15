@@ -20,6 +20,8 @@ flexi_logger = { version = "0.31.8" }
 anyhow = "1.0.95"
 m0n1t0r-build = { path = "../m0n1t0r-build" }
 m0n1t0r-common = { path = "../m0n1t0r-common" }
+dialoguer = "0.11"
 rcgen = "0.13"
 time = "0.3"
 toml = "0.8"
+uuid = { version = "1", features = ["v4"] }

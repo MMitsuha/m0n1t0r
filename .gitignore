@@ -6,6 +6,9 @@ m0n1t0r-ui/dist/
 # TLS certificates
 certs/
 
+# Configuration
+config.toml
+
 # Environment
 .env
 

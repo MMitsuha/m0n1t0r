@@ -15,6 +15,12 @@ m0n1t0r is a cross-platform C2 (command and control) framework written in Rust. 
 - vcpkg with packages: `libvpx libyuv opus aom ffmpeg`
 - System: `binutils meson nasm ninja autoconf automake cmake pkg-config ffmpeg` (via brew on macOS)
 
+### Generate config.toml (required before first build)
+```
+cargo xtask -i
+```
+Interactive TUI wizard that creates `config.toml` with all settings.
+
 ### Generate TLS Certificates (required before first build)
 ```
 cargo xtask -c
