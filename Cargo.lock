@@ -5859,9 +5859,9 @@ dependencies = [
 
 [[package]]
 name = "socks5-impl"
-version = "0.7.3"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05f8fe8625d4a55c988a8e649c2821be2201493e63d3df24e94a7957917f6e27"
+checksum = "1eae7c78f163b7805f66493c787d7bad4816146faf0cf655d57c78b90c383ce3"
 dependencies = [
  "async-trait",
  "bytes",
