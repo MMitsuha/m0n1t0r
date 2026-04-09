@@ -170,7 +170,7 @@ fn main() -> Result<()> {
     let args = Arguments::parse();
 
     if args.init {
-        if build_config::check() {
+        if build_config::exists() {
             warn!("Config found.");
             return Ok(());
         }

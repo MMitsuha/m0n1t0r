@@ -89,7 +89,7 @@ pub fn path() -> PathBuf {
 pub fn ensure() {
     let config = path();
     cargo_emit::rerun_if_changed!(config.display());
-    if !check() {
+    if !exists() {
         panic!(
             "No valid config found at {}. Please run `cargo xtask -i` to generate one.",
             config.display()
@@ -97,7 +97,7 @@ pub fn ensure() {
     }
 }
 
-pub fn check() -> bool {
+pub fn exists() -> bool {
     let config = path();
     if !config.exists() {
         return false;
