@@ -7,12 +7,6 @@ readme.workspace = true
 repository.workspace = true
 edition.workspace = true
 
-[features]
-general = []
-winnt = []
-linux = []
-macos = []
-
 [dependencies]
 clap = { version = "4.5.28", features = ["derive"] }
 log = "0.4.25"

@@ -18,6 +18,29 @@ struct Arguments {
     cert: bool,
     #[arg(short, long, help = "Interactive config.toml generator")]
     init: bool,
+    #[arg(short, long, help = "Force overwrite existing files")]
+    force: bool,
+}
+
+fn populate_dn(params: &mut CertificateParams, cert: &CertConfig) {
+    params
+        .distinguished_name
+        .push(DnType::CountryName, &cert.country);
+    params
+        .distinguished_name
+        .push(DnType::StateOrProvinceName, &cert.state);
+    params
+        .distinguished_name
+        .push(DnType::LocalityName, &cert.locality);
+    params
+        .distinguished_name
+        .push(DnType::OrganizationName, &cert.org);
+    params
+        .distinguished_name
+        .push(DnType::OrganizationalUnitName, &cert.unit);
+    params
+        .distinguished_name
+        .push(DnType::CommonName, format!("{}.", &cert.domain));
 }
 
 fn generate_certs() -> Result<()> {
@@ -36,24 +59,7 @@ fn generate_certs() -> Result<()> {
     ca_params.is_ca = IsCa::Ca(rcgen::BasicConstraints::Unconstrained);
     ca_params.not_before = now;
     ca_params.not_after = not_after;
-    ca_params
-        .distinguished_name
-        .push(DnType::CountryName, &config.cert.country);
-    ca_params
-        .distinguished_name
-        .push(DnType::StateOrProvinceName, &config.cert.state);
-    ca_params
-        .distinguished_name
-        .push(DnType::LocalityName, &config.cert.locality);
-    ca_params
-        .distinguished_name
-        .push(DnType::OrganizationName, &config.cert.org);
-    ca_params
-        .distinguished_name
-        .push(DnType::OrganizationalUnitName, &config.cert.unit);
-    ca_params
-        .distinguished_name
-        .push(DnType::CommonName, format!("{}.", &config.cert.domain));
+    populate_dn(&mut ca_params, &config.cert);
 
     let ca_key = KeyPair::generate()?;
     let ca_cert = ca_params.self_signed(&ca_key)?;
@@ -63,24 +69,7 @@ fn generate_certs() -> Result<()> {
     end_params.is_ca = IsCa::NoCa;
     end_params.not_before = now;
     end_params.not_after = not_after;
-    end_params
-        .distinguished_name
-        .push(DnType::CountryName, &config.cert.country);
-    end_params
-        .distinguished_name
-        .push(DnType::StateOrProvinceName, &config.cert.state);
-    end_params
-        .distinguished_name
-        .push(DnType::LocalityName, &config.cert.locality);
-    end_params
-        .distinguished_name
-        .push(DnType::OrganizationName, &config.cert.org);
-    end_params
-        .distinguished_name
-        .push(DnType::OrganizationalUnitName, &config.cert.unit);
-    end_params
-        .distinguished_name
-        .push(DnType::CommonName, format!("{}.", &config.cert.domain));
+    populate_dn(&mut end_params, &config.cert);
 
     let end_key = KeyPair::generate()?;
     let end_cert = end_params.signed_by(&end_key, &ca_cert, &ca_key)?;
@@ -170,16 +159,16 @@ fn main() -> Result<()> {
     let args = Arguments::parse();
 
     if args.init {
-        if build_config::exists() {
-            warn!("Config found.");
+        if build_config::exists() && !args.force {
+            warn!("Config already exists. Use --force to overwrite.");
             return Ok(());
         }
         init_config()?;
     }
 
     if args.cert {
-        if build_cert::exists() {
-            warn!("Certificates found.");
+        if build_cert::exists() && !args.force {
+            warn!("Certificates already exist. Use --force to overwrite.");
             return Ok(());
         }
         generate_certs()?;
