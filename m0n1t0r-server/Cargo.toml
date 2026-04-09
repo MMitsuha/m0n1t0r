@@ -70,7 +70,7 @@ slotmap = { version = "1.0.7", features = ["serde"] }
 chrono = { version = "0.4.44", features = ["serde"] }
 scrap = { path = "../deps/scrap", features = ["wayland"], optional = true }
 hbb_common = { git = "https://github.com/rustdesk/hbb_common", optional = true }
-ffmpeg-next = { version = "8.0.0", optional = true }
+ffmpeg-next = { version = "8.1.0", optional = true }
 toml = "0.8.21"
 
 [target.'cfg(windows)'.build-dependencies]
