@@ -18,6 +18,15 @@ rustflags = [
 [target.'cfg(target_os="macos")']
 rustflags = [
     "-C", "link-args=-sectcreate __CGPreLoginApp __cgpreloginapp /dev/null",
+    "-l", "framework=AVFoundation",
+    "-l", "framework=AudioToolbox",
+    "-l", "framework=CoreMedia",
+    "-l", "framework=CoreVideo",
+    "-l", "framework=CoreFoundation",
+    "-l", "framework=VideoToolbox",
+    "-l", "framework=CoreImage",
+    "-l", "framework=OpenGL",
+    "-l", "framework=AppKit",
 ]
 #[target.'cfg(target_os="linux")']
 # glibc-static required, this may fix https://github.com/rustdesk/rustdesk/issues/9103, but I do not want this big change
