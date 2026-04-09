@@ -16,14 +16,12 @@ pub fn exists() -> bool {
 }
 
 pub fn ensure() {
-    for cert in &paths() {
+    let paths = paths();
+    for cert in &paths {
         cargo_emit::rerun_if_changed!(cert.display());
     }
-    if !exists() {
-        let missing: Vec<_> = paths()
-            .into_iter()
-            .filter(|c| !c.exists())
-            .collect();
+    let missing: Vec<_> = paths.iter().filter(|c| !c.exists()).collect();
+    if !missing.is_empty() {
         panic!(
             "Missing certificate(s): {}. Please run `cargo xtask -c` to generate.",
             missing

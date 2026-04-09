@@ -26,8 +26,7 @@ m0n1t0r/
 ├── m0n1t0r-client/    # Agent — connects back to server over TLS
 ├── m0n1t0r-common/    # Shared types, RPC definitions, and utilities
 ├── m0n1t0r-ui/        # React + TypeScript web dashboard
-├── m0n1t0r-build/     # Build-time helpers (config loading, cert validation)
-├── m0n1t0r-macro/     # Procedural macros
+├── m0n1t0r-build/     # Build toolkit (config, cert, version, platform, winres)
 ├── xtask/             # Build tasks (cargo xtask)
 └── deps/              # Vendored dependencies
 ```
