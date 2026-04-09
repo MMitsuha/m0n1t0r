@@ -16,6 +16,15 @@ env:
 
 jobs:
   docker-build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - features: linux,rd
+            tag: nightly
+          - features: linux
+            tag: nightly-slim
+
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -41,6 +50,7 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name == 'push' }}
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:nightly
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }}
+          build-args: FEATURES=${{ matrix.features }}
+          cache-from: type=gha,scope=${{ matrix.tag }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.tag }}

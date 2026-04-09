@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+For detailed code reference (all types, traits, API routes, data flows), see [CODEBASE.md](CODEBASE.md).
+
 ## Project Overview
 
 m0n1t0r is a cross-platform C2 (command and control) framework written in Rust. It consists of a server, client agent, shared library, and a React web dashboard.
@@ -12,8 +14,7 @@ m0n1t0r is a cross-platform C2 (command and control) framework written in Rust. 
 - Rust 1.85+ (edition 2024)
 - xmake (C/C++ build system)
 - cxxbridge-cmd: `cargo install cxxbridge-cmd`
-- vcpkg with packages: `libvpx libyuv opus aom ffmpeg`
-- System: `binutils meson nasm ninja autoconf automake cmake pkg-config ffmpeg` (via brew on macOS)
+- **With `rd` feature only**: vcpkg with packages: `libvpx libyuv opus aom ffmpeg`; system media libs (`nasm ffmpeg libavcodec-dev ...` on Linux, `brew install ffmpeg` on macOS)
 
 ### First-Time Setup
 ```
@@ -23,10 +24,15 @@ cargo xtask -c    # generate TLS certificates
 
 ### Build Rust Binaries
 Platform feature flags are **required** and mutually exclusive: `macos`, `linux`, `winnt`, `winnt-uac`
-Optional feature: `rd` (remote desktop — enables ffmpeg, scrap, hbb_common dependencies)
+Optional feature: `rd` (remote desktop — enables ffmpeg, scrap, hbb_common dependencies; requires vcpkg + media system libraries)
 ```
+# With remote desktop (requires vcpkg + media deps)
 cargo build --bin m0n1t0r-server --features macos,rd -r
 cargo build --bin m0n1t0r-client --features macos,rd -r
+
+# Without remote desktop (lightweight, no vcpkg needed)
+cargo build --bin m0n1t0r-server --features macos -r
+cargo build --bin m0n1t0r-client --features macos -r
 ```
 
 ### Build UI
@@ -79,14 +85,6 @@ In debug mode, connects to `127.0.0.1`. In release mode, server address and port
 - `unix/` — Linux/macOS-specific
 - Platform dispatch uses Cargo features and `cfg_block`
 
-### Configuration (`config.toml`)
-Generated interactively via `cargo xtask -i`. See `config.example.toml` for reference.
-- **`[general]`** — `log_level` (default: `debug`), `secret` (session cookie signing key)
-- **`[conn]`** — `addr` (default: `0.0.0.0:27853`, client TLS listener)
-- **`[api]`** — `addr` (default: `0.0.0.0:10801`, REST/WebSocket API), `use_https` (default: `false`)
-- **`[tls]`** — `key`, `cert` (PEM file paths for TLS)
-- **`[cert]`** — `country`, `state`, `locality`, `org`, `unit`, `domain` (used by `cargo xtask -c` to generate TLS certs; `domain` is also baked into client binary)
-
 ### Key Dependencies
 - **tokio** — Async runtime
 - **actix-web** — HTTP server (with rustls, secure cookies, WebSocket via actix-ws)
@@ -99,3 +97,20 @@ Generated interactively via `cargo xtask -i`. See `config.example.toml` for refe
 
 ### Release Profile
 Binaries are optimized for size: `opt-level = "z"`, LTO enabled, single codegen unit, symbols stripped, panic=abort.
+
+### Key Patterns
+
+- **RPC via remoc**: All agent traits in `m0n1t0r-common` use `#[rtc::remote]` which auto-generates `*Client` and `*ServerSharedMut` types. The `create_agent_instance!` macro in the client spawns a server/client pair for each agent.
+- **Platform dispatch**: `declare_agents!` macro conditionally imports platform-specific modules based on feature flags; `default_agents!` generates no-op fallbacks returning `Error::Unsupported`.
+- **C++ FFI**: Windows-specific code (process injection, ETW patching, autorun infection, charset) uses `cxx::bridge` calling C++ headers in `m0n1t0r-cpp-windows-lib/`. FFI calls are wrapped in `std::thread::spawn` + `oneshot::channel` to avoid blocking the async runtime.
+- **WebSocket pattern**: All WS endpoints use `actix_ws::handle()` → `task::spawn_local(util::handle_websocket(...))` with `tokio::select!` to multiplex WebSocket messages, remoc channels, and cancellation tokens.
+- **Error codes**: Response envelope `{ code: i16, body: T }` where `code = 0` means success, negative values are error discriminants (see `web::error::Error::discriminant()`).
+- **Proxy lifecycle**: Proxy sessions are tracked in a global `PROXY_MAP` (lazy_static `SlotMap`), cleaned up when either the client disconnects or the session is explicitly closed.
+
+### Configuration (`config.toml`)
+Generated interactively via `cargo xtask -i`. See `config.example.toml` for reference.
+- **`[general]`** — `log_level` (default: `debug`), `secret` (session cookie signing key)
+- **`[conn]`** — `addr` (default: `0.0.0.0:27853`, client TLS listener)
+- **`[api]`** — `addr` (default: `0.0.0.0:10801`, REST/WebSocket API), `use_https` (default: `false`)
+- **`[tls]`** — `key`, `cert`, `ca` (PEM file paths for TLS)
+- **`[cert]`** — `country`, `state`, `locality`, `org`, `unit`, `domain` (used by `cargo xtask -c` to generate TLS certs; `domain` is also baked into client binary)

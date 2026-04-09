@@ -150,3 +150,88 @@ jobs:
             ./target/release/${{ matrix.server_bin }}
             ./target/release/${{ matrix.client_bin }}
             ./certs
+
+  build-no-rd:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: macos
+            artifact: m0n1t0r-macos-no-rd
+            server_bin: m0n1t0r-server
+            client_bin: m0n1t0r-client
+          - os: ubuntu-latest
+            platform: linux
+            artifact: m0n1t0r-linux-no-rd
+            server_bin: m0n1t0r-server
+            client_bin: m0n1t0r-client
+          - os: windows-latest
+            platform: winnt
+            artifact: m0n1t0r-windows-no-rd
+            server_bin: m0n1t0r-server.exe
+            client_bin: m0n1t0r-client.exe
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ${{ matrix.platform }}-no-rd
+
+      - name: Install xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ gcc cmake make clang ninja-build pkg-config libclang-dev
+
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        uses: MinoruSekine/setup-scoop@v4.0.2
+        with:
+          buckets: main
+          apps: pkg-config
+
+      - name: Cache cxxbridge-cmd
+        id: cxxbridge-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/cxxbridge*
+          key: cxxbridge-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+
+      - name: Install cxxbridge-cmd
+        if: steps.cxxbridge-cache.outputs.cache-hit != 'true'
+        run: cargo install cxxbridge-cmd
+
+      - name: Create config.toml from example
+        run: cp config.example.toml config.toml
+        shell: bash
+
+      - name: Generate TLS certificates
+        run: cargo xtask -c
+        shell: bash
+
+      - name: Build server
+        run: cargo build --bin m0n1t0r-server --features ${{ matrix.platform }} -r
+
+      - name: Build client
+        run: cargo build --bin m0n1t0r-client --features ${{ matrix.platform }} -r
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            ./target/release/${{ matrix.server_bin }}
+            ./target/release/${{ matrix.client_bin }}
+            ./certs
