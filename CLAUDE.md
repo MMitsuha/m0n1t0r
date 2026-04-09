@@ -20,6 +20,8 @@ m0n1t0r is a cross-platform C2 (command and control) framework written in Rust. 
 ```
 cargo xtask -i    # interactive config.toml generator
 cargo xtask -c    # generate TLS certificates
+cargo xtask -i --force  # regenerate config.toml
+cargo xtask -c --force  # regenerate TLS certificates
 ```
 
 ### Build Rust Binaries
@@ -61,9 +63,8 @@ In debug mode, connects to `127.0.0.1`. In release mode, server address and port
 - **m0n1t0r-client** — Agent binary that connects back to the server over TLS
 - **m0n1t0r-common** — Shared types, RPC trait definitions, error types (the contract between server and client)
 - **m0n1t0r-ui** — React + TypeScript + Vite + Ant Design web dashboard
-- **m0n1t0r-build** — Build-time utilities (config loading, cert validation, version tracking via vergen, dependency validation)
-- **m0n1t0r-macro** — Procedural macros
-- **xtask** — Build automation (interactive config generator, cert generation via rcgen)
+- **m0n1t0r-build** — Build toolkit (config loading, cert validation, version tracking via vergen, dependency validation, platform feature validation, Windows resource embedding)
+- **xtask** — Build automation (interactive config generator, cert generation via rcgen; use `--force` to overwrite existing files)
 - **deps/** — Vendored dependencies (qqkey, scrap with wayland support)
 
 ### Communication Model

@@ -9,8 +9,7 @@ m0n1t0r/
   m0n1t0r-server/    # Server binary (TLS listener + REST/WS API)
   m0n1t0r-client/    # Client agent binary
   m0n1t0r-common/    # Shared RPC traits, types, error definitions
-  m0n1t0r-build/     # Build-time config loading, cert validation, version tracking
-  m0n1t0r-macro/     # Procedural macros (currently empty)
+  m0n1t0r-build/     # Build toolkit (config, cert, version, dep, platform, winres)
   m0n1t0r-ui/        # React + TypeScript + Vite + Ant Design dashboard
   xtask/             # Build automation (config generator, cert generator)
   deps/              # Vendored: qqkey (QQ account access), scrap (screen capture + wayland)
@@ -486,10 +485,12 @@ Platform-specific overrides using Win32 APIs and C++ FFI:
 
 Build-time library, used in `build.rs` scripts and `xtask`.
 
-- **`config.rs`** — `FileConfig` struct matching `config.toml`. Provides `path()`, `ensure()` (panics if missing), `check()`, `read()`. Config is read at compile time to bake values into binaries.
-- **`cert.rs`** — `path()` returns `[ca, cert, key]` paths. `ensure()` panics if certs missing. `check()` returns whether any are missing.
+- **`config.rs`** — `FileConfig` struct matching `config.toml`. Provides `path()`, `ensure()` (panics if missing), `exists()`, `read()`.
+- **`cert.rs`** — `paths()` returns `[ca, cert, key]` paths. `ensure()` panics if certs missing. `exists()` returns true when all certs are present.
 - **`version.rs`** — Calls `vergen` to emit build metadata env vars.
 - **`dep.rs`** — `check_xmake()`, `check_xrepo()`, `xrepo_fetch(dep)` — validates and fetches native dependencies.
+- **`platform.rs`** — `ensure()` validates that a platform feature flag is set at build time.
+- **`winres.rs`** — `embed(icon, manifest)` embeds Windows resource manifest with icon (behind `winres` feature).
 
 ---
 
@@ -497,8 +498,9 @@ Build-time library, used in `build.rs` scripts and `xtask`.
 
 CLI tool with two commands:
 
-- **`-i` / `--init`** — Interactive `config.toml` generator. Prompts for all config fields with sensible defaults. Won't overwrite existing valid config.
-- **`-c` / `--cert`** — TLS certificate generator using `rcgen`. Creates a self-signed CA + end-entity cert pair (10-year validity). Writes to paths specified in config.
+- **`-i` / `--init`** — Interactive `config.toml` generator. Prompts for all config fields with sensible defaults. Warns and exits if config exists (use `--force` to overwrite).
+- **`-c` / `--cert`** — TLS certificate generator using `rcgen`. Creates a self-signed CA + end-entity cert pair (10-year validity). Warns and exits if certs exist (use `--force` to overwrite).
+- **`-f` / `--force`** — Force overwrite existing config/certs.
 
 ---
 
