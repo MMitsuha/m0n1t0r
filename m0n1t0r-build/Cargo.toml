@@ -16,3 +16,11 @@ regex = "1.12.2"
 strip-ansi-escapes = "0.2.1"
 toml = "0.8"
 serde = { version = "1", features = ["derive"] }
+
+[target.'cfg(windows)'.dependencies]
+winres = { version = "0.1.12", optional = true }
+winapi = { version = "0.3.9", features = ["winbase"], optional = true }
+
+[features]
+default = []
+winres = ["dep:winres", "dep:winapi"]
