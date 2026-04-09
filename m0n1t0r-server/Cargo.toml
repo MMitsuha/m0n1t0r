@@ -73,6 +73,5 @@ hbb_common = { git = "https://github.com/rustdesk/hbb_common", optional = true }
 ffmpeg-next = { version = "8.1.0", optional = true }
 toml = "0.8.21"
 
-[target.'cfg(windows)'.build-dependencies]
-winres = "0.1.12"
-winapi = { version = "0.3.9", features = ["winbase"] }
+[build-dependencies]
+m0n1t0r-build = { path = "../m0n1t0r-build", features = ["winres"] }
