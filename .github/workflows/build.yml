@@ -58,10 +58,10 @@ jobs:
       - name: Install xmake
         uses: xmake-io/github-action-setup-xmake@v1
 
-      # macOS dependencies
+      # macOS dependencies (ffmpeg comes from vcpkg, not brew, to avoid version mismatch)
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
-        run: brew install binutils meson nasm ninja autoconf automake autoconf-archive python3 libtool cmake gcc wget pkg-config libresample ffmpeg
+        run: brew install binutils meson nasm ninja autoconf automake autoconf-archive python3 libtool cmake gcc wget pkg-config
 
       # Linux dependencies
       - name: Install dependencies (Linux)
@@ -74,7 +74,8 @@ jobs:
             cmake make libclang-dev ninja-build \
             libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libpam0g-dev \
             pkg-config libavutil-dev libavcodec-dev libavdevice-dev \
-            libavfilter-dev libavformat-dev libswresample-dev libswscale-dev
+            libavfilter-dev libavformat-dev libswresample-dev libswscale-dev \
+            autoconf autoconf-archive automake libtool
 
       # Windows dependencies
       - name: Install dependencies (Windows)
@@ -127,6 +128,13 @@ jobs:
       - name: Install cxxbridge-cmd
         if: steps.cxxbridge-cache.outputs.cache-hit != 'true'
         run: cargo install cxxbridge-cmd
+
+      - name: Set FFMPEG_DIR to vcpkg installation
+        if: runner.os == 'macOS'
+        run: |
+          TRIPLET=$(ls $VCPKG_ROOT/installed/ | grep -v vcpkg | head -1)
+          echo "FFMPEG_DIR=$VCPKG_ROOT/installed/$TRIPLET" >> $GITHUB_ENV
+        shell: bash
 
       - name: Create config.toml from example
         run: cp config.example.toml config.toml
