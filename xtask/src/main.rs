@@ -178,7 +178,7 @@ fn main() -> Result<()> {
     }
 
     if args.cert {
-        if !build_cert::check() {
+        if build_cert::exists() {
             warn!("Certificates found.");
             return Ok(());
         }

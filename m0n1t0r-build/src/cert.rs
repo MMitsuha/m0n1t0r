@@ -1,8 +1,8 @@
 use crate::config;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
-pub fn path() -> [PathBuf; 3] {
-    let root = Path::new(env!("CARGO_WORKSPACE_DIR"));
+pub fn paths() -> [PathBuf; 3] {
+    let root = std::path::Path::new(env!("CARGO_WORKSPACE_DIR"));
     let config = config::read();
     [
         root.join(&config.tls.ca),
@@ -11,10 +11,19 @@ pub fn path() -> [PathBuf; 3] {
     ]
 }
 
+pub fn exists() -> bool {
+    paths().iter().all(|cert| cert.exists())
+}
+
 pub fn ensure() {
-    let certs = path();
-    if check() {
-        let missing: Vec<_> = certs.iter().filter(|c| !c.exists()).collect();
+    for cert in &paths() {
+        cargo_emit::rerun_if_changed!(cert.display());
+    }
+    if !exists() {
+        let missing: Vec<_> = paths()
+            .into_iter()
+            .filter(|c| !c.exists())
+            .collect();
         panic!(
             "Missing certificate(s): {}. Please run `cargo xtask -c` to generate.",
             missing
@@ -24,11 +33,4 @@ pub fn ensure() {
                 .join(", ")
         );
     }
-    for cert in &certs {
-        cargo_emit::rerun_if_changed!(cert.display());
-    }
-}
-
-pub fn check() -> bool {
-    path().into_iter().any(|cert| !cert.exists())
 }
