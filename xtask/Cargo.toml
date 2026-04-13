@@ -16,5 +16,5 @@ m0n1t0r-build = { path = "../m0n1t0r-build" }
 dialoguer = "0.11"
 rcgen = "0.13"
 time = "0.3"
-toml = "0.8"
+toml = "1.1"
 uuid = { version = "1", features = ["v4"] }
